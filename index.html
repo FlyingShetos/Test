@@ -9,9 +9,10 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
-        body { background-color: #111; color: white; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: Arial, sans-serif; }
-        #game-container { position: relative; width: 640px; height: 480px; background-color: #000; box-shadow: 0 0 20px rgba(0,0,0,0.8); transition: width 0.3s, height 0.3s; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        canvas { width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; z-index: 1; }
+        body { background-color: #111; color: white; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: Arial, sans-serif; touch-action: none; }
+        
+        #game-container { position: relative; width: 640px; height: 480px; background-color: #000; box-shadow: 0 0 20px rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; overflow: hidden; touch-action: none; transform-origin: center center; }
+        canvas { width: 100%; height: 100%; object-fit: fill; position: absolute; top: 0; left: 0; z-index: 1; touch-action: none; }
         
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #loading-bar-container { width: 300px; height: 20px; border: 2px solid white; border-radius: 10px; overflow: hidden; margin-top: 20px; }
@@ -21,7 +22,7 @@
         #ping-counter { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); font-family: 'Press Start 2P', cursive; font-size: 10px; color: lime; z-index: 200; text-shadow: 1px 1px black; }
         
         .modal { display: none; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; background: rgba(0, 0, 0, 0.9); border: 4px solid #fff; border-radius: 10px; z-index: 100; overflow-y: auto; padding: 20px; box-sizing: border-box; }
-        .close-btn { position: absolute; top: 10px; right: 10px; background: red; color: white; border: none; font-size: 20px; font-weight: bold; cursor: pointer; padding: 5px 10px; }
+        .close-btn { position: absolute; top: 10px; right: 10px; background: red; color: white; border: none; font-size: 20px; font-weight: bold; cursor: pointer; padding: 5px 10px; z-index: 10; }
         
         .enter-btn, button { cursor: pointer; font-family: 'Press Start 2P', cursive; padding: 10px; border: 2px solid white; border-radius: 5px; background: #3498db; color: white; text-transform: uppercase; text-shadow: 1px 1px 2px black; }
         .enter-btn:hover, button:hover { transform: scale(1.05); filter: brightness(1.2); }
@@ -30,10 +31,16 @@
         
         .btn-gold { background: linear-gradient(to right, #FFD700, #DAA520); color: #000; border-color: #FFF; text-shadow: none; }
         .btn-yellow { background: linear-gradient(to right, #F1C40F, #F39C12); color: #000; border-color: #FFF; text-shadow: none; }
+        .btn-green { background: #2ecc71; color: black; border-color: white; text-shadow: none; }
+        .btn-blue { background: #3498db; color: white; border-color: white; text-shadow: none; }
+        .btn-red { background: #e74c3c; color: white; border-color: white; text-shadow: none; }
         
         #landing-page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #041820; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #landing-page h1 { font-family: 'Pacifico', cursive; font-size: 50px; color: #f1c40f; margin-bottom: 10px; text-shadow: 2px 2px #e67e22; text-align: center; }
         
+        #splash-text { position: absolute; top: 25%; right: 15%; color: #ffff00; font-family: 'Press Start 2P', cursive; font-size: 10px; transform: rotate(-15deg); text-shadow: 2px 2px #000; animation: pulse-splash 0.5s alternate infinite; pointer-events: none; z-index: 60; max-width: 200px; text-align: center; }
+        @keyframes pulse-splash { 0% { transform: rotate(-15deg) scale(1); } 100% { transform: rotate(-15deg) scale(1.1); } }
+
         .menu-stats { display: flex; gap: 15px; margin-bottom: 20px; }
         .stat-box { background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 5px; text-align: center; border: 1px solid #fff; font-size: 12px; }
         .stat-val { font-size: 18px; font-weight: bold; color: #f1c40f; }
@@ -60,7 +67,7 @@
         
         #sherlock-btn { left: 170px; background: rgba(0, 0, 255, 0.7); }
         #hrbreak-btn { left: 250px; background: rgba(128, 128, 128, 0.7); }
-        #arthur-btn { left: 330px; background: rgba(139, 69, 19, 0.7); }
+        #arthur-btn { left: 340px; background: rgba(139, 69, 19, 0.7); }
         
         #delete-boss-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 30px; background: red; z-index: 40; display: none; padding: 20px; border: 5px solid white; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.1); } 100% { transform: translate(-50%, -50%) scale(1); } }
@@ -137,6 +144,11 @@
         .shake { animation: shake 0.5s; animation-iteration-count: infinite; }
         @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
         .upside-down { transform: rotate(180deg); }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #f1c40f; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f39c12; }
     </style>
 </head>
 <body> 
@@ -153,7 +165,7 @@
          <h1 id="lang-welcome" style="color: #f1c40f; font-family: 'Press Start 2P', cursive; font-size: 20px; margin-bottom: 20px; line-height: 1.5;">WELCOME TO<br>FLYING SHETOS</h1>
          <p id="lang-res-warn" style="color: white; font-family: Arial, sans-serif; font-size: 16px; max-width: 400px; margin-bottom: 20px;">Please change the resolution from the Settings button (⚙️) if it does not fit your screen correctly!</p>
          <p style="font-size: 10px; color: #ccc; margin-bottom: 20px; font-family: Arial;">By pressing 'I UNDERSTAND' you agree to our <a href="#" onclick="openPrivacyPolicy(); return false;" style="color: lime;">Privacy Policy</a>.</p>
-         <button id="lang-btn-understand" class="enter-btn btn-yellow" style="font-size: 18px; padding: 15px 30px;" onclick="document.getElementById('startup-warning').style.display='none'; playClickSound();">I UNDERSTAND</button>
+         <button id="lang-btn-understand" class="enter-btn btn-yellow" style="font-size: 18px; padding: 15px 30px;" onclick="closeStartupWarning(); playClickSound();">I UNDERSTAND</button>
      </div>
 
      <div id="game-container"> 
@@ -268,14 +280,43 @@
                      <span>RESOLUTION</span>
                      <select id="res-select" class="res-select" onchange="changeResolution(this.value)">
                          <option value="640x480">Classic (640x480)</option>
-                         <option value="800x480">Wide (800x480)</option>
-                         <option value="960x720">HD Large (960x720)</option>
-                         <option value="mobile">Mobile (Fit Screen)</option>
+                         <option value="1280x720">HD PC (1280x720)</option>
+                         <option value="1920x1080">FHD PC (1920x1080)</option>
+                         <option value="1080x1920">Mobile Port. 1 (1080x1920)</option>
+                         <option value="1170x2532">Mobile Port. 2 (1170x2532)</option>
+                         <option value="1440x3088">Mobile Port. 3 (1440x3088)</option>
+                         <option value="fullscreen">Fullscreen (Auto Fit)</option>
                      </select>
                  </div>
              </div>
              <button id="resume-btn" class="enter-btn btn-yellow btn-full-width" onclick="togglePause()">RESUME</button>
              <button class="enter-btn secondary-btn btn-full-width" style="background-color: #c0392b; margin-top:10px;" onclick="quitToMenu()">QUIT TO MENU</button>
+         </div>
+
+         <div id="shop-modal" class="modal" style="background: #041820; border: 4px solid #f1c40f;">
+             <button class="close-btn" onclick="playClickSound(); closeShop()">X</button>
+             <h1 style="color: #f1c40f; font-family: 'Pacifico', cursive; text-align: center; font-size: 32px;">Shop</h1>
+             <div style="text-align: center; color: white; margin-bottom: 20px; font-family: 'Press Start 2P', cursive; font-size: 12px;">Dry Food: <span id="shop-food-val" style="color: #f1c40f;">0</span></div>
+             
+             <button class="enter-btn btn-yellow" style="display: block; margin: 0 auto 20px auto; font-size: 12px; width: 200px;" onclick="openLabMenu()">THE LAB</button>
+
+             <div class="lb-tabs" style="margin-bottom: 20px;">
+                 <div class="lb-tab active" id="tab-skins" style="background: #f1c40f; color: black; flex: 1; text-align: center;" onclick="switchShopTab('skins')">SKINS</div>
+                 <div class="lb-tab" id="tab-trails" style="background: #0a2e3f; color: white; border: 1px solid #f1c40f; flex: 1; text-align: center;" onclick="switchShopTab('trails')">TRAILS</div>
+             </div>
+             <div id="shop-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; max-height: 60%; overflow-y: auto; padding: 10px;">
+                 <!-- JS will inject items here -->
+             </div>
+         </div>
+
+         <!-- Confirmation Modal for Selling -->
+         <div id="confirm-modal" class="modal" style="display:none; height: auto; top: 40%; max-width: 400px; left: 50%; transform: translateX(-50%); text-align: center; padding: 30px; z-index: 500; background: #041820; border: 4px solid #f1c40f;">
+             <h2 style="color: lime; font-size: 16px; font-family: 'Press Start 2P', cursive;" id="confirm-title">SELL ITEM</h2>
+             <p style="font-size: 12px; color: white; margin-top: 10px; line-height:1.5;" id="confirm-text">Are you sure?</p>
+             <div style="display:flex; gap:10px; margin-top:30px;">
+                 <button class="enter-btn btn-green btn-full-width" id="confirm-yes-btn">YES</button>
+                 <button class="enter-btn btn-red btn-full-width" onclick="playClickSound(); closeModal('confirm-modal')">NO</button>
+             </div>
          </div>
 
          <div id="friendChatModal" class="modal">
@@ -299,9 +340,9 @@
              </div>
          </div>
 
-         <div id="labModal" class="modal">
+         <div id="labModal" class="modal" style="background: #041820; border-color: #f1c40f;">
              <button class="close-btn" onclick="playClickSound(); closeModal('labModal')">X</button>
-             <h2 style="color:lime;">THE LAB</h2>
+             <h2 style="color:#00ccff; text-align:center;">THE LAB</h2>
              
              <div id="lab-locked" style="text-align:center; color:white; margin-top:50px;">
                  <p style="font-family:'Press Start 2P'; font-size:12px; line-height:2;">Unlock the power to build<br>your ultimate Custom Shetos.</p>
@@ -313,17 +354,17 @@
                  <div id="lab-ui">
                      <div class="lab-points">POINTS AVAILABLE: <span id="lab-pts-val">10</span>/10</div>
                      
-                     <div class="lab-section">
+                     <div class="lab-section" style="border: 1px solid #f1c40f;">
                          <div style="color:gold; font-family:'Press Start 2P'; font-size:10px; margin-bottom:10px;">BASE APPEARANCE</div>
                          <div class="skin-selector">
-                             <button class="enter-btn" style="width:40px; padding:5px;" onclick="changeLabSkin(-1)">❮</button>
+                             <button class="enter-btn btn-blue" style="width:40px; padding:5px;" onclick="changeLabSkin(-1)">❮</button>
                              <img id="lab-skin-preview" src="player.png">
-                             <button class="enter-btn" style="width:40px; padding:5px;" onclick="changeLabSkin(1)">❯</button>
+                             <button class="enter-btn btn-blue" style="width:40px; padding:5px;" onclick="changeLabSkin(1)">❯</button>
                          </div>
                      </div>
                      
-                     <div class="lab-section">
-                         <div style="color:#00ccff; font-family:'Press Start 2P'; font-size:10px; margin-bottom:10px;">ABILITIES (Max 10 Total)</div>
+                     <div class="lab-section" style="border: 1px solid #00ccff;">
+                         <div style="color:#00ccff; font-family:'Press Start 2P'; font-size:10px; margin-bottom:10px;">ABILITIES (Max 10 Total) - Toggle Max 3</div>
                          <div class="lab-row"><span>Lives (Hearts)</span> <div class="lab-controls"><button onclick="adjStat('lives',-1)">-</button><span id="lab-stat-lives">0</span><button onclick="adjStat('lives',1)">+</button></div></div>
                          <div class="lab-row"><span>Dashes</span> <div class="lab-controls"><button onclick="adjStat('dashes',-1)">-</button><span id="lab-stat-dashes">0</span><button onclick="adjStat('dashes',1)">+</button></div></div>
                          <div class="lab-row"><span>Bombs</span> <div class="lab-controls"><button onclick="adjStat('bombs',-1)">-</button><span id="lab-stat-bombs">0</span><button onclick="adjStat('bombs',1)">+</button></div></div>
@@ -332,9 +373,12 @@
                          <hr style="border-color:#444; margin:10px 0;">
                          <div class="lab-row"><span>Low Gravity (Slow Fall)</span> <label class="switch"><input type="checkbox" id="lab-tog-grav" onchange="toggleLabSetting('slowFall', this.checked)"><span class="slider"></span></label></div>
                          <div class="lab-row"><span>Magnetize Food</span> <label class="switch"><input type="checkbox" id="lab-tog-mag" onchange="toggleLabSetting('magnet', this.checked)"><span class="slider"></span></label></div>
+                         <div class="lab-row"><span>Predict (Auto-Pilot)</span> <label class="switch"><input type="checkbox" id="lab-tog-sherlock" onchange="toggleLabSetting('sherlock', this.checked)"><span class="slider"></span></label></div>
+                         <div class="lab-row"><span>HR Break (Invincibility)</span> <label class="switch"><input type="checkbox" id="lab-tog-hr" onchange="toggleLabSetting('hrbreak', this.checked)"><span class="slider"></span></label></div>
+                         <div class="lab-row"><span>Dead Eye (Targeting)</span> <label class="switch"><input type="checkbox" id="lab-tog-arthur" onchange="toggleLabSetting('arthur', this.checked)"><span class="slider"></span></label></div>
                      </div>
 
-                     <div class="lab-section">
+                     <div class="lab-section" style="border: 1px solid #ff3333;">
                          <div style="color:#ff3333; font-family:'Press Start 2P'; font-size:10px; margin-bottom:10px;">CUSTOM TRAIL COLORS</div>
                          <div class="lab-row"><span>Base Color</span> <input type="color" id="lab-col-base" class="lab-color-picker" value="#ffffff" onchange="updateLabColor('base', this.value)"></div>
                          <div class="lab-row"><span>Shield Color</span> <input type="color" id="lab-col-shield" class="lab-color-picker" value="#00ccff" onchange="updateLabColor('shield', this.value)"></div>
@@ -350,6 +394,7 @@
          </div>
 
          <div id="landing-page"> 
+             <div id="splash-text">Splash!</div>
              <h1>Flying Shetos</h1> 
              <img src="player.png" class="preview-img" alt="Cheetos" onclick="playNoseSound()" ontouchstart="playNoseSound()"> 
              
@@ -386,10 +431,10 @@
              <div id="achievementsList"></div>
          </div>
          
-         <div id="charInfoModal" class="modal" style="height: 40%; top: 40%;">
+         <div id="charInfoModal" class="modal" style="height: 40%; top: 40%; background: #041820; border-color: #f1c40f; z-index: 200;">
              <button class="close-btn" onclick="playClickSound(); closeModal('charInfoModal')">X</button>
-             <h2 id="charInfoTitle">Character Info</h2>
-             <div id="charInfoText" style="color:white; text-align:center; margin-top:20px; font-size:16px;"></div>
+             <h2 id="charInfoTitle" style="color: #f1c40f;">Character Info</h2>
+             <div id="charInfoText" style="color:white; text-align:center; margin-top:20px; font-size:16px; line-height: 1.5;"></div>
          </div>
          
          <div id="leaderboardModal" class="modal">
@@ -425,7 +470,7 @@
              <button class="enter-btn btn-yellow btn-full-width" onclick="redeemCode()">SUBMIT</button>
          </div>
 
-         <div id="chatModal" class="modal">
+         <div id="chatModal" class="modal" style="z-index: 150;">
              <button class="close-btn" onclick="playClickSound(); closeModal('chatModal')">X</button>
              <h2>AI Shetos</h2>
              <div id="chat-box">
@@ -457,15 +502,34 @@
 <script>
         const originalCanvasW = 640;
         const originalCanvasH = 480;
+        let currentLang = 'en';
+
+        const SPLASH_TEXTS = ["Sue Me", "67", "Also try Flappy bird", "Bread", "who reads privacy policies?", ":>", ";)", "DELETE", "ALT F4 boosts FPS", "Daveyyyhowyadoin'", "It's average!", "Code: Infinite for unlimited dry food ;)", "Stong Independent Shetos", "Chocolate milk comes from Gangster Cows.", "If dry food is your power, then what are you without it?", "Money can buy happiness.", "Tu Hablas Espaniol?", "Game of the minute", "Slim Shady"];
+
+        const DEATH_MESSAGES = [
+            "404 ERROR", "oops", "wow", "*Thumbs down*", "ELLIE_IMG",
+            "..- ... . -.-. --- -.. . .-..-.\n. .- ... - . .-. . --. --. .-..-.",
+            "0 Braincells", "loser", "NO ITS NOT REPETETIVE AND\nDON'T SAY THAT AGAIN",
+            "yep they should replace\nyou with AI", "Get a life",
+            "..- ... . -.-. --- -.. . .-..-.\n..- -. .-.. .. -- .. - . -.. .-..-.",
+            "Wake Up", "time for a different approach",
+            "Insanity is doing the same thing\nover and over again and\nexpecting different results",
+            "addiction is bad", "It's me", "I always die", "...", "cool",
+            "yeah really close I guess", "yes there is an ending", "if function",
+            "..- ... . -.-. --- -.. . .-..-.\n-- --- .-. ... . .-..-."
+        ];
 
         const TRANSLATIONS = {
-            en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", resWarn: "Please change the resolution from the Settings (⚙️) if it doesn't fit!", understand: "I UNDERSTAND", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS" },
-            de: { play: "SPIELEN", shop: "GESCHÄFT", achieve: "ERFOLGE", friends: "FREUNDE", lead: "BESTEN", ai: "KI CHAT", redeem: "EINLÖSEN", high: "Höchstpunktzahl", food: "Trockenfutter", trophies: "Trophäen", games: "Spiele", welcome: "WILLKOMMEN BEI<br>FLYING SHETOS", resWarn: "Bitte ändern Sie die Auflösung über die Einstellungen (⚙️), falls es nicht passt!", understand: "ICH VERSTEHE", chooseMode: "Modus wählen", story: "GESCHICHTSMODUS", endless: "ENDLOSMODUS", pvp: "PVP-MODUS", settings: "EINSTELLUNGEN" },
-            ar: { play: "العب", shop: "المتجر", achieve: "إنجازات", friends: "أصدقاء", lead: "المتصدرين", ai: "محادثة ذكاء", redeem: "استرداد", high: "أعلى نتيجة", food: "طعام جاف", trophies: "الجوائز", games: "الألعاب", welcome: "مرحباً بكم في<br>فلاينج شيتوس", resWarn: "يرجى تغيير الدقة من زر الإعدادات (⚙️) إذا كانت لا تناسب شاشتك!", understand: "أنا أفهم", chooseMode: "اختر الوضع", story: "وضع القصة", endless: "وضع لا نهاية له", pvp: "وضع لاعب ضد لاعب", settings: "الإعدادات" },
-            it: { play: "GIOCA", shop: "NEGOZIO", achieve: "RISULTATI", friends: "AMICI", lead: "CLASSIFICA", ai: "CHAT AI", redeem: "RISCATTA", high: "Punteggio Max", food: "Cibo Secco", trophies: "Trofei", games: "Giochi", welcome: "BENVENUTO A<br>FLYING SHETOS", resWarn: "Modifica la risoluzione dalle Impostazioni (⚙️) se non si adatta!", understand: "CAPISCO", chooseMode: "Scegli Modalità", story: "MODALITÀ STORIA", endless: "MODALITÀ INFINITA", pvp: "MODALITÀ PVP", settings: "IMPOSTAZIONI" }
+            en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", resWarn: "Please change the resolution from the Settings (⚙️) if it doesn't fit!", understand: "I UNDERSTAND", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS", b1_1: "oh, here you are", b1_2: "I was waiting for you", b2_1: "you are getting out of control", b2_2: "you werent supposed to come HERE", b2_3: "Its too late to go back now....", sys: "System Override...", bypass: "Bypassing...", admin: "Administrator Granted.", tbc: "To Be Continued...", cat: "THAT WAS A CAT", kid: "you got clipped by a kid lmao", err1: "Connection Error", fall: "Fell down!", wall: "Hit a wall!", eaten: "EATEN BY SHETOS!" },
+            de: { play: "SPIELEN", shop: "GESCHÄFT", achieve: "ERFOLGE", friends: "FREUNDE", lead: "BESTEN", ai: "KI CHAT", redeem: "EINLÖSEN", high: "Höchstpunktzahl", food: "Trockenfutter", trophies: "Trophäen", games: "Spiele", welcome: "WILLKOMMEN BEI<br>FLYING SHETOS", resWarn: "Bitte ändern Sie die Auflösung über die Einstellungen (⚙️), falls es nicht passt!", understand: "ICH VERSTEHE", chooseMode: "Modus wählen", story: "GESCHICHTSMODUS", endless: "ENDLOSMODUS", pvp: "PVP-MODUS", settings: "EINSTELLUNGEN", b1_1: "oh, da bist du ja", b1_2: "ich habe auf dich gewartet", b2_1: "du gerätst außer kontrolle", b2_2: "du solltest nicht HIERHER kommen", b2_3: "es ist zu spät um umzukehren....", sys: "Systemüberschreibung...", bypass: "Umgehung...", admin: "Administrator gewährt.", tbc: "Fortsetzung folgt...", cat: "DAS WAR EINE KATZE", kid: "du wurdest von einem kind erwischt lmao", err1: "Verbindungsfehler", fall: "Heruntergefallen!", wall: "Wand getroffen!", eaten: "VON SHETOS GEFRESSEN!" },
+            ar: { play: "العب", shop: "المتجر", achieve: "إنجازات", friends: "أصدقاء", lead: "المتصدرين", ai: "محادثة ذكاء", redeem: "استرداد", high: "أعلى نتيجة", food: "طعام جاف", trophies: "الجوائز", games: "الألعاب", welcome: "مرحباً بكم في<br>فلاينج شيتوس", resWarn: "يرجى تغيير الدقة من زر الإعدادات (⚙️) إذا كانت لا تناسب شاشتك!", understand: "أنا أفهم", chooseMode: "اختر الوضع", story: "وضع القصة", endless: "وضع لا نهاية له", pvp: "وضع لاعب ضد لاعب", settings: "الإعدادات", b1_1: "أوه، ها أنت ذا", b1_2: "كنت في انتظارك", b2_1: "أنت تخرج عن السيطرة", b2_2: "لم يكن من المفترض أن تأتي إلى هنا", b2_3: "لقد فات الأوان للتراجع....", sys: "تجاوز النظام...", bypass: "جاري التجاوز...", admin: "تم منح حق المسؤول.", tbc: "يتبع...", cat: "تلك كانت قطة", kid: "لقد صدمك طفل لول", err1: "خطأ في الاتصال", fall: "سقطت!", wall: "اصطدمت بجدار!", eaten: "أكلك شيتوس!" },
+            it: { play: "GIOCA", shop: "NEGOZIO", achieve: "RISULTATI", friends: "AMICI", lead: "CLASSIFICA", ai: "CHAT AI", redeem: "RISCATTA", high: "Punteggio Max", food: "Cibo Secco", trophies: "Trofei", games: "Giochi", welcome: "BENVENUTO A<br>FLYING SHETOS", resWarn: "Modifica la risoluzione dalle Impostazioni (⚙️) se non si adatta!", understand: "CAPISCO", chooseMode: "Scegli Modalità", story: "MODALITÀ STORIA", endless: "MODALITÀ INFINITA", pvp: "MODALITÀ PVP", settings: "IMPOSTAZIONI", b1_1: "oh, eccoti qui", b1_2: "ti stavo aspettando", b2_1: "stai perdendo il controllo", b2_2: "non dovevi venire QUI", b2_3: "è troppo tardi per tornare indietro....", sys: "Override del Sistema...", bypass: "Bypass in corso...", admin: "Amministratore Concesso.", tbc: "Continua...", cat: "QUELLO ERA UN GATTO", kid: "ti ha colpito un bambino lmao", err1: "Errore di Connessione", fall: "Sei caduto!", wall: "Hai colpito un muro!", eaten: "MANGIATO DA SHETOS!" }
         };
 
+        function getLangText(key) { return TRANSLATIONS[currentLang][key] || key; }
+
         window.changeLanguage = function(lang) {
+            currentLang = lang;
             const t = TRANSLATIONS[lang];
             if(!t) return;
             document.getElementById('btn-play').innerText = t.play;
@@ -489,6 +553,41 @@
             document.getElementById('lang-settings').innerText = t.settings;
             document.getElementById('lang-select').blur();
         };
+
+        window.updateSplashText = function() {
+            document.getElementById('splash-text').innerText = SPLASH_TEXTS[Math.floor(Math.random() * SPLASH_TEXTS.length)];
+        };
+
+        window.applyScale = function() {
+            let container = document.getElementById('game-container');
+            if (currentResValue === 'fullscreen') {
+                container.style.transform = 'none';
+                container.style.width = '100vw';
+                container.style.height = '100vh';
+                CANVAS_WIDTH = window.innerWidth;
+                CANVAS_HEIGHT = window.innerHeight;
+                myCanvas.width = CANVAS_WIDTH;
+                myCanvas.height = CANVAS_HEIGHT;
+            } else {
+                container.style.transform = 'none';
+                let parts = currentResValue.split('x'); 
+                let w = parseInt(parts[0]) || 640; 
+                let h = parseInt(parts[1]) || 480;
+                CANVAS_WIDTH = w;
+                CANVAS_HEIGHT = h;
+                myCanvas.width = w;
+                myCanvas.height = h;
+
+                let scaleX = window.innerWidth / w;
+                let scaleY = window.innerHeight / h;
+                let scale = Math.min(scaleX, scaleY);
+                container.style.width = w + 'px';
+                container.style.height = h + 'px';
+                container.style.transform = `scale(${scale})`;
+            }
+            if (bird && game_mode === 'waiting_for_website') { bird.x = CANVAS_WIDTH / 3; bird.y = CANVAS_HEIGHT / 2; }
+        }
+        window.addEventListener('resize', applyScale);
 
         setInterval(() => {
             let start = Date.now();
@@ -542,7 +641,8 @@
                 audio.load();
             }
         });
-window.closeStartupWarning = function() {
+
+        window.closeStartupWarning = function() {
             document.getElementById('startup-warning').style.display = 'none';
         };
 
@@ -665,7 +765,7 @@ window.closeStartupWarning = function() {
         }
 
         window.closeAllModals = function() {
-            const modals = ['mode-select-modal', 'leaderboardModal', 'friendsModal', 'chatModal', 'labModal', 'achievementsModal', 'charInfoModal', 'friendChatModal', 'privacyModal', 'redeemModal', 'inviteModal'];
+            const modals = ['mode-select-modal', 'leaderboardModal', 'friendsModal', 'chatModal', 'labModal', 'achievementsModal', 'charInfoModal', 'friendChatModal', 'privacyModal', 'redeemModal', 'inviteModal', 'shop-modal', 'confirm-modal'];
             modals.forEach(id => { let el = document.getElementById(id); if(el) el.style.display = 'none'; });
         }
 
@@ -728,11 +828,32 @@ window.closeStartupWarning = function() {
             playClickSound(); let code = document.getElementById('redeemInput').value.trim();
             if(code === "") return; if(redeemedCodes.includes(code)) return alert("Code already used!");
             let success = false;
+            let isUnlimited = false;
             if(code === "1-UGLY") { collectedStars += 20; success = true; }
             else if(code === "2-67") { collectedStars += 67; success = true; }
             else if(code === "3-Online") { onlineTrophies += 300; success = true; }
             else if(code === "4-thankyoudaddy") { collectedStars += 100; success = true; }
-            if(success) { redeemedCodes.push(code); localStorage.setItem('flappyRedeemed', JSON.stringify(redeemedCodes)); localStorage.setItem('flappyStars', collectedStars); localStorage.setItem('flappyTrophies', onlineTrophies); saveUserData(); updateMenuStats(); playPowerUpSound(); showCheatFeedback("CODE REDEEMED!"); closeModal('redeemModal'); } else { alert("Invalid code."); }
+            else if(code === "morse") { collectedStars += 50; success = true; }
+            else if(code === "easteregg") { collectedStars += 50; success = true; }
+            else if(code === "unlimited") { success = true; isUnlimited = true; }
+            
+            if(success) { 
+                redeemedCodes.push(code); 
+                localStorage.setItem('flappyRedeemed', JSON.stringify(redeemedCodes)); 
+                localStorage.setItem('flappyStars', collectedStars); 
+                localStorage.setItem('flappyTrophies', onlineTrophies); 
+                saveUserData(); 
+                updateMenuStats(); 
+                playPowerUpSound(); 
+                if (isUnlimited) {
+                    showCheatFeedback("you got unlimited amount of air");
+                } else {
+                    showCheatFeedback("CODE REDEEMED!"); 
+                }
+                closeModal('redeemModal'); 
+            } else { 
+                alert("Invalid code."); 
+            }
         }
 
         window.openPrivacyPolicy = function() { playClickSound(); closeAllModals(); document.getElementById('privacyModal').style.display = 'block'; }
@@ -792,7 +913,7 @@ window.triggerPvpTrashTalk = async function() {
         window.askShetosAboutItem = function(itemName) { playClickSound(); closeAllModals(); document.getElementById('chatModal').style.display = 'block'; const askText = `what do you think about the ${itemName}?`; const input = document.getElementById('chatInput'); input.value = askText; sendMessage(); }
         
         let labUnlocked = false; try { labUnlocked = localStorage.getItem('flappyLabUnlocked') === 'true'; } catch(e) {}
-        let customStats = { lives: 0, dashes: 0, bombs: 0, shrinks: 0, widens: 0, magnet: false, slowFall: false, visualSkin: 'default' };
+        let customStats = { lives: 0, dashes: 0, bombs: 0, shrinks: 0, widens: 0, magnet: false, slowFall: false, sherlock: false, hrbreak: false, arthur: false, visualSkin: 'default' };
         let customTrailColors = { base: '#ffffff', shield: '#00ccff', damage: '#ff3333', potion: '#ff00ff', slow: '#ffffff', food: '#ffd700' };
         try { let cStat = JSON.parse(localStorage.getItem('flappyCustomStats')); if(cStat) customStats = {...customStats, ...cStat}; } catch(e) {}
         try { let cTrail = JSON.parse(localStorage.getItem('flappyCustomTrail')); if(cTrail) customTrailColors = {...customTrailColors, ...cTrail}; } catch(e) {}
@@ -810,6 +931,9 @@ window.triggerPvpTrashTalk = async function() {
             document.getElementById('lab-stat-widens').innerText = customStats.widens || 0;
             document.getElementById('lab-tog-grav').checked = customStats.slowFall;
             document.getElementById('lab-tog-mag').checked = customStats.magnet;
+            document.getElementById('lab-tog-sherlock').checked = customStats.sherlock || false;
+            document.getElementById('lab-tog-hr').checked = customStats.hrbreak || false;
+            document.getElementById('lab-tog-arthur').checked = customStats.arthur || false;
             
             const allSkinKeys = Object.keys(SKINS).filter(k => k !== 'custom');
             let tempIndex = allSkinKeys.indexOf(customStats.visualSkin);
@@ -825,7 +949,27 @@ window.triggerPvpTrashTalk = async function() {
         }
 
         window.adjStat = function(statName, delta) { playClickSound(); if (customStats[statName] === undefined) customStats[statName] = 0; let usedPts = customStats.lives + customStats.dashes + customStats.bombs + (customStats.shrinks || 0) + (customStats.widens || 0); if (delta > 0 && usedPts >= 10) return; let newVal = customStats[statName] + delta; if (newVal >= 0 && newVal <= 10) { customStats[statName] = newVal; refreshLabUI(); } }
-        window.toggleLabSetting = function(settingName, checked) { playClickSound(); customStats[settingName] = checked; }
+        window.toggleLabSetting = function(settingName, checked) { 
+            playClickSound(); 
+            if (checked) {
+                let activeCount = 0;
+                ['slowFall', 'magnet', 'sherlock', 'hrbreak', 'arthur'].forEach(k => {
+                    if (customStats[k]) activeCount++;
+                });
+                if (activeCount >= 3) {
+                    let elId = 'lab-tog-grav';
+                    if(settingName === 'slowFall') elId = 'lab-tog-grav';
+                    if(settingName === 'magnet') elId = 'lab-tog-mag';
+                    if(settingName === 'sherlock') elId = 'lab-tog-sherlock';
+                    if(settingName === 'hrbreak') elId = 'lab-tog-hr';
+                    if(settingName === 'arthur') elId = 'lab-tog-arthur';
+                    document.getElementById(elId).checked = false;
+                    showCheatFeedback("MAX 3 TOGGLES ALLOWED");
+                    return;
+                }
+            }
+            customStats[settingName] = checked; 
+        }
         window.updateLabColor = function(colorName, hexVal) { customTrailColors[colorName] = hexVal; }
         
         window.changeLabSkin = function(dir) {
@@ -840,38 +984,27 @@ window.triggerPvpTrashTalk = async function() {
             document.getElementById('lab-skin-preview').src = SKINS[customStats.visualSkin].src;
         }
 
-        window.saveAndEquipCustom = function() { playPowerUpSound(); localStorage.setItem('flappyCustomStats', JSON.stringify(customStats)); localStorage.setItem('flappyCustomTrail', JSON.stringify(customTrailColors)); saveUserData(); for (let k in SKINS) { SKINS[k].current = false; } for (let k in TRAILS) { TRAILS[k].current = false; } currentSkinKey = 'custom'; currentTrailKey = 'trail_custom'; localStorage.setItem('currentSkin', 'custom'); localStorage.setItem('currentTrail', 'trail_custom'); let tempImg = new Image(); tempImg.onload = function() { bird.MyImg = tempImg; }; tempImg.src = SKINS[customStats.visualSkin] ? SKINS[customStats.visualSkin].src : 'player.png'; closeModal('labModal'); showCheatFeedback("CUSTOM EQUIPPED!"); }
+        window.saveAndEquipCustom = function() { playPowerUpSound(); localStorage.setItem('flappyCustomStats', JSON.stringify(customStats)); localStorage.setItem('flappyCustomTrail', JSON.stringify(customTrailColors)); saveUserData(); for (let k in SKINS) { SKINS[k].current = false; } for (let k in TRAILS) { TRAILS[k].current = false; } currentSkinKey = 'custom'; currentTrailKey = 'trail_custom'; localStorage.setItem('currentSkin', 'custom'); localStorage.setItem('currentTrail', 'trail_custom'); let tempImg = new Image(); tempImg.onload = function() { bird.MyImg = tempImg; }; tempImg.src = SKINS[customStats.visualSkin] ? SKINS[customStats.visualSkin].src : 'player.png'; closeModal('labModal'); showCheatFeedback("CUSTOM EQUIPPED!"); updateAbilityButtons(); }
 
-        // --- RESOLUTION LOGIC FIX ---
         let CANVAS_WIDTH = 640; 
         let CANVAS_HEIGHT = 480;
         let currentResValue = "640x480";
 
         window.changeResolution = function(val) {
             playClickSound();
-            if (game_mode !== 'waiting_for_website' && game_mode !== 'shop_from_menu') { alert("You can only change the resolution from the Main Menu!"); document.getElementById('res-select').value = currentResValue; return; }
+            if (game_mode !== 'waiting_for_website') { alert("You can only change the resolution from the Main Menu!"); document.getElementById('res-select').value = currentResValue; return; }
             currentResValue = val; localStorage.setItem('flappyRes', val); 
             
-            let container = document.getElementById('game-container');
-            if (currentResValue === 'mobile') { 
-                // Don't break logic coordinates, just scale via CSS object-fit
-                CANVAS_WIDTH = 640; CANVAS_HEIGHT = 480; 
-                myCanvas.style.width = '100vw'; 
-                myCanvas.style.height = '100vh';
-                myCanvas.style.objectFit = 'contain';
-                container.style.width = '100vw';
-                container.style.height = '100vh';
-            } else { 
-                let parts = currentResValue.split('x'); 
-                CANVAS_WIDTH = parseInt(parts[0]) || 640; CANVAS_HEIGHT = parseInt(parts[1]) || 480; 
-                myCanvas.style.width = '100%'; 
-                myCanvas.style.height = '100%';
-                myCanvas.style.objectFit = 'fill';
-                container.style.width = CANVAS_WIDTH + 'px'; 
-                container.style.height = CANVAS_HEIGHT + 'px';
+            if (currentResValue === 'fullscreen') {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(e=>console.log(e));
+                }
+            } else {
+                if (document.fullscreenElement && document.exitFullscreen) {
+                    document.exitFullscreen().catch(e=>console.log(e));
+                }
             }
-            myCanvas.width = CANVAS_WIDTH; myCanvas.height = CANVAS_HEIGHT;
-            if (bird) { bird.x = CANVAS_WIDTH / 3; bird.y = CANVAS_HEIGHT / 2; }
+            applyScale();
             if(backgroundImages[0] && backgroundImages[0].complete && game_mode === 'waiting_for_website') { ctx.drawImage(backgroundImages[0], 0, 0, myCanvas.width, myCanvas.height); }
         }
 
@@ -888,7 +1021,7 @@ window.triggerPvpTrashTalk = async function() {
         window.updateSFXVolume = function(val) { masterSFXVol = parseFloat(val); flapSound.volume = masterSFXVol * 0.5; alarmSound.volume = masterSFXVol; breathingSound.volume = masterSFXVol; shieldBreakSound.volume = masterSFXVol; damageSound.volume = masterSFXVol; explosionSound.volume = masterSFXVol; noseSound.volume = masterSFXVol; buttonSound.volume = masterSFXVol; buySound.volume = masterSFXVol; dashSound.volume = masterSFXVol; }
 
         let voidBreathingCount = 0; const MAX_BREATHING = 2; let musicMuted = false; let sfxMuted = false;
-        window.addEventListener('click', () => { if(mainMenuMusic.paused && !musicMuted && (game_mode === 'waiting_for_website' || game_mode === 'shop_from_menu')) { mainMenuMusic.play().catch(e => console.log("Music auto-started")); } }, {once: true});
+        window.addEventListener('click', () => { if(mainMenuMusic.paused && !musicMuted && game_mode === 'waiting_for_website') { mainMenuMusic.play().catch(e => console.log("Music auto-started")); } }, {once: true});
 
         let boss = { x: 9999, y: 100, width: 150, height: 150, stamina: 100, speedY: 2, movingIn: true }; let chocolates = []; let victoryTimer = 0; let deathMessage = "Game Over"; let bossIntroState = 0; let bossIntroTimer = 0; let boss1Defeated = false; let isBoss2 = false; let boss2Hits = 0; const BOSS2_MAX_HITS = 5; let deleteBtnTimer = 0; let deleteBtnSpawnTimer = 0; let errorSigns = []; let errorSignCooldown = 0; 
         const AREA_NAMES = [ "The Beginning", "The SKY", "The SUNSET", "The NIGHT", "The VOID" ]; const GLITCH_TEXTS = ["thats not the reality", "404", "not found", "wake up", "null", "error"]; let currentBGIndex = 0; let transitionText = ""; let transitionTimer = 0; let flashColor = null; let flashTimer = 0; let levelReached = 1; let portals = []; const PORTAL_CHANCE = 0.02; let hasPortalSpawnedInThisArea = false; let cheatBuffer = ""; let floatingTexts = []; 
@@ -906,7 +1039,7 @@ window.triggerPvpTrashTalk = async function() {
             'happy':      { src: 'player_happy.png', cost: 220, current: false, name: 'Happy Shetos', desc: 'Low gravity. Falls slower.' }, 
             'arthur':     { src: 'arthur.png', cost: 240, current: false, name: 'Arthur Shetos', desc: 'Enter Slow-Mo. Click red X marks to destroy pipes/bosses. 30s Cooldown.' },
             'luigi':      { src: 'luigi_shetos.png', cost: 250, current: false, name: 'Luigi Shetos', desc: 'Can SHRINK for 4 sec (Press S). Starts with 4 uses.' },
-            'sherlock':   { src: 'sherlock.png', cost: 250, current: false, name: 'Sherlock Shetos', desc: 'PREDICTS safe paths and dodges attacks. Starts with 1 extra life. 15s Cooldown.' },
+            'sherlock':   { src: 'sherlock.png', cost: 250, current: false, name: 'Sherlock Shetos', desc: 'Engages Auto-Pilot and dodges everything. 6s Duration. 15s Cooldown.' },
             'heisenbark': { src: 'heisen_bark.png', cost: 260, current: false, name: 'Heisenbark Shetos', desc: 'Widens gaps 2x for 6s (Press W). Side effect: Screen blinks. 4 uses.' },
             'yellow':     { src: 'player_yellow.png', cost: 300, current: false, name: 'Terrorist Shetos', desc: 'Can DESTROY walls (Press D). Starts with 5 Bombs.' }, 
             'black':      { src: 'player_black.png', cost: 700, current: false, name: 'Legendary Shetos', desc: 'ALL POWERS COMBINED!\n3 Lives, Dash, 5 Bombs, Shrink, Widen, Magnet, Low Grav.' },
@@ -918,6 +1051,11 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
             'trail_blue':        { color: '#00ccff', cost: 30, current: false, name: 'Blue Trail' },
             'trail_red':         { color: '#ff3333', cost: 30, current: false, name: 'Red Trail' },
             'trail_green':       { color: '#33ff33', cost: 30, current: false, name: 'Green Trail' },
+            'trail_yellow':      { color: '#f1c40f', cost: 30, current: false, name: 'Yellow Trail' },
+            'trail_orange':      { color: '#e67e22', cost: 30, current: false, name: 'Orange Trail' },
+            'trail_pink':        { color: '#ff66b2', cost: 30, current: false, name: 'Pink Trail' },
+            'trail_white':       { color: '#ffffff', cost: 30, current: false, name: 'White Trail' },
+            'trail_black':       { color: '#000000', cost: 30, current: false, name: 'Black Trail' },
             'trail_purple':      { color: '#bf00ff', cost: 40, current: false, name: 'Purple Trail' },
             'trail_rainbow':     { color: 'rainbow', cost: 70, current: false, name: 'Rainbow Trail' },
             'trail_transparent': { color: 'transparent', cost: 100, current: false, name: 'Reactive Trail' },
@@ -932,7 +1070,16 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
         for (const key in SKINS) { SKINS[key].current = false; } if (SKINS[currentSkinKey]) { SKINS[currentSkinKey].current = true; }
         let availableTrails = ['trail_none']; try { availableTrails = JSON.parse(localStorage.getItem('flappyTrails')) || ['trail_none']; } catch(e) {} let currentTrailKey = 'trail_none'; try { if (localStorage.getItem('currentTrail')) { currentTrailKey = localStorage.getItem('currentTrail'); for (const key in TRAILS) { TRAILS[key].current = false; } if (TRAILS[currentTrailKey]) { TRAILS[currentTrailKey].current = true; } } } catch(e) {}
 
-        const ALL_ACHIEVEMENTS = [ { id: 'beginner', title: 'Beginner', desc: 'Score more than 10', unlocked: false }, { id: 'hang', title: 'Getting the hang of it', desc: 'Score more than 20', unlocked: false }, { id: 'sunset', title: 'It was a beautiful SUNSET', desc: 'Score more than 30', unlocked: false }, { id: 'void', title: 'THE VOID?', desc: 'Score more than 40', unlocked: false }, { id: 'monster', title: 'YOU MONSTER!', desc: 'Kill the first Boss', unlocked: false }, { id: 'interesting', title: 'INTERESTING!', desc: '???', unlocked: false }, { id: 'hardcore', title: 'Hardcore Gamer', desc: 'Beat the game with Original Shetos', unlocked: false }, { id: 'dryfoodaire', title: 'Dryfood-aire', desc: 'Get more than 1000 Dry Food', unlocked: false } ];
+        const ALL_ACHIEVEMENTS = [ 
+            { id: 'beginner', title: 'Beginner', desc: 'Score more than 10', reward: 10, unlocked: false }, 
+            { id: 'hang', title: 'Getting the hang of it', desc: 'Score more than 20', reward: 20, unlocked: false }, 
+            { id: 'sunset', title: 'It was a beautiful SUNSET', desc: 'Score more than 30', reward: 30, unlocked: false }, 
+            { id: 'void', title: 'THE VOID?', desc: 'Score more than 40', reward: 40, unlocked: false }, 
+            { id: 'monster', title: 'YOU MONSTER!', desc: 'Kill the first Boss', reward: 67, unlocked: false }, 
+            { id: 'interesting', title: 'INTERESTING!', desc: '???', reward: 69, unlocked: false }, 
+            { id: 'hardcore', title: 'Hardcore Gamer', desc: 'Beat the game with Original Shetos', reward: 500, unlocked: false }, 
+            { id: 'dryfoodaire', title: 'Dryfood-aire', desc: 'Get more than 1000 Dry Food', reward: 0, unlocked: false } 
+        ];
         let savedAchievements = []; try { savedAchievements = JSON.parse(localStorage.getItem('flappyAchievements')) || []; ALL_ACHIEVEMENTS.forEach(ach => { if (savedAchievements.includes(ach.id)) ach.unlocked = true; }); } catch(e) {} let highScore = 0; try { highScore = parseInt(localStorage.getItem('flappyHighScore')) || 0; } catch(e) {} let endlessHighScore = 0; try { endlessHighScore = parseInt(localStorage.getItem('flappyEndlessHighScore')) || 0; } catch(e) {}
 
         function MySprite(img_url) {
@@ -967,7 +1114,10 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
 
         let loadedSrc = SKINS['default'].src; if (currentSkinKey === 'custom') loadedSrc = SKINS[customStats.visualSkin] ? SKINS[customStats.visualSkin].src : 'player.png'; else if (SKINS[currentSkinKey]) loadedSrc = SKINS[currentSkinKey].src; var bird = new MySprite(loadedSrc);
 
-        function make_bird_slow_and_fall() { let current_accel = (currentSkinKey === 'happy' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && customStats.slowFall)) ? SUPER_ACCELERATION : acceleration; let current_max = (currentSkinKey === 'happy' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && customStats.slowFall)) ? SUPER_MAX_FALL_SPEED : max_fall_speed; current_accel = Math.abs(current_accel); current_max = Math.abs(current_max); if (bird.velocity_y < current_max) { bird.velocity_y += current_accel; } if (bird.velocity_y > current_max) { bird.velocity_y = current_max; } bird.angle = 0; }
+        function make_bird_slow_and_fall() { 
+            bird.x = CANVAS_WIDTH / 3; bird.velocity_x = 0;
+            let current_accel = (currentSkinKey === 'happy' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && customStats.slowFall)) ? SUPER_ACCELERATION : acceleration; let current_max = (currentSkinKey === 'happy' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && customStats.slowFall)) ? SUPER_MAX_FALL_SPEED : max_fall_speed; current_accel = Math.abs(current_accel); current_max = Math.abs(current_max); if (bird.velocity_y < current_max) { bird.velocity_y += current_accel; } if (bird.velocity_y > current_max) { bird.velocity_y = current_max; } bird.angle = 0; 
+        }
 
         function ImagesTouching(thing1, thing2) {
             if (thing1 === bird && isHrBreakActive) return false; if (!thing1.visible || !thing2.visible) return false; let w1, h1, w2, h2;
@@ -978,19 +1128,129 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
             if (t1x >= t2x + w2 || t1x + w1 <= t2x) return false; if (t1y >= t2y + h2 || t1y + h1 <= t2y) return false; return true;
         }
 
-        window.openAchievements = function() { closeAllModals(); const list = document.getElementById('achievementsList'); list.innerHTML = ''; ALL_ACHIEVEMENTS.forEach(ach => { let div = document.createElement('div'); div.className = 'achievement-item ' + (ach.unlocked ? 'unlocked' : 'locked'); div.innerHTML = `<div><div class="ach-title">${ach.title} ${ach.unlocked ? '✅' : '🔒'}</div><div class="ach-desc">${ach.desc}</div></div>`; list.appendChild(div); }); document.getElementById('achievementsModal').style.display = 'block'; }
+        window.openAchievements = function() { 
+            closeAllModals(); 
+            const list = document.getElementById('achievementsList'); 
+            list.innerHTML = ''; 
+            ALL_ACHIEVEMENTS.forEach(ach => { 
+                let rewardDisplay = "??? Dry Food";
+                if (ach.unlocked) {
+                    rewardDisplay = (ach.reward > 0) ? ach.reward + " Dry Food" : "None";
+                } else if (ach.id === 'hardcore' || ach.id === 'interesting') {
+                    rewardDisplay = ach.reward + " Dry Food";
+                }
+
+                let div = document.createElement('div'); 
+                div.className = 'achievement-item ' + (ach.unlocked ? 'unlocked' : 'locked'); 
+                div.innerHTML = `<div><div class="ach-title">${ach.title} ${ach.unlocked ? '✅' : '🔒'}</div><div class="ach-desc">${ach.desc}</div><div style="color:gold; font-size:10px; margin-top:5px; font-family:'Press Start 2P', cursive;">Reward: ${rewardDisplay}</div></div>`; 
+                list.appendChild(div); 
+            }); 
+            document.getElementById('achievementsModal').style.display = 'block'; 
+        }
         window.togglePause = function() { playClickSound(); if (game_mode === 'waiting_for_website') { let menu = document.getElementById('pause-menu'); if(menu.style.display === 'flex') { menu.style.display = 'none'; } else { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'none'; } return; } if (game_mode === 'online_match' || game_mode === 'pvp_shetos') { let menu = document.getElementById('pause-menu'); if(menu.style.display === 'flex') { menu.style.display = 'none'; } else { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'block'; } return; } isPaused = !isPaused; let menu = document.getElementById('pause-menu'); if (isPaused) { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'block'; if (game_mode === 'running' || game_mode === 'boss') { bgMusic.pause(); voidMusic.pause(); breathingSound.pause(); boss1Music.pause(); boss2Music.pause(); connectorMusic.pause(); } } else { menu.style.display = 'none'; if (!musicMuted && (game_mode === 'running' || game_mode === 'boss')) { if (game_mode === 'boss') { if (!isBoss2) boss1Music.play().catch(e=>console.log(e)); else boss2Music.play().catch(e=>console.log(e)); } else { if (currentBGIndex === 4) voidMusic.play(); else if(connectorMusic.currentTime > 0 && !connectorMusic.ended) connectorMusic.play(); else bgMusic.play(); } } } }
         window.quitToMenu = function() { bgMusic.pause(); bgMusic.currentTime = 0; voidMusic.pause(); voidMusic.currentTime = 0; connectorMusic.pause(); connectorMusic.currentTime = 0; boss1Music.pause(); boss1Music.currentTime = 0; boss2Music.pause(); boss2Music.currentTime = 0; breathingSound.pause(); breathingSound.currentTime = 0; const loader = document.getElementById('temp-online-loader'); if(loader) loader.remove(); if (activeMatchID && unsubscribeMatch) { db.collection('matches').doc(activeMatchID).update({ status: 'ended' }); unsubscribeMatch(); activeMatchID = null; } isPaused = false; document.getElementById('pause-menu').style.display = 'none'; document.getElementById('online-ui').style.display = 'none'; document.getElementById('settings-btn').style.display = 'block'; 
-            if (currentResValue === 'mobile') { CANVAS_WIDTH = 640; CANVAS_HEIGHT = 480; } else { let parts = currentResValue.split('x'); CANVAS_WIDTH = parseInt(parts[0]) || 640; CANVAS_HEIGHT = parseInt(parts[1]) || 480; }
             myCanvas.width = CANVAS_WIDTH; myCanvas.height = CANVAS_HEIGHT; let container = document.getElementById('game-container'); container.classList.remove('portrait-shake'); myCanvas.style.filter = "none";
             document.getElementById('landing-page').style.display = 'flex'; updateMenuStats(); game_mode = 'waiting_for_website'; reset_game(); document.getElementById('dash-btn').style.display = 'none'; document.getElementById('bomb-btn').style.display = 'none'; document.getElementById('shrink-btn').style.display = 'none'; document.getElementById('widen-btn').style.display = 'none'; document.getElementById('sherlock-btn').style.display = 'none'; document.getElementById('hrbreak-btn').style.display = 'none'; document.getElementById('arthur-btn').style.display = 'none';
-            currentBGIndex = 0; if(backgroundImages[0] && backgroundImages[0].complete) { ctx.drawImage(backgroundImages[0], 0, 0, myCanvas.width, myCanvas.height); } if(!musicMuted) mainMenuMusic.play().catch(e => console.log(e)); }
+            currentBGIndex = 0; if(backgroundImages[0] && backgroundImages[0].complete) { ctx.drawImage(backgroundImages[0], 0, 0, myCanvas.width, myCanvas.height); } if(!musicMuted) mainMenuMusic.play().catch(e => console.log(e)); window.updateSplashText(); applyScale(); }
+
+        window.openShopFromMenu = function() { 
+            playClickSound();
+            closeAllModals(); 
+            document.getElementById('shop-modal').style.display = 'block'; 
+            renderShopItems();
+            if(!musicMuted && mainMenuMusic.paused) mainMenuMusic.play().catch(e=>{});
+        }
+        window.closeShop = function() {
+            document.getElementById('shop-modal').style.display = 'none';
+        }
+        window.switchShopTab = function(tab) {
+            playClickSound();
+            shopCategory = tab;
+            document.getElementById('tab-skins').style.background = (tab === 'skins') ? '#f1c40f' : '#0a2e3f';
+            document.getElementById('tab-skins').style.color = (tab === 'skins') ? 'black' : 'white';
+            document.getElementById('tab-trails').style.background = (tab === 'trails') ? '#f1c40f' : '#0a2e3f';
+            document.getElementById('tab-trails').style.color = (tab === 'trails') ? 'black' : 'white';
+            renderShopItems();
+        }
+        window.renderShopItems = function() {
+            document.getElementById('shop-food-val').innerText = collectedStars;
+            const grid = document.getElementById('shop-grid');
+            grid.innerHTML = '';
+            const items = shopCategory === 'skins' ? SKINS : TRAILS;
+            const keys = Object.keys(items).filter(k => k !== 'custom' && k !== 'trail_custom');
+
+            keys.forEach(key => {
+                const item = items[key];
+                const owned = shopCategory === 'skins' ? availableSkins.includes(key) : availableTrails.includes(key);
+                const isEquipped = item.current;
+                const canAfford = collectedStars >= item.cost;
+
+                let btnText = isEquipped ? 'EQUIPPED' : (owned ? 'EQUIP' : `BUY (${item.cost})`);
+                let btnClass = isEquipped ? 'btn-green' : (owned ? 'btn-blue' : (canAfford ? 'btn-yellow' : 'btn-red'));
+                let btnAction = `purchaseOrEquipSkin('${key}')`;
+
+                let visualHTML = '';
+                if (shopCategory === 'skins') {
+                    visualHTML = `<img src="${item.src}" style="width: 50px; height: 50px; object-fit: contain; margin: 0 auto; display: block; image-rendering: pixelated;">`;
+                } else {
+                    let colorCode = item.color === 'rainbow' ? 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)' : (item.color === 'transparent' ? 'white' : item.color);
+                    visualHTML = `<div style="width: 40px; height: 10px; border-radius: 5px; background: ${colorCode}; margin: 20px auto;"></div>`;
+                }
+
+                let sellBtnHTML = '';
+                if (owned && !isEquipped && item.cost > 0 && key !== 'default' && key !== 'custom' && key !== 'trail_none' && key !== 'trail_custom') {
+                    sellBtnHTML = `<button class="enter-btn btn-red" style="font-size: 8px; padding: 8px; width: 100%; margin-bottom: 5px;" onclick="promptSellItem('${key}')">SELL (${Math.floor(item.cost/2)})</button>`;
+                }
+
+                grid.innerHTML += `
+                    <div style="background: rgba(255,255,255,0.05); border: 2px solid ${isEquipped ? 'lime' : '#f1c40f'}; border-radius: 10px; padding: 10px; text-align: center;">
+                        ${visualHTML}
+                        <div style="font-family: 'Press Start 2P', cursive; font-size: 8px; margin: 10px 0; color: white; line-height: 1.4; height: 20px;">${item.name}</div>
+                        <button class="enter-btn ${btnClass}" style="font-size: 10px; padding: 8px; width: 100%; margin-bottom: 5px;" onclick="${btnAction}">${btnText}</button>
+                        ${sellBtnHTML}
+                        <div style="display: flex; justify-content: space-between;">
+                            <button onclick="openCharInfo('${key}')" style="background:#333; color:white; border:none; border-radius:5px; padding:5px 10px; font-weight:bold; cursor:pointer;">?</button>
+                            <button onclick="askShetosAboutItem('${item.name.replace(/'/g, "\\'")}')" style="background:#e67e22; color:white; border:none; border-radius:5px; padding:5px 10px; font-family:'Press Start 2P', cursive; font-size:8px; cursor:pointer;">AI</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        window.promptSellItem = function(key) {
+            playClickSound();
+            let item = shopCategory === 'skins' ? SKINS[key] : TRAILS[key];
+            let sellPrice = Math.floor(item.cost / 2);
+            document.getElementById('confirm-text').innerText = `Are you sure you want to sell ${item.name} for ${sellPrice} Dry Food?`;
+            document.getElementById('confirm-modal').style.display = 'block';
+            document.getElementById('confirm-yes-btn').onclick = function() {
+                executeSellItem(key, sellPrice);
+            };
+        }
+
+        window.executeSellItem = function(key, price) {
+            playClickSound();
+            if (shopCategory === 'skins') {
+                availableSkins = availableSkins.filter(k => k !== key);
+                localStorage.setItem('flappySkins', JSON.stringify(availableSkins));
+            } else {
+                availableTrails = availableTrails.filter(k => k !== key);
+                localStorage.setItem('flappyTrails', JSON.stringify(availableTrails));
+            }
+            collectedStars += price;
+            localStorage.setItem('flappyStars', collectedStars);
+            updateMenuStats();
+            saveUserData();
+            closeModal('confirm-modal');
+            renderShopItems();
+            showCheatFeedback("ITEM SOLD!");
+        }
 
         function purchaseOrEquipSkin(key) {
             if (key === 'custom' || key === 'trail_custom') return; 
-            if (SKINS[key] && shopCategory === 'skins') { const skin = SKINS[key]; if (availableSkins.includes(key)) { if (!skin.current) { for (let k in SKINS) { SKINS[k].current = false; } skin.current = true; let tempImg = new Image(); tempImg.onload = function() { bird.MyImg = tempImg; }; tempImg.src = skin.src; currentSkinKey = key; localStorage.setItem('currentSkin', key); 
-                wallDestroyCharges = (currentSkinKey === 'yellow' || currentSkinKey === 'black') ? MAX_DESTROY_CHARGES : 0; dashCharges = (currentSkinKey === 'doordash' || currentSkinKey === 'black') ? 4 : 0; shrinkCharges = (currentSkinKey === 'luigi' || currentSkinKey === 'black') ? 4 : 0; widenCharges = (currentSkinKey === 'heisenbark' || currentSkinKey === 'black') ? 4 : 0; if (currentSkinKey === 'black' || currentSkinKey === 'tough' || currentSkinKey === 'sherlock') currentLives = (currentSkinKey === 'sherlock' ? 1 : INITIAL_LIVES); else currentLives = 0; updateAbilityButtons(); } } else if (collectedStars >= skin.cost) { collectedStars -= skin.cost; availableSkins.push(key); if(!sfxMuted){buySound.currentTime = 0; buySound.play().catch(e => console.warn(e));} if (key === 'employed' && availableSkins.includes(key)) { alert("Congrats, you finally got a J*b"); } localStorage.setItem('flappyStars', collectedStars); localStorage.setItem('flappySkins', JSON.stringify(availableSkins)); updateMenuStats(); saveUserData(); purchaseOrEquipSkin(key); } } 
-            else if (TRAILS[key] && shopCategory === 'trails') { const trail = TRAILS[key]; if (availableTrails.includes(key)) { if (!trail.current) { for (let k in TRAILS) { TRAILS[k].current = false; } trail.current = true; currentTrailKey = key; localStorage.setItem('currentTrail', key); } } else if (collectedStars >= trail.cost) { collectedStars -= trail.cost; availableTrails.push(key); if(!sfxMuted){buySound.currentTime = 0; buySound.play().catch(e => console.warn(e));} localStorage.setItem('flappyStars', collectedStars); localStorage.setItem('flappyTrails', JSON.stringify(availableTrails)); updateMenuStats(); saveUserData(); purchaseOrEquipSkin(key); } }
+            if (SKINS[key] && shopCategory === 'skins') { const skin = SKINS[key]; if (availableSkins.includes(key)) { if (!skin.current) { playClickSound(); for (let k in SKINS) { SKINS[k].current = false; } skin.current = true; let tempImg = new Image(); tempImg.onload = function() { bird.MyImg = tempImg; }; tempImg.src = skin.src; currentSkinKey = key; localStorage.setItem('currentSkin', key); 
+                wallDestroyCharges = (currentSkinKey === 'yellow' || currentSkinKey === 'black') ? MAX_DESTROY_CHARGES : 0; dashCharges = (currentSkinKey === 'doordash' || currentSkinKey === 'black') ? 4 : 0; shrinkCharges = (currentSkinKey === 'luigi' || currentSkinKey === 'black') ? 4 : 0; widenCharges = (currentSkinKey === 'heisenbark' || currentSkinKey === 'black') ? 4 : 0; if (currentSkinKey === 'black' || currentSkinKey === 'tough' || currentSkinKey === 'sherlock') currentLives = (currentSkinKey === 'sherlock' ? 1 : INITIAL_LIVES); else currentLives = 0; updateAbilityButtons(); renderShopItems(); } } else if (collectedStars >= skin.cost) { collectedStars -= skin.cost; availableSkins.push(key); if(!sfxMuted){buySound.currentTime = 0; buySound.play().catch(e => console.warn(e));} if (key === 'employed' && availableSkins.includes(key)) { alert("Congrats, you finally got a J*b"); } localStorage.setItem('flappyStars', collectedStars); localStorage.setItem('flappySkins', JSON.stringify(availableSkins)); updateMenuStats(); saveUserData(); purchaseOrEquipSkin(key); } } 
+            else if (TRAILS[key] && shopCategory === 'trails') { const trail = TRAILS[key]; if (availableTrails.includes(key)) { if (!trail.current) { playClickSound(); for (let k in TRAILS) { TRAILS[k].current = false; } trail.current = true; currentTrailKey = key; localStorage.setItem('currentTrail', key); renderShopItems(); } } else if (collectedStars >= trail.cost) { collectedStars -= trail.cost; availableTrails.push(key); if(!sfxMuted){buySound.currentTime = 0; buySound.play().catch(e => console.warn(e));} localStorage.setItem('flappyStars', collectedStars); localStorage.setItem('flappyTrails', JSON.stringify(availableTrails)); updateMenuStats(); saveUserData(); purchaseOrEquipSkin(key); } }
         }
 
         function playPowerUpSound() { if(!sfxMuted) {flapSound.currentTime = 0; flapSound.play().catch(e => console.warn(e));} }
@@ -1005,21 +1265,37 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
         window.triggerShrink = function() { if (!(currentSkinKey === 'luigi' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && shrinkCharges > 0)) || shrinkCharges <= 0 || isShrunk || (game_mode !== 'running' && game_mode !== 'online_match' && game_mode !== 'pvp_shetos' && game_mode !== 'boss') || isPaused) return; shrinkCharges--; isShrunk = true; shrinkTimer = SHRINK_DURATION; playPowerUpSound(); triggerFlash("rgba(46, 204, 113, 0.3)"); }
         window.triggerWiden = function() { if (!(currentSkinKey === 'heisenbark' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && widenCharges > 0)) || widenCharges <= 0 || isWidenActive || (game_mode !== 'running' && game_mode !== 'online_match' && game_mode !== 'pvp_shetos' && game_mode !== 'boss') || isPaused) return; widenCharges--; isWidenActive = true; widenTimer = WIDEN_DURATION; playPowerUpSound(); triggerFlash("rgba(155, 89, 182, 0.3)"); for(let i=0; i<pipes.length; i++) { if(pipes[i].x > bird.x - 50 && pipes[i].flipV) { pipes[i].y += 140; if(pipes[i].oscillate) pipes[i].baseY += 140; } } }
         
-        window.triggerSherlock = function() { if (currentSkinKey !== 'sherlock' || sherlockCooldown > 0 || isPaused || game_mode !== 'running' && game_mode !== 'boss') return; isSherlockActive = true; sherlockTimer = 240; sherlockCooldown = 15 * FPS; playPowerUpSound(); }
-        window.triggerHRBreak = function() { if (currentSkinKey !== 'employed' || hrBreakCooldown > 0 || isPaused || game_mode !== 'running' && game_mode !== 'boss') return; isHrBreakActive = true; hrBreakTimer = 6 * FPS; hrBreakCooldown = 25 * FPS; playPowerUpSound(); triggerFlash("rgba(255, 255, 255, 0.4)"); }
-        window.triggerArthur = function() { if (currentSkinKey !== 'arthur' || arthurCooldown > 0 || isPaused || game_mode !== 'running' && game_mode !== 'boss') return; isArthurActive = true; arthurTimer = 5 * FPS; arthurCooldown = 30 * FPS; arthurShotUsed = false; myCanvas.style.filter = "sepia(100%) saturate(150%) brightness(80%)"; playPowerUpSound(); }
+        window.triggerSherlock = function() { if (!(currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && customStats.sherlock)) || sherlockCooldown > 0 || isSherlockActive || isPaused || (game_mode !== 'running' && game_mode !== 'boss')) return; isSherlockActive = true; sherlockTimer = 240; playPowerUpSound(); }
+        window.triggerHRBreak = function() { if (!(currentSkinKey === 'employed' || (currentSkinKey === 'custom' && customStats.hrbreak)) || hrBreakCooldown > 0 || isHrBreakActive || isPaused || (game_mode !== 'running' && game_mode !== 'boss')) return; isHrBreakActive = true; hrBreakTimer = 6 * FPS; playPowerUpSound(); triggerFlash("rgba(255, 255, 255, 0.4)"); }
+        window.triggerArthur = function() { if (!(currentSkinKey === 'arthur' || (currentSkinKey === 'custom' && customStats.arthur)) || arthurCooldown > 0 || isArthurActive || isPaused || (game_mode !== 'running' && game_mode !== 'boss')) return; isArthurActive = true; arthurTimer = 5 * FPS; arthurShotUsed = false; myCanvas.style.filter = "sepia(100%) saturate(150%) brightness(80%)"; playPowerUpSound(); }
 
-        function updateAbilityButtons() { if (game_mode !== 'waiting_for_website' && game_mode !== 'shop_from_menu') { document.getElementById('dash-btn').style.display = (dashCharges > 0) ? 'flex' : 'none'; document.getElementById('bomb-btn').style.display = (wallDestroyCharges > 0) ? 'flex' : 'none'; document.getElementById('shrink-btn').style.display = (shrinkCharges > 0) ? 'flex' : 'none'; document.getElementById('widen-btn').style.display = (widenCharges > 0) ? 'flex' : 'none'; document.getElementById('sherlock-btn').style.display = (currentSkinKey === 'sherlock') ? 'flex' : 'none'; document.getElementById('hrbreak-btn').style.display = (currentSkinKey === 'employed') ? 'flex' : 'none'; document.getElementById('arthur-btn').style.display = (currentSkinKey === 'arthur') ? 'flex' : 'none'; } else { document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none'); } }
+        function updateAbilityButtons() { 
+            if (game_mode !== 'waiting_for_website') { 
+                document.getElementById('dash-btn').style.display = (dashCharges > 0) ? 'flex' : 'none'; 
+                document.getElementById('bomb-btn').style.display = (wallDestroyCharges > 0) ? 'flex' : 'none'; 
+                document.getElementById('shrink-btn').style.display = (shrinkCharges > 0) ? 'flex' : 'none'; 
+                document.getElementById('widen-btn').style.display = (widenCharges > 0) ? 'flex' : 'none'; 
+                document.getElementById('sherlock-btn').style.display = (currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && customStats.sherlock)) ? 'flex' : 'none'; 
+                document.getElementById('hrbreak-btn').style.display = (currentSkinKey === 'employed' || (currentSkinKey === 'custom' && customStats.hrbreak)) ? 'flex' : 'none'; 
+                document.getElementById('arthur-btn').style.display = (currentSkinKey === 'arthur' || (currentSkinKey === 'custom' && customStats.arthur)) ? 'flex' : 'none'; 
+                
+                if (sherlockCooldown <= 0 && !isSherlockActive && document.getElementById('sherlock-btn').style.display !== 'none') document.getElementById('sherlock-btn').innerText = "PREDICT";
+                if (hrBreakCooldown <= 0 && !isHrBreakActive && document.getElementById('hrbreak-btn').style.display !== 'none') document.getElementById('hrbreak-btn').innerText = "HR BREAK";
+                if (arthurCooldown <= 0 && !isArthurActive && document.getElementById('arthur-btn').style.display !== 'none') document.getElementById('arthur-btn').innerText = "DEAD EYE";
+            } else { 
+                document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none'); 
+            } 
+        }
 
         function updateBoss() {
             if (boss.movingIn) { boss.x -= 2 * speedMultiplier; if (boss.x <= CANVAS_WIDTH - 180) boss.movingIn = false; let img = (isBoss2) ? BOSS2_IMG : BOSS_IMG; if (img.complete && img.naturalWidth !== 0) ctx.drawImage(img, boss.x, boss.y, boss.width, boss.height); return; }
-            if (bossIntroState < 4) { updateAbilityButtons(); let img = (isBoss2) ? BOSS2_IMG : BOSS_IMG; if (img.complete && img.naturalWidth !== 0) ctx.drawImage(img, boss.x, boss.y, boss.width, boss.height); else { ctx.fillStyle = "red"; ctx.fillRect(boss.x, boss.y, boss.width, boss.height); } if (bossIntroState === 0) { bossIntroState = 1; bossIntroTimer = 120; } if (!isBoss2) { if (bossIntroState === 1) { drawDialogueBox("oh, here you are"); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=2; bossIntroTimer=120;} } else if (bossIntroState === 2) { drawDialogueBox("I was waiting for you"); bossIntroTimer--; if(bossIntroTimer<=0){ bossIntroState=5; if(!musicMuted) boss1Music.play().catch(e=>console.log(e)); } } } else { if (bossIntroState === 1) { drawDialogueBox("you are getting out of control"); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=2; bossIntroTimer=120;} } else if (bossIntroState === 2) { drawDialogueBox("you werent supposed to come HERE"); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=3; bossIntroTimer=120;} } else if (bossIntroState === 3) { drawDialogueBox("Its too late to go back now...."); bossIntroTimer--; if(bossIntroTimer<=0){ bossIntroState=5; if(!musicMuted) boss2Music.play().catch(e=>console.log(e)); } } } return; }
+            if (bossIntroState < 4) { updateAbilityButtons(); let img = (isBoss2) ? BOSS2_IMG : BOSS_IMG; if (img.complete && img.naturalWidth !== 0) ctx.drawImage(img, boss.x, boss.y, boss.width, boss.height); else { ctx.fillStyle = "red"; ctx.fillRect(boss.x, boss.y, boss.width, boss.height); } if (bossIntroState === 0) { bossIntroState = 1; bossIntroTimer = 120; } if (!isBoss2) { if (bossIntroState === 1) { drawDialogueBox(getLangText('b1_1')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=2; bossIntroTimer=120;} } else if (bossIntroState === 2) { drawDialogueBox(getLangText('b1_2')); bossIntroTimer--; if(bossIntroTimer<=0){ bossIntroState=5; if(!musicMuted) boss1Music.play().catch(e=>console.log(e)); } } } else { if (bossIntroState === 1) { drawDialogueBox(getLangText('b2_1')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=2; bossIntroTimer=120;} } else if (bossIntroState === 2) { drawDialogueBox(getLangText('b2_2')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=3; bossIntroTimer=120;} } else if (bossIntroState === 3) { drawDialogueBox(getLangText('b2_3')); bossIntroTimer--; if(bossIntroTimer<=0){ bossIntroState=5; if(!musicMuted) boss2Music.play().catch(e=>console.log(e)); } } } return; }
             
             boss.y += boss.speedY * speedMultiplier; if (boss.y > 300 || boss.y < 50) boss.speedY *= -1; let fightImg = (isBoss2) ? BOSS2_IMG : BOSS_IMG; if (fightImg.complete && fightImg.naturalWidth !== 0) ctx.drawImage(fightImg, boss.x, boss.y, boss.width, boss.height); else { ctx.fillStyle = "red"; ctx.fillRect(boss.x, boss.y, boss.width, boss.height); }
-            if (!isBoss2) { if (Math.random() < 0.06) spawnChocolate(); boss.stamina -= 0.1; if (boss.stamina <= 0) { unlockAchievement('monster'); triggerFlash("lime"); collectedStars += 100; localStorage.setItem('flappyStars', collectedStars); showCheatFeedback("BOSS DEFEATED! +100 FOOD"); currentLives += 2; showCheatFeedback("BOSS DEFEATED! +2 LIVES"); victoryTimer = 100; game_mode = 'running'; currentScore = 51; boss1Defeated = true; boss.x = CANVAS_WIDTH + 500; chocolates = []; pipe_spawn_timer = 0; bossIntroState = 0; boss.movingIn = true; boss.stamina = 100; boss1Music.pause(); boss1Music.currentTime = 0; if (!musicMuted) voidMusic.play().catch(e=>console.log(e)); } } else { if (Math.random() < 0.05) { let container = document.getElementById('game-container'); let r = Math.random(); if (r < 0.33) container.className = "upside-down"; else if (r < 0.66) container.className = "shake"; else container.className = ""; } if (errorSignCooldown > 0) errorSignCooldown--; if (errorSignCooldown <= 0 && Math.random() < 0.04 && errorSigns.length < 4) { spawnErrorSign(); errorSignCooldown = 25; } if (deleteBtnTimer > 0) { deleteBtnTimer -= (1000/FPS); if (deleteBtnTimer <= 0) document.getElementById('delete-boss-btn').style.display = 'none'; } else { deleteBtnSpawnTimer += (1000/FPS); if (deleteBtnSpawnTimer > 4000) { document.getElementById('delete-boss-btn').style.display = 'block'; deleteBtnTimer = 1200; deleteBtnSpawnTimer = 0; } } }
+            if (!isBoss2) { if (Math.random() < 0.06) spawnChocolate(); boss.stamina -= 0.1; if (boss.stamina <= 0) { unlockAchievement('monster'); triggerFlash("lime"); showCheatFeedback("BOSS DEFEATED!"); currentLives += 2; victoryTimer = 100; game_mode = 'running'; currentScore = 51; boss1Defeated = true; boss.x = CANVAS_WIDTH + 500; chocolates = []; pipe_spawn_timer = 0; bossIntroState = 0; boss.movingIn = true; boss.stamina = 100; boss1Music.pause(); boss1Music.currentTime = 0; if (!musicMuted) voidMusic.play().catch(e=>console.log(e)); } } else { if (Math.random() < 0.05) { let container = document.getElementById('game-container'); let r = Math.random(); if (r < 0.33) container.className = "upside-down"; else if (r < 0.66) container.className = "shake"; else container.className = ""; } if (errorSignCooldown > 0) errorSignCooldown--; if (errorSignCooldown <= 0 && Math.random() < 0.04 && errorSigns.length < 4) { spawnErrorSign(); errorSignCooldown = 25; } if (deleteBtnTimer > 0) { deleteBtnTimer -= (1000/FPS); if (deleteBtnTimer <= 0) document.getElementById('delete-boss-btn').style.display = 'none'; } else { deleteBtnSpawnTimer += (1000/FPS); if (deleteBtnSpawnTimer > 4000) { document.getElementById('delete-boss-btn').style.display = 'block'; deleteBtnTimer = 1200; deleteBtnSpawnTimer = 0; } } }
             
-            for (let i = chocolates.length - 1; i >= 0; i--) { chocolates[i].Do_Frame_Things(); if (ImagesTouching(bird, chocolates[i]) && chocolates[i].visible) { if (isDashActive) { chocolates[i].visible = false; continue; } if (isShieldActive) { deactivateShield(); chocolates.splice(i, 1); } else if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} chocolates.splice(i, 1); trailRedTimer = 120; } else { if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} triggerPlayerDeath("THAT WAS A CAT"); } } else if (chocolates[i].x < -50) chocolates.splice(i, 1); }
-            for (let i = errorSigns.length - 1; i >= 0; i--) { errorSigns[i].Do_Frame_Things(); if (ImagesTouching(bird, errorSigns[i]) && errorSigns[i].visible) { if (isDashActive) { errorSigns[i].visible = false; continue; } if (isShieldActive) { deactivateShield(); errorSigns.splice(i, 1); } else if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} errorSigns.splice(i, 1); trailRedTimer = 120; } else { if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} triggerPlayerDeath("you got clipped by a kid lmao"); } } else if (errorSigns[i].x < -150) errorSigns.splice(i, 1); }
+            for (let i = chocolates.length - 1; i >= 0; i--) { chocolates[i].Do_Frame_Things(); if (ImagesTouching(bird, chocolates[i]) && chocolates[i].visible) { if (isDashActive) { chocolates[i].visible = false; continue; } if (isShieldActive) { deactivateShield(); chocolates.splice(i, 1); } else if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} chocolates.splice(i, 1); trailRedTimer = 120; } else { if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} triggerPlayerDeath(); } } else if (chocolates[i].x < -50) chocolates.splice(i, 1); }
+            for (let i = errorSigns.length - 1; i >= 0; i--) { errorSigns[i].Do_Frame_Things(); if (ImagesTouching(bird, errorSigns[i]) && errorSigns[i].visible) { if (isDashActive) { errorSigns[i].visible = false; continue; } if (isShieldActive) { deactivateShield(); errorSigns.splice(i, 1); } else if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} errorSigns.splice(i, 1); trailRedTimer = 120; } else { if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} triggerPlayerDeath(); } } else if (errorSigns[i].x < -150) errorSigns.splice(i, 1); }
             if (bossIntroState >= 5) { let barX = CANVAS_WIDTH/2 - 50; let barY = 20; let barW = 100; let barH = 10; let hpPercent = 1; if (isBoss2) { hpPercent = Math.max(0, (BOSS2_MAX_HITS - boss2Hits) / BOSS2_MAX_HITS); } else { hpPercent = Math.max(0, boss.stamina / 100); } ctx.fillStyle = "black"; ctx.fillRect(barX, barY, barW, barH); ctx.fillStyle = "#FF0000"; ctx.fillRect(barX, barY, barW * hpPercent, barH); ctx.strokeStyle = "white"; ctx.lineWidth = 2; ctx.strokeRect(barX, barY, barW, barH); }
         }
 let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let shetosBotVelocityY = 0; let activeFriendChatID = null; let friendChatListener = null;
@@ -1039,7 +1315,7 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
         function triggerFlash(color) { flashColor = color; flashTimer = 10; }
         function updateMenuStats() { if(document.getElementById('menuHighScore')) { document.getElementById('menuHighScore').innerText = highScore; document.getElementById('menuStars').innerText = collectedStars; document.getElementById('menuTrophies').innerText = onlineTrophies; document.getElementById('menuGamesPlayed').innerText = totalGamesPlayed; } }
         function showCheatFeedback(text) { let el = document.getElementById('cheat-feedback'); el.innerText = text; el.style.display = 'block'; setTimeout(() => { el.style.display = 'none'; }, 2000); }
-        function unlockAchievement(id) { let ach = ALL_ACHIEVEMENTS.find(a => a.id === id); if (ach && !ach.unlocked) { ach.unlocked = true; savedAchievements.push(id); localStorage.setItem('flappyAchievements', JSON.stringify(savedAchievements)); let reward = 0; if (id === 'beginner') reward = 10; else if (id === 'hang') reward = 20; else if (id === 'sunset') reward = 30; else if (id === 'void') reward = 40; else if (id === 'monster') reward = 50; else if (id === 'interesting') reward = 69; else if (id === 'hardcore') reward = 467; if (reward > 0) { collectedStars += reward; localStorage.setItem('flappyStars', collectedStars); updateMenuStats(); showCheatFeedback(`ACHIEVEMENT: +${reward} FOOD!`); } } }
+        function unlockAchievement(id) { let ach = ALL_ACHIEVEMENTS.find(a => a.id === id); if (ach && !ach.unlocked) { ach.unlocked = true; savedAchievements.push(id); localStorage.setItem('flappyAchievements', JSON.stringify(savedAchievements)); if (ach.reward > 0) { collectedStars += ach.reward; localStorage.setItem('flappyStars', collectedStars); updateMenuStats(); showCheatFeedback(`ACHIEVEMENT: +${ach.reward} FOOD!`); } } }
         function triggerPortalEffect() { playPowerUpSound(); let outcome = Math.random() < 0.5 ? 10 : -10; let tempScore = currentScore + outcome; if (tempScore < 0) tempScore = 0; if (currentScore < 50 && tempScore >= 50) { tempScore = 49; } if (currentScore < 100 && tempScore >= 100) { tempScore = 99; } currentScore = tempScore; pipes = []; let oldIndex = currentBGIndex; currentBGIndex = Math.floor(currentScore / 10); if (currentBGIndex > 4) currentBGIndex = 4; if (currentBGIndex < 0) currentBGIndex = 0; hasPortalSpawnedInThisArea = false; updateDifficulty(); if (oldIndex !== currentBGIndex) { if (currentBGIndex === 4) { bgMusic.pause(); bgMusic.currentTime = 0; if (!musicMuted) voidMusic.play(); } else if (oldIndex === 4) { voidMusic.pause(); voidMusic.currentTime = 0; if (!musicMuted) bgMusic.play(); } } if (outcome > 0) { showCheatFeedback("WARP AHEAD! +10"); triggerFlash("cyan"); } else { showCheatFeedback("WARP BACK! -10"); triggerFlash("purple"); transitionText = AREA_NAMES[currentBGIndex]; transitionTimer = 80; } }
         function updateDifficulty() { if (currentBGIndex === 0) { pipe_speed = -2; currentSpawnInterval = 2500; } else if (currentBGIndex === 1) { pipe_speed = -3; currentSpawnInterval = 2200; } else if (currentBGIndex === 2) { pipe_speed = -3.5; currentSpawnInterval = 2000; } else if (currentBGIndex === 3) { pipe_speed = -4; currentSpawnInterval = 1800; } else if (currentBGIndex === 4) { pipe_speed = -5; currentSpawnInterval = 1500; } if (isEndless) { pipe_speed -= (currentScore / 50); currentSpawnInterval = Math.max(800, 2500 - (currentScore * 20)); } [shields, stars, potions, slowPotions, portals].forEach(arr => { for (let i = 0; i < arr.length; i++) { arr[i].velocity_x = pipe_speed; } }); }
 
@@ -1056,14 +1332,30 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
         function updateOnlineUI() { document.getElementById('p-name').innerText = "YOU (" + myWins + ")"; document.getElementById('e-name').innerText = opponentName + " (" + enemyWins + ")"; document.getElementById('p-score').innerText = currentScore; if(game_mode === 'pvp_shetos') { document.getElementById('e-score').innerText = shetosBotScore; } else { if(enemyHasCrashed) document.getElementById('e-score').innerText = online_score_enemy + " (X)"; else document.getElementById('e-score').innerText = online_score_enemy; } document.getElementById('online-round-text').innerText = "ROUND " + online_round + " / 3"; }
 
         window.roundEnding = false;
-        function triggerPlayerDeath(msg) { if (game_mode === 'online_match' || game_mode === 'pvp_shetos') { if (!myHasCrashed) { myHasCrashed = true; window.roundEnding = false; if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} if (game_mode === 'online_match') { if (!activeMatchID) return triggerGameOver("Connection Error"); let updateData = {}; if (myOnlineRole === 'host') { updateData.hostStatus = 'crashed'; updateData.hostScore = currentScore; } else { updateData.guestStatus = 'crashed'; updateData.guestScore = currentScore; } db.collection('matches').doc(activeMatchID).update(updateData).then(() => { checkRoundResult(); }); } } } else { triggerGameOver(msg); } }
+        function triggerPlayerDeath(msg) { 
+            if (game_mode === 'online_match' || game_mode === 'pvp_shetos') { 
+                if (!myHasCrashed) { 
+                    myHasCrashed = true; 
+                    window.roundEnding = false; 
+                    if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} 
+                    if (game_mode === 'online_match') { 
+                        if (!activeMatchID) return triggerGameOver(msg); 
+                        let updateData = {}; 
+                        if (myOnlineRole === 'host') { updateData.hostStatus = 'crashed'; updateData.hostScore = currentScore; } else { updateData.guestStatus = 'crashed'; updateData.guestScore = currentScore; } 
+                        db.collection('matches').doc(activeMatchID).update(updateData).then(() => { checkRoundResult(); }); 
+                    } 
+                } 
+            } else { 
+                triggerGameOver(msg); 
+            } 
+        }
         function resetOnlineRound() { pipes = []; bird.y = myCanvas.height / 2; bird.velocity_y = 0; bird.velocity_x = 0; currentScore = 0; lastPipeY = 250; pipe_speed = -2; speedMultiplier = 1; pipe_spawn_timer = 0; onlineStartTimer = 3; isRoundStarting = true; myHasCrashed = false; enemyHasCrashed = false; window.roundEnding = false; if(game_mode === 'pvp_shetos') { shetosBotY = myCanvas.height/2; shetosBotScore = 0; shetosBotAlive = true; shetosBotVelocityY = 0; } if(activeMatchID) { let updateData = {}; if(myOnlineRole === 'host') { updateData.hostStatus = 'alive'; updateData.hostScore = 0; } else { updateData.guestStatus = 'alive'; updateData.guestScore = 0; } db.collection('matches').doc(activeMatchID).update(updateData); } updateOnlineUI(); flashTimer = 0; }
         function checkRoundResult() { if (game_mode === 'pvp_shetos') { if (currentScore > shetosBotScore && !shetosBotAlive) resolveRound('win'); else if (shetosBotScore > currentScore && myHasCrashed) resolveRound('loss'); else if (!shetosBotAlive && myHasCrashed && shetosBotScore === currentScore) resolveRound('draw'); return; } if (!myHasCrashed) { if (enemyHasCrashed && currentScore > online_score_enemy) { resolveRound('win'); } return; } if (enemyHasCrashed) { if (currentScore > online_score_enemy) resolveRound('win'); else if (currentScore < online_score_enemy) resolveRound('loss'); else resolveRound('draw'); } }
         function resolveRound(result) { if (game_mode === 'pvp_shetos') { let newMyWins = myWins; let newEnemyWins = enemyWins; if (result === 'win') newMyWins++; else if (result === 'loss') newEnemyWins++; myWins = newMyWins; enemyWins = newEnemyWins; online_round++; if (myWins >= 2 || enemyWins >= 2) { let iWon = (myWins >= 2); let trophyChange = iWon ? 10 : -5; onlineTrophies += trophyChange; localStorage.setItem('flappyTrophies', onlineTrophies); saveUserData(); setTimeout(() => { let msg = iWon ? `VICTORY! +${trophyChange} 🏆` : `DEFEAT... ${trophyChange} 🏆`; triggerGameOver(msg); document.getElementById('online-ui').style.display = 'none'; }, 1000); } else { resetOnlineRound(); triggerFlash("white"); } return; } if (myOnlineRole !== 'host') return; let newHostWins = myWins; let newGuestWins = enemyWins; if (result === 'win') newHostWins++; else if (result === 'loss') newGuestWins++; if (currentScore > online_score_enemy) newHostWins = myWins + 1; else if (online_score_enemy > currentScore) newGuestWins = enemyWins + 1; db.collection('matches').doc(activeMatchID).update({ round: online_round + 1, hostWins: newHostWins, guestWins: newGuestWins, hostStatus: 'alive', guestStatus: 'alive' }); }
         function endMatchLogic(data) { if (trophyProcessed) return; trophyProcessed = true; let amIHost = (myOnlineRole === 'host'); let hostWon = (data.hostWins >= 2); let iWon = (amIHost && hostWon) || (!amIHost && !hostWon); let trophyChange = iWon ? 25 : -15; if (!iWon && onlineTrophies < 15) trophyChange = -onlineTrophies; onlineTrophies += trophyChange; localStorage.setItem('flappyTrophies', onlineTrophies); saveUserData(); if (amIHost) { db.collection('matches').doc(activeMatchID).update({ status: 'ended' }); } if(unsubscribeMatch) unsubscribeMatch(); setTimeout(() => { let msg = iWon ? `VICTORY! +${trophyChange} 🏆` : `DEFEAT... ${trophyChange} 🏆`; triggerGameOver(msg); document.getElementById('online-ui').style.display = 'none'; activeMatchID = null; }, 1000); }
-        window.toggleMusicSwitch = function(isChecked) { musicMuted = !isChecked; if (musicMuted) { mainMenuMusic.pause(); bgMusic.pause(); voidMusic.pause(); boss1Music.pause(); boss2Music.pause(); connectorMusic.pause(); } else { if (!isPaused && (game_mode === 'running' || game_mode === 'boss' || game_mode === 'online_match' || game_mode === 'pvp_shetos')) { if (game_mode === 'boss') { if (!isBoss2) boss1Music.play(); else boss2Music.play(); } else if (currentBGIndex === 4) voidMusic.play(); else bgMusic.play(); } else if (game_mode === 'waiting_for_website' || game_mode === 'shop_from_menu') { mainMenuMusic.play(); } } }
+        window.toggleMusicSwitch = function(isChecked) { musicMuted = !isChecked; if (musicMuted) { mainMenuMusic.pause(); bgMusic.pause(); voidMusic.pause(); boss1Music.pause(); boss2Music.pause(); connectorMusic.pause(); } else { if (!isPaused && (game_mode === 'running' || game_mode === 'boss' || game_mode === 'online_match' || game_mode === 'pvp_shetos')) { if (game_mode === 'boss') { if (!isBoss2) boss1Music.play(); else boss2Music.play(); } else if (currentBGIndex === 4) voidMusic.play(); else bgMusic.play(); } else if (game_mode === 'waiting_for_website') { mainMenuMusic.play(); } } }
         window.toggleSFXSwitch = function(isChecked) { sfxMuted = !isChecked; }
-        window.openShopFromMenu = function() { closeAllModals(); document.getElementById('landing-page').style.display = 'none'; document.getElementById('settings-btn').style.display = 'none'; document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none'); game_mode = 'shop_from_menu'; if(!musicMuted) mainMenuMusic.play().catch(e=>{}); }
+        
         window.playNoseSound = function() { if(!sfxMuted) { noseSound.currentTime = 0; noseSound.play().catch(e => console.warn(e)); } }
         window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0; buttonSound.play().catch(e => console.warn(e)); } }
 
@@ -1073,17 +1365,22 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
             
             let savedRes = localStorage.getItem('flappyRes'); if(savedRes) currentResValue = savedRes;
             let container = document.getElementById('game-container');
-            if (currentResValue === 'mobile') { 
-                CANVAS_WIDTH = 640; CANVAS_HEIGHT = 480; 
-                container.style.width = '100vw'; container.style.height = '100vh'; 
+            if (currentResValue === 'fullscreen') {
+                CANVAS_WIDTH = window.innerWidth;
+                CANVAS_HEIGHT = window.innerHeight;
             } else { 
                 let parts = currentResValue.split('x'); CANVAS_WIDTH = parseInt(parts[0]) || 640; CANVAS_HEIGHT = parseInt(parts[1]) || 480; 
             }
             myCanvas.width = CANVAS_WIDTH; myCanvas.height = CANVAS_HEIGHT; container.classList.remove('portrait-shake');
-            speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; isSherlockActive = false; sherlockTimer = 0; isHrBreakActive = false; hrBreakTimer = 0; isArthurActive = false; arthurTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = "Game Over"; bossIntroState = 0; bossIntroTimer = 0; isBoss2 = false; boss2Hits = 0; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; hasPortalSpawnedInThisArea = false; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; transitionText = AREA_NAMES[0]; transitionTimer = 80; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; 
+            speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; showEllieImage = false; bossIntroState = 0; bossIntroTimer = 0; isBoss2 = false; boss2Hits = 0; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; hasPortalSpawnedInThisArea = false; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; transitionText = AREA_NAMES[0]; transitionTimer = 80; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; 
+
+            isSherlockActive = false; sherlockCooldown = 0; sherlockTimer = 0;
+            isHrBreakActive = false; hrBreakCooldown = 0; hrBreakTimer = 0;
+            isArthurActive = false; arthurCooldown = 0; arthurTimer = 0;
             
             if (currentSkinKey === 'custom') { currentLives = customStats.lives || 0; wallDestroyCharges = customStats.bombs || 0; dashCharges = customStats.dashes || 0; shrinkCharges = customStats.shrinks || 0; widenCharges = customStats.widens || 0; } else { if (currentSkinKey === 'black' || currentSkinKey === 'tough' || currentSkinKey === 'sherlock') currentLives = (currentSkinKey === 'sherlock' ? 1 : INITIAL_LIVES); else currentLives = 0; wallDestroyCharges = (currentSkinKey === 'yellow' || currentSkinKey === 'black') ? MAX_DESTROY_CHARGES : 0; dashCharges = (currentSkinKey === 'doordash' || currentSkinKey === 'black') ? 4 : 0; shrinkCharges = (currentSkinKey === 'luigi' || currentSkinKey === 'black') ? 4 : 0; widenCharges = (currentSkinKey === 'heisenbark' || currentSkinKey === 'black') ? 4 : 0; }
             updateAbilityButtons(); lastPipeY = 250; add_pipe(CANVAS_WIDTH, 100, 140); deactivateShield(true); voidMusic.pause(); voidMusic.currentTime = 0; connectorMusic.pause(); connectorMusic.currentTime = 0; boss1Music.pause(); boss1Music.currentTime = 0; boss2Music.pause(); boss2Music.currentTime = 0; document.getElementById('jumpscare-vid').style.display = 'none';
+            applyScale();
         }
 
         function add_pipe(x_pos, top_of_gap, gap_width) {
@@ -1100,32 +1397,100 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
         function display_star_count() { ctx.font = '20px Arial'; ctx.textAlign = 'left'; if (voidUIErrorTimer > 0) { ctx.fillStyle = 'red'; ctx.fillText('ERROR', 10, 80); } else { ctx.fillStyle = 'yellow'; ctx.fillText('Food: ' + collectedStars, 10, 80); } let stackIndex = 0; if (isShieldActive) { let pct = shieldTimer / SHIELD_DURATION_FRAMES; drawTimerBar(pct, "cyan", "SHIELD", stackIndex++); } if (isDoubleStarsActive) { let pct = doubleStarTimer / POTION_DURATION_FRAMES; drawTimerBar(pct, "#ff00ff", "DOUBLE DRYFOOD", stackIndex++); } if (isSlowMotionActive) { let pct = slowMoTimer / SLOW_POTION_DURATION_FRAMES; drawTimerBar(pct, "#00ffff", "SLOW MOTION", stackIndex++); } }
         function display_score() { if (game_mode === 'online_match' || game_mode === 'pvp_shetos') return; ctx.font = 'bold 24px Arial'; ctx.textAlign = 'left'; ctx.strokeStyle = 'black'; ctx.lineWidth = 3; let displayStr = 'Score: ' + currentScore; if (isEndless) displayStr = 'Endless: ' + currentScore; if (voidUIErrorTimer > 0) displayStr = "ERROR"; else if (currentBGIndex === 4 && Math.random() < 0.1) { displayStr = "Sc#re: " + Math.floor(Math.random()*999); } ctx.strokeText(displayStr, 10, 115); ctx.fillStyle = voidUIErrorTimer > 0 ? 'red' : 'white'; ctx.fillText(displayStr, 10, 115); }
         function display_lives() { let y = 150; ctx.font = 'bold 22px Arial'; ctx.textAlign = 'left'; if (voidUIErrorTimer > 0) { ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText('ERROR', 10, y); ctx.fillStyle = 'red'; ctx.fillText('ERROR', 10, y); return; } if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText('Lives: ' + currentLives, 10, y); ctx.fillStyle = '#ff4d4d'; ctx.fillText('Lives: ' + currentLives, 10, y); y += 35; } else if (currentLives >= 100) { ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText('GOD MODE', 10, y); ctx.fillStyle = '#ff4d4d'; ctx.fillText('GOD MODE', 10, y); y += 35; } if ((currentSkinKey === 'yellow' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && wallDestroyCharges > 0)) && wallDestroyCharges > 0) { ctx.textAlign = 'left'; ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText('Bombs: ' + wallDestroyCharges, 10, y); ctx.fillStyle = 'orange'; ctx.fillText('Bombs: ' + wallDestroyCharges, 10, y); y+=35; } if ((currentSkinKey === 'doordash' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && dashCharges > 0)) && dashCharges > 0) { ctx.textAlign = 'left'; ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText('Dashes: ' + dashCharges, 10, y); ctx.fillStyle = '#ff4500'; ctx.fillText('Dashes: ' + dashCharges, 10, y); y+=35; } if ((currentSkinKey === 'luigi' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && shrinkCharges > 0)) && shrinkCharges > 0) { ctx.textAlign = 'left'; ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText('Shrinks: ' + shrinkCharges, 10, y); ctx.fillStyle = '#2ecc71'; ctx.fillText('Shrinks: ' + shrinkCharges, 10, y); y+=35; } if ((currentSkinKey === 'heisenbark' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && widenCharges > 0)) && widenCharges > 0) { ctx.textAlign = 'left'; ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText('Widens: ' + widenCharges, 10, y); ctx.fillStyle = '#9b59b6'; ctx.fillText('Widens: ' + widenCharges, 10, y); } }
-        function display_shop() { document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none'); if (currentSkinKey !== 'custom' && !SKINS[currentSkinKey]) currentSkinKey = 'default'; ctx.clearRect(0, 0, myCanvas.width, myCanvas.height); ctx.font = '30px Arial'; ctx.fillStyle = 'black'; ctx.textAlign = 'center'; ctx.fillStyle = '#444'; ctx.fillRect(myCanvas.width/2 - 100, 10, 200, 40); ctx.fillStyle = 'white'; ctx.font = '16px Arial'; ctx.fillText(shopCategory === 'skins' ? "Switch to TRAILS" : "Switch to SKINS", myCanvas.width/2, 35); ctx.fillStyle = 'red'; ctx.fillRect(10, 10, 80, 40); ctx.fillStyle = 'white'; ctx.font = '16px Arial'; ctx.fillText("EXIT", 50, 35); ctx.fillStyle = '#f1c40f'; ctx.fillRect(10, 60, 110, 40); ctx.fillStyle = 'black'; ctx.font = 'bold 16px Arial'; ctx.fillText("THE LAB", 65, 85); ctx.font = '40px Arial'; ctx.fillStyle = 'black'; ctx.fillText(shopCategory === 'skins' ? 'Skin Shop' : 'Trail Shop', myCanvas.width / 2, 85); ctx.font = '25px Arial'; ctx.fillStyle = 'yellow'; ctx.fillText('Your Food: ' + collectedStars, myCanvas.width / 2, 115); let y_offset = 140; const items = shopCategory === 'skins' ? SKINS : TRAILS; const keys = Object.keys(items).filter(k => k !== 'custom' && k !== 'trail_custom'); for (let i = 0; i < keys.length; i++) { const key = keys[i]; const item = items[key]; let status = ''; let owned = shopCategory === 'skins' ? availableSkins.includes(key) : availableTrails.includes(key); if (shopCategory === 'skins' && item.img && item.img.complete) { ctx.drawImage(item.img, myCanvas.width / 2 - 250, y_offset - 20, 25, 25); } else if (shopCategory === 'trails') { ctx.beginPath(); ctx.lineWidth = 10; ctx.strokeStyle = item.color === 'rainbow' ? 'magenta' : item.color; if (item.color === 'transparent') ctx.strokeStyle = 'white'; ctx.moveTo(myCanvas.width / 2 - 250, y_offset - 5); ctx.lineTo(myCanvas.width / 2 - 220, y_offset - 5); ctx.stroke(); } if (owned) { status = item.current ? ` [EQUIPPED]` : ` [OWNED]`; ctx.fillStyle = item.current ? 'green' : 'blue'; } else { status = ` [COST: ${item.cost}]`; ctx.fillStyle = (collectedStars >= item.cost) ? 'orange' : 'red'; } ctx.textAlign = 'center'; ctx.font = 'bold 16px Arial'; ctx.fillStyle = 'white'; ctx.fillText(`[${i+1}]`, myCanvas.width / 2 - 270, y_offset); ctx.font = '18px Arial'; ctx.fillStyle = (collectedStars >= item.cost || owned) ? (item.current ? 'green' : 'blue') : 'red'; ctx.fillText(item.name + status, myCanvas.width / 2 + 10, y_offset); ctx.fillStyle = "#333"; ctx.fillRect(myCanvas.width/2 + 230, y_offset - 15, 25, 25); ctx.fillStyle = "white"; ctx.font = "bold 16px Arial"; ctx.fillText("?", myCanvas.width/2 + 242, y_offset + 3); ctx.fillStyle = "#e67e22"; ctx.fillRect(myCanvas.width/2 + 265, y_offset - 15, 30, 25); ctx.fillStyle = "white"; ctx.font = "bold 12px Arial"; ctx.fillText("AI", myCanvas.width/2 + 280, y_offset + 2); y_offset += 35; } ctx.font = '20px Arial'; ctx.fillStyle = 'black'; ctx.fillText('Tap Item to Buy/Equip', myCanvas.width / 2, myCanvas.height - 15); }
 
-        let blackScreenTimer = 0; let blackScreenText = ""; let showEllieImage = false;
+        let canQuitTimer = 0;
         function Do_a_Frame() {
             try {
                 if (game_mode === 'waiting_for_website') { document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none'); let savedRes = localStorage.getItem('flappyRes'); if(savedRes && document.getElementById('res-select').value !== savedRes) { document.getElementById('res-select').value = savedRes; currentResValue = savedRes; changeResolution(savedRes); } return; }
                 if (game_mode === 'over_black_screen') { ctx.fillStyle = "black"; ctx.fillRect(0, 0, myCanvas.width, myCanvas.height); if (showEllieImage && ELLIE_IMG.complete && ELLIE_IMG.naturalWidth !== 0) { let imgW = ELLIE_IMG.naturalWidth; let imgH = ELLIE_IMG.naturalHeight; if (imgW > myCanvas.width * 0.8) { let scale = (myCanvas.width * 0.8) / imgW; imgW *= scale; imgH *= scale; } if (imgH > myCanvas.height * 0.8) { let scale = (myCanvas.height * 0.8) / imgH; imgW *= scale; imgH *= scale; } let imgX = (myCanvas.width - imgW) / 2; let imgY = (myCanvas.height - imgH) / 2; ctx.drawImage(ELLIE_IMG, imgX, imgY, imgW, imgH); } else { ctx.font = '16px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(blackScreenText, myCanvas.width / 2, myCanvas.height / 2); } blackScreenTimer--; if(blackScreenTimer <= 0) { quitToMenu(); } return; }
-                if (game_mode === 'shop' || game_mode === 'shop_from_menu') { display_shop(); return; }
+                
                 if (isPaused && game_mode !== 'online_match' && game_mode !== 'pvp_shetos') return; if (!ctx) return;
                 
                 if ((game_mode === 'online_match' || game_mode === 'pvp_shetos') && isRoundStarting) { if (backgroundImages[currentBGIndex] && backgroundImages[currentBGIndex].complete) { ctx.drawImage(backgroundImages[currentBGIndex], 0, 0, myCanvas.width, myCanvas.height); } else { ctx.fillStyle = "#222"; ctx.fillRect(0,0,myCanvas.width,myCanvas.height); } bird.Do_Frame_Things(); for(let i=0; i<pipes.length; i++) { let p = pipes[i]; p.Do_Frame_Things(); } if (game_mode === 'pvp_shetos') { ctx.save(); ctx.globalAlpha = 0.7; ctx.drawImage(PLAYER_IMG, bird.x, shetosBotY, 40, 40); ctx.restore(); } else if (activeMatchID && !enemyHasCrashed) { ctx.save(); ctx.globalAlpha = 0.4; let ghostW = bird.MyImg.width || 50; let ghostH = bird.MyImg.height || 50; if(bird.MyImg && bird.MyImg.complete && bird.MyImg.naturalWidth !== 0) { ghostW = bird.MyImg.width; ghostH = bird.MyImg.height; } ctx.drawImage(bird.MyImg, bird.x, enemyGhostY, ghostW, ghostH); ctx.restore(); } ctx.font = 'bold 80px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.lineWidth = 4; ctx.strokeStyle="black"; let displayText = Math.ceil(onlineStartTimer); if(displayText <= 0) displayText = "GO!"; ctx.strokeText(displayText, myCanvas.width/2, myCanvas.height/2); ctx.fillText(displayText, myCanvas.width/2, myCanvas.height/2); onlineStartTimer -= (1/FPS); if (onlineStartTimer <= -0.5) { isRoundStarting = false; roundStartTime = Date.now(); } return; }
                 
-                if (!isPaused) { if (isShieldActive) { shieldTimer--; if (shieldTimer <= 0) deactivateShield(); } if (isDoubleStarsActive) { doubleStarTimer--; if (doubleStarTimer <= 0) isDoubleStarsActive = false; } if (isSlowMotionActive) { slowMoTimer--; if (slowMoTimer <= 0) { isSlowMotionActive = false; setGameSpeed(false); } } if (isShrunk) { shrinkTimer--; if(shrinkTimer <= 0) isShrunk = false; } if (isWidenActive) { if(widenTimer === 1) heisenBlinkTimer = 80; widenTimer--; if(widenTimer <= 0) isWidenActive = false; } if (trailRedTimer > 0) trailRedTimer--; if (trailGoldTimer > 0) trailGoldTimer--; if (sherlockCooldown > 0) { sherlockCooldown--; document.getElementById('sherlock-btn').innerText = sherlockCooldown > 0 ? Math.ceil(sherlockCooldown/FPS) + "s" : "PREDICT"; } if (isSherlockActive) { sherlockTimer--; if (sherlockTimer <= 0) isSherlockActive = false; } if (hrBreakCooldown > 0) { hrBreakCooldown--; document.getElementById('hrbreak-btn').innerText = hrBreakCooldown > 0 ? Math.ceil(hrBreakCooldown/FPS) + "s" : "HR BREAK"; } if (isHrBreakActive) { hrBreakTimer--; if (hrBreakTimer <= 0) isHrBreakActive = false; } if (arthurCooldown > 0) { arthurCooldown--; document.getElementById('arthur-btn').innerText = arthurCooldown > 0 ? Math.ceil(arthurCooldown/FPS) + "s" : "DEAD EYE"; } if (isArthurActive) { arthurTimer--; speedMultiplier = 0.3; if (arthurTimer <= 0) { isArthurActive = false; speedMultiplier = 1; myCanvas.style.filter = "none"; } } if (currentBGIndex === 4 && Math.random() < 0.01) { voidUIErrorTimer = 5; } if (voidUIErrorTimer > 0) voidUIErrorTimer--; }
+                if (!isPaused) { 
+                    if (isShieldActive) { shieldTimer--; if (shieldTimer <= 0) deactivateShield(); } 
+                    if (isDoubleStarsActive) { doubleStarTimer--; if (doubleStarTimer <= 0) isDoubleStarsActive = false; } 
+                    if (isSlowMotionActive) { slowMoTimer--; if (slowMoTimer <= 0) { isSlowMotionActive = false; setGameSpeed(false); } } 
+                    if (isShrunk) { shrinkTimer--; if(shrinkTimer <= 0) isShrunk = false; } 
+                    if (isWidenActive) { if(widenTimer === 1) heisenBlinkTimer = 80; widenTimer--; if(widenTimer <= 0) isWidenActive = false; } 
+                    if (trailRedTimer > 0) trailRedTimer--; 
+                    if (trailGoldTimer > 0) trailGoldTimer--; 
+                    
+                    if (isSherlockActive) { 
+                        sherlockTimer--; 
+                        if (document.getElementById('sherlock-btn').style.display !== 'none') document.getElementById('sherlock-btn').innerText = "ACTIVE";
+                        if (sherlockTimer <= 0) { isSherlockActive = false; sherlockCooldown = 15 * FPS; } 
+                    }
+                    if (sherlockCooldown > 0) { 
+                        sherlockCooldown--; 
+                        if (document.getElementById('sherlock-btn').style.display !== 'none') document.getElementById('sherlock-btn').innerText = Math.ceil(sherlockCooldown/FPS) + "s"; 
+                    } else if (!isSherlockActive && document.getElementById('sherlock-btn').style.display !== 'none') {
+                        document.getElementById('sherlock-btn').innerText = "PREDICT";
+                    }
+
+                    if (isHrBreakActive) { 
+                        hrBreakTimer--; 
+                        if (document.getElementById('hrbreak-btn').style.display !== 'none') document.getElementById('hrbreak-btn').innerText = "ACTIVE";
+                        if (hrBreakTimer <= 0) { isHrBreakActive = false; hrBreakCooldown = 25 * FPS; } 
+                    }
+                    if (hrBreakCooldown > 0) { 
+                        hrBreakCooldown--; 
+                        if (document.getElementById('hrbreak-btn').style.display !== 'none') document.getElementById('hrbreak-btn').innerText = Math.ceil(hrBreakCooldown/FPS) + "s"; 
+                    } else if (!isHrBreakActive && document.getElementById('hrbreak-btn').style.display !== 'none') {
+                        document.getElementById('hrbreak-btn').innerText = "HR BREAK";
+                    }
+
+                    if (isArthurActive) { 
+                        arthurTimer--; speedMultiplier = 0.3; 
+                        if (document.getElementById('arthur-btn').style.display !== 'none') document.getElementById('arthur-btn').innerText = "ACTIVE";
+                        if (arthurTimer <= 0) { isArthurActive = false; speedMultiplier = 1; myCanvas.style.filter = "none"; arthurCooldown = 30 * FPS; } 
+                    }
+                    if (arthurCooldown > 0) { 
+                        arthurCooldown--; 
+                        if (document.getElementById('arthur-btn').style.display !== 'none') document.getElementById('arthur-btn').innerText = Math.ceil(arthurCooldown/FPS) + "s"; 
+                    } else if (!isArthurActive && document.getElementById('arthur-btn').style.display !== 'none') {
+                        document.getElementById('arthur-btn').innerText = "DEAD EYE";
+                    }
+
+                    if (currentBGIndex === 4 && Math.random() < 0.01) { voidUIErrorTimer = 5; } if (voidUIErrorTimer > 0) voidUIErrorTimer--; 
+                }
+
                 if (isDashActive) { speedMultiplier = 3; dashTimer--; if (dashTimer <= 0) { isDashActive = false; speedMultiplier = 1; } } else { if (!isSlowMotionActive && !isArthurActive) speedMultiplier = 1; }
                 ctx.clearRect(0, 0, myCanvas.width, myCanvas.height); if (backgroundImages[currentBGIndex] && backgroundImages[currentBGIndex].complete) { ctx.drawImage(backgroundImages[currentBGIndex], 0, 0, myCanvas.width, myCanvas.height); } else { ctx.fillStyle = "#222"; ctx.fillRect(0,0,myCanvas.width,myCanvas.height); }
                 bird.Do_Frame_Things(); if (bottom_bar.complete && bossIntroState >= 3) { if (bottom_bar_offset < -23) bottom_bar_offset = 0; ctx.drawImage(bottom_bar, bottom_bar_offset, myCanvas.height - bottom_bar.height); } else if (bottom_bar.complete && game_mode !== 'boss' && game_mode !== 'terminal_ending') { if (bottom_bar_offset < -23) bottom_bar_offset = 0; ctx.drawImage(bottom_bar, bottom_bar_offset, myCanvas.height - bottom_bar.height); } else if (bottom_bar.complete && game_mode !== 'terminal_ending') { ctx.drawImage(bottom_bar, bottom_bar_offset, myCanvas.height - bottom_bar.height); }
 
                 switch (game_mode) {
                     case 'prestart': game_mode = 'running'; break;
-                    case 'boss': if (bossIntroState < 3 && !boss.movingIn) { bird.velocity_y = 0; } else { time_game_last_running = new Date(); bottom_bar_offset += pipe_speed * speedMultiplier; make_bird_slow_and_fall(); } updateBoss(); break;
+                    case 'boss': if (bossIntroState < 3 && !boss.movingIn) { bird.velocity_y = 0; } else { time_game_last_running = new Date(); bottom_bar_offset += pipe_speed * speedMultiplier; make_bird_slow_and_fall(); } 
+                    
+                    if (isSherlockActive && bird.visible) {
+                        let targetY = myCanvas.height / 2;
+                        let proj = [...chocolates, ...errorSigns].find(p => p.x > bird.x && p.x < bird.x + 200 && p.visible);
+                        if (proj) { targetY = proj.y < bird.y ? bird.y + 100 : bird.y - 100; }
+                        let diff = targetY - bird.y;
+                        bird.velocity_y = diff * 0.15;
+                    }
+                    
+                    updateBoss(); break;
                     case 'running':
                         time_game_last_running = new Date(); bottom_bar_offset += pipe_speed * speedMultiplier;
                         if (!isEndless && currentScore >= 50 && !boss1Defeated && currentScore < 100) { game_mode = 'boss'; pipes = []; bgMusic.pause(); voidMusic.pause(); } else if (!isEndless && currentScore >= 100) { game_mode = 'boss'; pipes = []; isBoss2 = true; boss2Hits = 0; bgMusic.pause(); voidMusic.pause(); } 
                         for (var i = 0; i < pipes.length; i++) { pipes[i].velocity_x = pipe_speed; pipes[i].Do_Frame_Things(); } pipe_spawn_timer += (1000 / FPS) * speedMultiplier; let lastPipeX = pipes.length > 0 ? pipes[pipes.length - 1].x : -999;
                         if (pipe_spawn_timer > currentSpawnInterval && (CANVAS_WIDTH - lastPipeX > 220)) { let gap_size = isWidenActive ? 280 : 140; let safe_area = myCanvas.height - gap_size - 50; if(safe_area < 50) safe_area = 50; let top_of_gap = Math.floor(Math.random() * (safe_area - 50)) + 50; add_pipe(myCanvas.width, top_of_gap, gap_size); pipe_spawn_timer = 0; } 
-                        make_bird_slow_and_fall(); check_for_end_game(); check_for_score_increase();
+                        make_bird_slow_and_fall(); 
+                        
+                        if (isSherlockActive && bird.visible) {
+                            let nextPipe = null; let closestDist = 9999;
+                            for(let p of pipes) { if(p.x + (p.MyImg.width || 50) > bird.x && !p.flipV && p.x < closestDist) { closestDist = p.x; nextPipe = p; } }
+                            if (nextPipe) {
+                                let targetY = nextPipe.y + (nextPipe.MyImg.height || 50) + (isWidenActive ? 140 : 70);
+                                let diff = targetY - bird.y;
+                                bird.velocity_y = diff * 0.15;
+                            }
+                        }
+
+                        check_for_end_game(); check_for_score_increase();
                         [pipes, shields, stars, potions, slowPotions, portals].forEach(arr => { for (let i = arr.length - 1; i >= 0; i--) { if (arr[i].x < -100) arr.splice(i, 1); else if (arr !== pipes) arr[i].Do_Frame_Things(); } });
                         if (currentBGIndex === 4 && Math.random() < 0.10) { ctx.save(); ctx.font = 'bold 20px "Courier New", monospace'; ctx.fillStyle = Math.random() < 0.5 ? '#00FF00' : '#FFFFFF'; let gx = Math.random() * myCanvas.width; let gy = Math.random() * myCanvas.height; ctx.fillText(GLITCH_TEXTS[Math.floor(Math.random() * GLITCH_TEXTS.length)], gx, gy); ctx.restore(); }
                         if (currentBGIndex === 4 && voidBreathingCount < MAX_BREATHING && Math.random() < 0.001) { breathingSound.play(); voidBreathingCount++; } break;
@@ -1138,13 +1503,49 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
                         
                     case 'terminal_ending':
                         ctx.fillStyle = "black"; ctx.fillRect(0, 0, myCanvas.width, myCanvas.height);
-                        if (window.endingState === 0) { let img = BOSS2_IMG; if (img.complete && img.naturalWidth !== 0) ctx.drawImage(img, boss.x, boss.y, boss.width, boss.height); drawDialogueBox("you are making a big mistake"); window.endingTimer--; if (window.endingTimer <= 0) { window.endingState = 1; window.endingTimer = 120; } }
+                        if (window.endingState === 0) { let img = BOSS2_IMG; if (img.complete && img.naturalWidth !== 0) ctx.drawImage(img, boss.x, boss.y, boss.width, boss.height); drawDialogueBox(getLangText("b2_3")); window.endingTimer--; if (window.endingTimer <= 0) { window.endingState = 1; window.endingTimer = 120; } }
                         else if (window.endingState === 1) { window.endingTimer--; if (window.endingTimer <= 0) { window.endingState = 2; window.terminalPercent = 1; } }
-                        else if (window.endingState === 2) { ctx.font = '20px "Press Start 2P", cursive'; ctx.fillStyle = '#00FF00'; ctx.textAlign = 'left'; ctx.fillText(`System Override...`, 20, 80); ctx.fillText(`Bypassing... ${Math.floor(window.terminalPercent)}%`, 20, 120); window.terminalPercent += (100 / 80); if (window.terminalPercent >= 100) { window.terminalPercent = 100; window.endingState = 3; window.endingTimer = 80; } }
-                        else if (window.endingState === 3) { ctx.font = '20px "Press Start 2P", cursive'; ctx.fillStyle = '#00FF00'; ctx.textAlign = 'left'; ctx.fillText(`System Override...`, 20, 80); ctx.fillText(`Bypassing... 100%`, 20, 120); ctx.fillText(`Administrator Granted.`, 20, 160); window.endingTimer--; if (window.endingTimer <= 0) { window.endingState = 4; window.endingTimer = 80; } }
+                        else if (window.endingState === 2) { ctx.font = '20px "Press Start 2P", cursive'; ctx.fillStyle = '#00FF00'; ctx.textAlign = 'left'; ctx.fillText(getLangText("sys"), 20, 80); ctx.fillText(`${getLangText("bypass")} ${Math.floor(window.terminalPercent)}%`, 20, 120); window.terminalPercent += (100 / 80); if (window.terminalPercent >= 100) { window.terminalPercent = 100; window.endingState = 3; window.endingTimer = 80; } }
+                        else if (window.endingState === 3) { ctx.font = '20px "Press Start 2P", cursive'; ctx.fillStyle = '#00FF00'; ctx.textAlign = 'left'; ctx.fillText(getLangText("sys"), 20, 80); ctx.fillText(`${getLangText("bypass")} 100%`, 20, 120); ctx.fillText(getLangText("admin"), 20, 160); window.endingTimer--; if (window.endingTimer <= 0) { window.endingState = 4; window.endingTimer = 80; } }
                         else if (window.endingState === 4) { window.endingTimer--; if (window.endingTimer <= 0) { window.endingState = 5; window.endingTimer = 120; } }
-                        else if (window.endingState === 5) { drawGlitchText("To Be Continued...", 1.0); window.endingTimer--; if (window.endingTimer <= 0) { unlockAchievement('hardcore'); triggerFlash("white"); collectedStars += 500; localStorage.setItem('flappyStars', collectedStars); showCheatFeedback("BOSS 2 DEFEATED! +500 FOOD"); quitToMenu(); } } break;
-                    case 'over': document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none'); make_bird_slow_and_fall(); ctx.font = '22px "Press Start 2P"'; ctx.fillStyle = 'red'; ctx.textAlign = 'center'; ctx.fillText(deathMessage, myCanvas.width / 2, 100); ctx.font = '30px Arial'; ctx.fillText('Score: ' + currentScore, myCanvas.width / 2, 160); ctx.font = '20px Arial'; ctx.fillStyle = 'white'; ctx.fillText('Tap to return to Menu', myCanvas.width / 2, 250); break;
+                        else if (window.endingState === 5) { drawGlitchText(getLangText("tbc"), 1.0); window.endingTimer--; if (window.endingTimer <= 0) { unlockAchievement('hardcore'); triggerFlash("white"); showCheatFeedback("BOSS 2 DEFEATED!"); quitToMenu(); } } break;
+                    case 'over': 
+                        document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none'); 
+                        make_bird_slow_and_fall(); 
+                        
+                        ctx.fillStyle = "black";
+                        ctx.fillRect(0, 0, myCanvas.width, myCanvas.height);
+                        
+                        if (showEllieImage && ELLIE_IMG.complete && ELLIE_IMG.naturalWidth !== 0) {
+                            let imgW = ELLIE_IMG.naturalWidth;
+                            let imgH = ELLIE_IMG.naturalHeight;
+                            if (imgW > myCanvas.width * 0.8) { let scale = (myCanvas.width * 0.8) / imgW; imgW *= scale; imgH *= scale; }
+                            if (imgH > myCanvas.height * 0.8) { let scale = (myCanvas.height * 0.8) / imgH; imgW *= scale; imgH *= scale; }
+                            let imgX = (myCanvas.width - imgW) / 2;
+                            let imgY = (myCanvas.height - imgH) / 2;
+                            ctx.drawImage(ELLIE_IMG, imgX, imgY, imgW, imgH);
+                        } else if (deathMessage !== "") {
+                            let fontSize = deathMessage.length > 40 ? 10 : (deathMessage.length > 20 ? 14 : 20);
+                            ctx.font = fontSize + 'px "Press Start 2P"'; 
+                            ctx.fillStyle = 'white'; 
+                            ctx.textAlign = 'center'; 
+                            let lines = deathMessage.split('\n');
+                            let startY = myCanvas.height / 2 - (lines.length * (fontSize + 10)) / 2;
+                            for(let i=0; i<lines.length; i++) {
+                                ctx.fillText(lines[i], myCanvas.width / 2, startY + (i * (fontSize + 10)));
+                            }
+                        }
+
+                        ctx.font = '16px Arial'; ctx.fillStyle = '#666'; 
+                        ctx.fillText('Score: ' + currentScore, myCanvas.width / 2, myCanvas.height - 60); 
+                        
+                        if (canQuitTimer > 0) {
+                            canQuitTimer--;
+                        } else {
+                            ctx.font = '16px Arial'; ctx.fillStyle = 'lime'; 
+                            ctx.fillText('Tap to return to Menu', myCanvas.width / 2, myCanvas.height - 30); 
+                        }
+                        break;
                 }
 
                 if (game_mode === 'running' || game_mode === 'boss' || game_mode === 'online_match' || game_mode === 'pvp_shetos') { display_star_count(); display_score(); display_lives(); }
@@ -1154,15 +1555,32 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
                 if (flashTimer > 0) { ctx.fillStyle = flashColor; ctx.fillRect(0, 0, myCanvas.width, myCanvas.height); flashTimer--; }
                 if (heisenBlinkTimer > 0) { let alpha = Math.abs(Math.sin((heisenBlinkTimer / 80) * Math.PI * 2)); ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`; ctx.fillRect(0, 0, myCanvas.width, myCanvas.height); heisenBlinkTimer--; }
 
-                // SHERLOCK VISUALS (Buffed)
                 if (isSherlockActive && bird.visible) {
                     ctx.save();
-                    ctx.strokeStyle = "rgba(0, 150, 255, 0.9)"; ctx.lineWidth = 4; ctx.setLineDash([5, 5]);
+                    ctx.strokeStyle = "rgba(0, 255, 0, 0.8)"; ctx.lineWidth = 3;
                     ctx.beginPath(); ctx.moveTo(bird.x + 20, bird.y + 20);
-                    let safeY = lastPipeY + 70;
-                    ctx.lineTo(bird.x + 250, safeY); ctx.stroke();
-                    ctx.strokeStyle = "red"; ctx.setLineDash([]);
-                    [chocolates, errorSigns].forEach(arr => { arr.forEach(proj => { if(proj.visible) { ctx.beginPath(); ctx.arc(proj.x + 20, proj.y + 20, 35, 0, Math.PI*2); ctx.stroke(); ctx.fillStyle = "red"; ctx.font = "10px Arial"; ctx.fillText("DANGER", proj.x, proj.y - 10); } }); });
+                    
+                    if (game_mode === 'boss') {
+                        let proj = [...chocolates, ...errorSigns].find(p => p.x > bird.x && p.x < bird.x + 200 && p.visible);
+                        if (proj) {
+                            let targetY = proj.y < bird.y ? bird.y + 100 : bird.y - 100;
+                            ctx.lineTo(proj.x, targetY);
+                        } else {
+                            ctx.lineTo(boss.x, bird.y + 20);
+                        }
+                    } else {
+                        let nextPipe = null; let closestDist = 9999;
+                        for(let p of pipes) { if(p.x + (p.MyImg.width || 50) > bird.x && !p.flipV && p.x < closestDist) { closestDist = p.x; nextPipe = p; } }
+                        if (nextPipe) {
+                            let gapCenter = nextPipe.y + (nextPipe.MyImg.height || 50) + (isWidenActive ? 140 : 70);
+                            ctx.lineTo(nextPipe.x + 25, gapCenter);
+                        } else {
+                            ctx.lineTo(bird.x + 200, bird.y + 20);
+                        }
+                    }
+                    ctx.stroke();
+                    ctx.fillStyle = "lime"; ctx.font = "12px 'Press Start 2P'"; ctx.textAlign="center";
+                    ctx.fillText("AUTO-PILOT", bird.x + 20, bird.y - 15);
                     ctx.restore();
                 }
 
@@ -1206,70 +1624,198 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
             case 'prestart': game_mode = 'running'; break;
             case 'running': case 'boss': case 'online_match': case 'pvp_shetos':
                 if (game_mode === 'online_match' && myHasCrashed) return; if (game_mode === 'pvp_shetos' && myHasCrashed) return;
-                if (MyEvent.type === 'touchstart' || MyEvent.type === 'mousedown') { let current_jump = (currentSkinKey === 'happy' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && customStats.slowFall)) ? SUPER_JUMP_AMOUNT : jump_amount; bird.velocity_y = current_jump; }
-                if (MyEvent.type === 'keydown' && MyEvent.keyCode === 68) { useWallDestruction(); } if (MyEvent.type === 'keydown' && (MyEvent.key === 'Delete' || MyEvent.keyCode === 46)) { hitBossTwo(); } if (MyEvent.type === 'keydown' && (MyEvent.key === 'Shift' || MyEvent.key === 'd' || MyEvent.key === 'D')) { triggerDash(); } if (MyEvent.type === 'keydown' && (MyEvent.key === 's' || MyEvent.key === 'S')) { triggerShrink(); } if (MyEvent.type === 'keydown' && (MyEvent.key === 'w' || MyEvent.key === 'W')) { triggerWiden(); }
-                if (MyEvent.type === 'keydown' && MyEvent.key) { cheatBuffer += MyEvent.key; if (cheatBuffer.length > 10) cheatBuffer = cheatBuffer.slice(-10); if (cheatBuffer.endsWith("10101010")) { if (currentLives < 100) { currentLives = 100; collectedStars += 999999; localStorage.setItem('flappyStars', collectedStars); updateMenuStats(); showCheatFeedback("GOD MODE + RICH!"); } else { if (currentSkinKey === 'black' || currentSkinKey === 'tough' || currentSkinKey === 'sherlock') currentLives = (currentSkinKey === 'sherlock' ? 1 : INITIAL_LIVES); else currentLives = 0; showCheatFeedback("GOD MODE OFF"); } playPowerUpSound(); cheatBuffer = ""; } } break;
-            case 'shop': case 'shop_from_menu':
-                if (MyEvent.type === 'touchstart' || MyEvent.type === 'mousedown') {
-                    if (clickX > 10 && clickX < 90 && clickY > 10 && clickY < 50) { document.getElementById('settings-btn').style.display = 'block'; if (game_mode === 'shop_from_menu') { document.getElementById('landing-page').style.display = 'flex'; updateMenuStats(); game_mode = 'waiting_for_website'; ctx.clearRect(0, 0, myCanvas.width, myCanvas.height); if(backgroundImages[0] && backgroundImages[0].complete) ctx.drawImage(backgroundImages[0], 0, 0, myCanvas.width, myCanvas.height); } else { game_mode = 'running'; updateAbilityButtons(); } break; }
-                    if (clickX > 10 && clickX < 120 && clickY > 60 && clickY < 100) { openLabMenu(); return; }
-                    if (clickX > myCanvas.width/2 - 100 && clickX < myCanvas.width/2 + 100 && clickY < 50) { shopCategory = (shopCategory === 'skins') ? 'trails' : 'skins'; return; }
-                    if (clickY >= 120 && clickY <= 450) { const indexClicked = Math.floor((clickY - 120) / 35); const items = shopCategory === 'skins' ? SKINS : TRAILS; const keys = Object.keys(items).filter(k => k !== 'custom' && k !== 'trail_custom'); if (indexClicked >= 0 && indexClicked < keys.length) { if (clickX > myCanvas.width/2 + 230 && clickX < myCanvas.width/2 + 255) { openCharInfo(keys[indexClicked]); } else if (clickX > myCanvas.width/2 + 265 && clickX < myCanvas.width/2 + 295) { askShetosAboutItem(items[keys[indexClicked]].name); } else { purchaseOrEquipSkin(keys[indexClicked]); } } }
+                if (MyEvent.type === 'touchstart' || MyEvent.type === 'mousedown') { 
+                    if (MyEvent.type === 'touchstart' && MyEvent.cancelable) {
+                        MyEvent.preventDefault(); 
+                    }
+                    let current_jump = (currentSkinKey === 'happy' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && customStats.slowFall)) ? SUPER_JUMP_AMOUNT : jump_amount; bird.velocity_y = current_jump; 
                 }
-                if (MyEvent.type === 'keydown' && MyEvent.keyCode === 69) { if (game_mode === 'shop_from_menu') { document.getElementById('landing-page').style.display = 'flex'; updateMenuStats(); game_mode = 'waiting_for_website'; ctx.clearRect(0, 0, myCanvas.width, myCanvas.height); if(backgroundImages[0] && backgroundImages[0].complete) ctx.drawImage(backgroundImages[0], 0, 0, myCanvas.width, myCanvas.height); } else { game_mode = 'running'; updateAbilityButtons(); } break; }
-                if (MyEvent.type === 'keydown') { const keyIndex = MyEvent.keyCode - 49; const items = shopCategory === 'skins' ? SKINS : TRAILS; const keys = Object.keys(items).filter(k => k !== 'custom' && k !== 'trail_custom'); if (keyIndex >= 0 && keyIndex < keys.length) { purchaseOrEquipSkin(keys[keyIndex]); } } break;
-            case 'over': if (new Date() - time_game_last_running > 1000) { quitToMenu(); } break;
-            case 'waiting_for_website': if (MyEvent.type === 'keydown' && MyEvent.key) { cheatBuffer += MyEvent.key; if (cheatBuffer.length > 10) cheatBuffer = cheatBuffer.slice(-10); if (cheatBuffer.endsWith("10101010")) { playPowerUpSound(); } } break;
-            } 
-        } 
+                if (MyEvent.type === 'keydown' && MyEvent.keyCode === 68) { useWallDestruction(); } 
+                if (MyEvent.type === 'keydown' && (MyEvent.key === 'Delete' || MyEvent.key === 'Backspace')) { hitBossTwo(); }
+                if (MyEvent.type === 'keydown' && (MyEvent.key === 'Shift')) { triggerDash(); }
+                if (MyEvent.type === 'keydown' && (MyEvent.key === 's' || MyEvent.key === 'S')) { triggerShrink(); }
+                if (MyEvent.type === 'keydown' && (MyEvent.key === 'w' || MyEvent.key === 'W')) { triggerWiden(); }
+                if (MyEvent.type === 'keydown' && (MyEvent.keyCode === 32 || MyEvent.keyCode === 38)) { 
+                    MyEvent.preventDefault();
+                    let current_jump = (currentSkinKey === 'happy' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && customStats.slowFall)) ? SUPER_JUMP_AMOUNT : jump_amount; 
+                    bird.velocity_y = current_jump; 
+                }
+                break;
+            case 'over':
+                if (canQuitTimer <= 0) quitToMenu();
+                break;
+            }
+        }
 
         function check_for_end_game() {
-            if (bird.y + 20 > myCanvas.height) { triggerPlayerDeath("Fell down!"); return; }
-            for (var i = 0; i < pipes.length; i++) { if (ImagesTouching(bird, pipes[i]) && pipes[i].visible) { if (isDashActive) { pipes[i].visible = false; continue; } if (isShieldActive) { deactivateShield(); pipes[i].visible = false; } else if (currentLives > 0) { currentLives--; if(!sfxMuted){damageSound.currentTime=0; damageSound.play().catch(e=>{});} pipes[i].visible = false; trailRedTimer = 120; } else { triggerPlayerDeath("Hit a wall!"); return; } } }
-            if(game_mode === 'boss' && !boss.movingIn && ImagesTouching(bird, boss)) { triggerPlayerDeath("EATEN BY SHETOS!"); return; }
+            for (var i = 0; i < pipes.length; i++) {
+                if (ImagesTouching(bird, pipes[i])) {
+                    if (isDashActive || isHrBreakActive) {
+                        pipes[i].visible = false;
+                        if(pipes[i].parentPipe) pipes[i].parentPipe.visible = false;
+                        continue;
+                    }
+                    if (isShieldActive) {
+                        deactivateShield();
+                        pipes[i].visible = false;
+                        if(pipes[i].parentPipe) pipes[i].parentPipe.visible = false;
+                    } else if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) {
+                        currentLives--;
+                        if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));}
+                        pipes[i].visible = false;
+                        if(pipes[i].parentPipe) pipes[i].parentPipe.visible = false;
+                        trailRedTimer = 120;
+                    } else {
+                        triggerPlayerDeath(getLangText('wall'));
+                    }
+                }
+            }
+            if (bird.y > myCanvas.height || bird.y < -50) {
+                triggerPlayerDeath(getLangText('fall'));
+            }
+            if (game_mode === 'boss' && !isBoss2 && ImagesTouching(bird, boss)) {
+                if(isDashActive || isHrBreakActive) return;
+                if(isShieldActive) deactivateShield();
+                else if(currentLives > 0) currentLives--;
+                else triggerPlayerDeath(getLangText('eaten'));
+            }
         }
 
         function check_for_score_increase() {
             for (var i = 0; i < pipes.length; i++) {
-                if (pipes[i].isScorable && !pipes[i].passed && bird.x > pipes[i].x + 50) { pipes[i].passed = true; 
-                    if (!myHasCrashed && game_mode !== 'over') { let scoreAdded = 1; currentScore += scoreAdded; floatingTexts.push({ x: bird.x, y: bird.y - 20, text: "+" + scoreAdded, timer: 40 }); if (currentScore >= 38 && (currentScore - scoreAdded) < 38 && !isEndless && game_mode !== 'online_match' && game_mode !== 'pvp_shetos') { bgMusic.pause(); if (!musicMuted) connectorMusic.play().catch(e=>console.log(e)); } if (game_mode === 'online_match' && activeMatchID && !myHasCrashed) { let updateData = {}; if (myOnlineRole === 'host') updateData.hostScore = currentScore; else updateData.guestScore = currentScore; db.collection('matches').doc(activeMatchID).update(updateData).catch(e=>{}); } if (currentScore > highScore && !isEndless) { highScore = currentScore; localStorage.setItem('flappyHighScore', highScore); } if (isEndless && currentScore > endlessHighScore) { endlessHighScore = currentScore; localStorage.setItem('flappyEndlessHighScore', endlessHighScore); } 
-                        let newBG = Math.floor(currentScore / 10); if (newBG > 4) newBG = 4; if (newBG !== currentBGIndex) { currentBGIndex = newBG; updateDifficulty(); if (!musicMuted && game_mode !== 'boss') { if (currentBGIndex === 4) { if(connectorMusic.paused && connectorMusic.currentTime === 0) { bgMusic.pause(); voidMusic.currentTime = 0; voidMusic.play().catch(e=>{}); } } } }
-                        if (currentScore >= 10 && !isEndless) unlockAchievement('beginner'); if (currentScore >= 20 && !isEndless) unlockAchievement('hang'); if (currentScore >= 30 && !isEndless) unlockAchievement('sunset'); if (currentScore >= 40 && !isEndless) unlockAchievement('void');
+                if (pipes[i].isScorable && !pipes[i].passed && pipes[i].x < bird.x) {
+                    pipes[i].passed = true;
+                    currentScore++;
+                    if(!sfxMuted){flapSound.currentTime = 0; flapSound.play().catch(e=>console.log(e));}
+                    if(currentScore > highScore && !isEndless) {
+                        highScore = currentScore;
+                        localStorage.setItem('flappyHighScore', highScore);
+                    }
+                    if(currentScore > endlessHighScore && isEndless) {
+                        endlessHighScore = currentScore;
+                        localStorage.setItem('flappyEndlessHighScore', endlessHighScore);
+                    }
+                    if (!isEndless && game_mode !== 'online_match' && game_mode !== 'pvp_shetos') {
+                        let oldIndex = currentBGIndex;
+                        currentBGIndex = Math.floor(currentScore / 10);
+                        if (currentBGIndex > 4) currentBGIndex = 4;
+                        if (oldIndex !== currentBGIndex) {
+                            transitionText = AREA_NAMES[currentBGIndex] || "UNKNOWN AREA";
+                            transitionTimer = 80;
+                            updateDifficulty();
+                            hasPortalSpawnedInThisArea = false;
+                            if (currentBGIndex === 4) {
+                                bgMusic.pause();
+                                if (!musicMuted) connectorMusic.play();
+                            }
+                        }
+                    }
+                    if (currentScore >= 10 && !savedAchievements.includes('beginner')) unlockAchievement('beginner');
+                    if (currentScore >= 20 && !savedAchievements.includes('hang')) unlockAchievement('hang');
+                    if (currentScore >= 30 && !savedAchievements.includes('sunset')) unlockAchievement('sunset');
+                    if (currentScore >= 40 && !savedAchievements.includes('void')) unlockAchievement('void');
+                }
+            }
+            
+            if(game_mode === 'pvp_shetos' && shetosBotAlive) {
+                for (var i = 0; i < pipes.length; i++) {
+                    if (pipes[i].isScorable && !pipes[i].aiPassed && pipes[i].x < bird.x + 20) { 
+                        pipes[i].aiPassed = true;
+                        shetosBotScore++;
                     }
                 }
-                if (game_mode === 'pvp_shetos' && pipes[i].isScorable && !pipes[i].aiPassed && shetosBotAlive) { if (bird.x > pipes[i].x + 50) { pipes[i].aiPassed = true; shetosBotScore++; } }
             }
-            for(let i = stars.length - 1; i >= 0; i--) { if (currentSkinKey === 'rich' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && customStats.magnet)) { let dx = bird.x - stars[i].x; let dy = bird.y - stars[i].y; let dist = Math.sqrt(dx*dx + dy*dy); if(dist < MAGNET_RADIUS) { stars[i].x += dx * 0.1; stars[i].y += dy * 0.1; } } if (ImagesTouching(bird, stars[i]) && stars[i].visible) { let gainedFood = isDoubleStarsActive ? (STAR_VALUE * 2) : STAR_VALUE; collectedStars += gainedFood; localStorage.setItem('flappyStars', collectedStars); stars.splice(i, 1); playPowerUpSound(); updateMenuStats(); if (collectedStars > 1000) unlockAchievement('dryfoodaire'); } }
-            for(let i = shields.length - 1; i >= 0; i--) { if (ImagesTouching(bird, shields[i]) && shields[i].visible) { isShieldActive = true; shieldTimer = SHIELD_DURATION_FRAMES; shields.splice(i, 1); playPowerUpSound(); } }
-            for(let i = potions.length - 1; i >= 0; i--) { if (ImagesTouching(bird, potions[i]) && potions[i].visible) { activateDoubleStars(); potions.splice(i, 1); playPowerUpSound(); } }
-            for(let i = slowPotions.length - 1; i >= 0; i--) { if (ImagesTouching(bird, slowPotions[i]) && slowPotions[i].visible) { activateSlowMotion(); slowPotions.splice(i, 1); playPowerUpSound(); } }
-            for(let i = portals.length - 1; i >= 0; i--) { if (ImagesTouching(bird, portals[i]) && portals[i].visible) { triggerPortalEffect(); portals.splice(i, 1); } }
+
+            checkPowerups(shields, () => { isShieldActive = true; shieldTimer = SHIELD_DURATION_FRAMES; playPowerUpSound(); });
+            checkPowerups(potions, () => activateDoubleStars());
+            checkPowerups(slowPotions, () => activateSlowMotion());
+            checkPowerups(stars, () => {
+                let gain = isDoubleStarsActive ? STAR_VALUE * 2 : STAR_VALUE;
+                collectedStars += gain;
+                localStorage.setItem('flappyStars', collectedStars);
+                if (collectedStars > 1000 && !savedAchievements.includes('dryfoodaire')) unlockAchievement('dryfoodaire');
+                if(!sfxMuted){buySound.currentTime=0;buySound.play().catch(e=>{});}
+                if (trailGoldTimer <= 0) trailGoldTimer = 30;
+                updateMenuStats();
+            });
+            checkPowerups(portals, () => { triggerPortalEffect(); });
+
+            if (currentSkinKey === 'rich' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && customStats.magnet)) {
+                magnetizeItem(stars);
+            }
         }
 
-        function deactivateShield(silent = false) { isShieldActive = false; shieldTimer = 0; if(!silent && !sfxMuted){ shieldBreakSound.currentTime = 0; shieldBreakSound.play().catch(e=>{}); } }
+        function deactivateShield(silent=false) {
+            isShieldActive = false;
+            shieldTimer = 0;
+            if(!silent && !sfxMuted){shieldBreakSound.currentTime=0; shieldBreakSound.play().catch(e=>{});}
+        }
+        
+        function checkPowerups(arr, callback) {
+            for(let i = arr.length - 1; i >= 0; i--) {
+                if(arr[i].visible && ImagesTouching(bird, arr[i])) {
+                    arr[i].visible = false;
+                    callback();
+                    arr.splice(i, 1);
+                }
+            }
+        }
+
+        function magnetizeItem(arr) {
+            for(let i = 0; i < arr.length; i++) {
+                if(!arr[i].visible) continue;
+                let dx = bird.x - arr[i].x;
+                let dy = bird.y - arr[i].y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                if(dist < MAGNET_RADIUS) {
+                    arr[i].x += (dx/dist) * 8;
+                    arr[i].y += (dy/dist) * 8;
+                }
+            }
+        }
 
         function triggerGameOver(msg) {
-            game_mode = 'over_black_screen'; showEllieImage = Math.random() < 0.20;
-            const deathPhrases = ["get up", "wake up", "no time", "......", "lol", "404 Not Found", "503 Service Unavailable", "403 Forbidden", "418 I'm a Teapot", "400 Bad Request", "do you keep losing on purpose?", "thumbs up", "401 Unauthorized"];
-            blackScreenText = deathPhrases[Math.floor(Math.random() * deathPhrases.length)];
-            let customPhrases = []; if (currentSkinKey === 'heisenbark') { customPhrases = ["Well... goodbye, Lydia", "say my name", "You're goddamn right"]; } else if (currentSkinKey === 'luigi') { customPhrases = ["Luigi time!", "Mamma mia!", "Yahoo!"]; } if (customPhrases.length > 0 && Math.random() < 0.4) { blackScreenText = customPhrases[Math.floor(Math.random() * customPhrases.length)]; }
-            blackScreenTimer = 120; bgMusic.pause(); voidMusic.pause(); boss1Music.pause(); boss2Music.pause(); connectorMusic.pause(); if(!sfxMuted){alarmSound.currentTime=0; alarmSound.play().catch(e=>{});}
-            totalGamesPlayed++; localStorage.setItem('flappyGamesPlayed', totalGamesPlayed); updateMenuStats(); saveUserData(); document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none'); 
+            game_mode = 'over';
+            if (msg && (msg.includes("VICTORY") || msg.includes("DEFEAT"))) {
+                deathMessage = msg;
+                showEllieImage = false;
+            } else {
+                let randMsg = DEATH_MESSAGES[Math.floor(Math.random() * DEATH_MESSAGES.length)];
+                if (randMsg === "ELLIE_IMG") {
+                    showEllieImage = true;
+                    deathMessage = "";
+                } else {
+                    showEllieImage = false;
+                    deathMessage = randMsg;
+                }
+            }
+            canQuitTimer = 60;
+            if(!sfxMuted){damageSound.currentTime=0; damageSound.play().catch(e=>{});}
+            bgMusic.pause(); voidMusic.pause(); boss1Music.pause(); boss2Music.pause(); connectorMusic.pause();
+            totalGamesPlayed++;
+            localStorage.setItem('flappyGamesPlayed', totalGamesPlayed);
+            updateMenuStats();
+            saveUserData();
+            document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none');
+            
+            if(Math.random() < 0.05) {
+                let jvid = document.getElementById('jumpscare-vid');
+                jvid.style.display = 'block';
+                jvid.play().catch(e=>{});
+                setTimeout(() => { jvid.style.display = 'none'; }, 2000);
+            }
         }
 
         window.addEventListener('keydown', Got_Player_Input);
         window.addEventListener('mousedown', Got_Player_Input);
         window.addEventListener('touchstart', Got_Player_Input, {passive: false});
 
-        window.onload = function() {
-            myCanvas = document.getElementById("myCanvas");
-            ctx = myCanvas.getContext("2d");
-            if (typeof originalCanvasW !== 'undefined') { CANVAS_WIDTH = originalCanvasW; CANVAS_HEIGHT = originalCanvasH; }
-            let savedRes = localStorage.getItem('flappyRes');
-            if(savedRes) { document.getElementById('res-select').value = savedRes; currentResValue = savedRes; changeResolution(savedRes); }
-            gameInterval = setInterval(Do_a_Frame, 1000 / FPS);
-            updateMenuStats();
-        };
+        myCanvas = document.getElementById('myCanvas');
+        ctx = myCanvas.getContext('2d');
+        applyScale();
+        updateMenuStats();
+        
+        setInterval(Do_a_Frame, 1000 / FPS);
 </script>
 </body>
-</html>
+    </html>
