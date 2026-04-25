@@ -11,7 +11,7 @@
     <style>
         body { background-color: #111; color: white; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: Arial, sans-serif; touch-action: none; }
         
-        #game-container { position: relative; width: 640px; height: 480px; background-color: #000; box-shadow: 0 0 20px rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; overflow: hidden; touch-action: none; transform-origin: center center; }
+        #game-container { position: relative; width: 100vw; height: 100vh; background-color: #000; box-shadow: 0 0 20px rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; overflow: hidden; touch-action: none; transform-origin: center center; }
         canvas { width: 100%; height: 100%; object-fit: fill; position: absolute; top: 0; left: 0; z-index: 1; touch-action: none; }
         
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -163,7 +163,6 @@
 
      <div id="startup-warning" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; box-sizing: border-box;">
          <h1 id="lang-welcome" style="color: #f1c40f; font-family: 'Press Start 2P', cursive; font-size: 20px; margin-bottom: 20px; line-height: 1.5;">WELCOME TO<br>FLYING SHETOS</h1>
-         <p id="lang-res-warn" style="color: white; font-family: Arial, sans-serif; font-size: 16px; max-width: 400px; margin-bottom: 20px;">Please change the resolution from the Settings button (⚙️) if it does not fit your screen correctly!</p>
          <p style="font-size: 10px; color: #ccc; margin-bottom: 20px; font-family: Arial;">By pressing 'I UNDERSTAND' you agree to our <a href="#" onclick="openPrivacyPolicy(); return false;" style="color: lime;">Privacy Policy</a>.</p>
          <button id="lang-btn-understand" class="enter-btn btn-yellow" style="font-size: 18px; padding: 15px 30px;" onclick="closeStartupWarning(); playClickSound();">I UNDERSTAND</button>
      </div>
@@ -274,18 +273,6 @@
                          <option value="de">Deutsch</option>
                          <option value="ar">العربية</option>
                          <option value="it">Italiano</option>
-                     </select>
-                 </div>
-                 <div class="toggle-row">
-                     <span>RESOLUTION</span>
-                     <select id="res-select" class="res-select" onchange="changeResolution(this.value)">
-                         <option value="640x480">Classic (640x480)</option>
-                         <option value="1280x720">HD PC (1280x720)</option>
-                         <option value="1920x1080">FHD PC (1920x1080)</option>
-                         <option value="1080x1920">Mobile Port. 1 (1080x1920)</option>
-                         <option value="1170x2532">Mobile Port. 2 (1170x2532)</option>
-                         <option value="1440x3088">Mobile Port. 3 (1440x3088)</option>
-                         <option value="fullscreen">Fullscreen (Auto Fit)</option>
                      </select>
                  </div>
              </div>
@@ -500,8 +487,6 @@
          <canvas id="myCanvas" width="640" height="480"></canvas> 
      </div>
 <script>
-        const originalCanvasW = 640;
-        const originalCanvasH = 480;
         let currentLang = 'en';
 
         const SPLASH_TEXTS = ["Sue Me", "67", "Also try Flappy bird", "Bread", "who reads privacy policies?", ":>", ";)", "DELETE", "ALT F4 boosts FPS", "Daveyyyhowyadoin'", "It's average!", "Code: Infinite for unlimited dry food ;)", "Stong Independent Shetos", "Chocolate milk comes from Gangster Cows.", "If dry food is your power, then what are you without it?", "Money can buy happiness.", "Tu Hablas Espaniol?", "Game of the minute", "Slim Shady"];
@@ -520,10 +505,10 @@
         ];
 
         const TRANSLATIONS = {
-            en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", resWarn: "Please change the resolution from the Settings (⚙️) if it doesn't fit!", understand: "I UNDERSTAND", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS", b1_1: "oh, here you are", b1_2: "I was waiting for you", b2_1: "you are getting out of control", b2_2: "you werent supposed to come HERE", b2_3: "Its too late to go back now....", sys: "System Override...", bypass: "Bypassing...", admin: "Administrator Granted.", tbc: "To Be Continued...", cat: "THAT WAS A CAT", kid: "you got clipped by a kid lmao", err1: "Connection Error", fall: "Fell down!", wall: "Hit a wall!", eaten: "EATEN BY SHETOS!" },
-            de: { play: "SPIELEN", shop: "GESCHÄFT", achieve: "ERFOLGE", friends: "FREUNDE", lead: "BESTEN", ai: "KI CHAT", redeem: "EINLÖSEN", high: "Höchstpunktzahl", food: "Trockenfutter", trophies: "Trophäen", games: "Spiele", welcome: "WILLKOMMEN BEI<br>FLYING SHETOS", resWarn: "Bitte ändern Sie die Auflösung über die Einstellungen (⚙️), falls es nicht passt!", understand: "ICH VERSTEHE", chooseMode: "Modus wählen", story: "GESCHICHTSMODUS", endless: "ENDLOSMODUS", pvp: "PVP-MODUS", settings: "EINSTELLUNGEN", b1_1: "oh, da bist du ja", b1_2: "ich habe auf dich gewartet", b2_1: "du gerätst außer kontrolle", b2_2: "du solltest nicht HIERHER kommen", b2_3: "es ist zu spät um umzukehren....", sys: "Systemüberschreibung...", bypass: "Umgehung...", admin: "Administrator gewährt.", tbc: "Fortsetzung folgt...", cat: "DAS WAR EINE KATZE", kid: "du wurdest von einem kind erwischt lmao", err1: "Verbindungsfehler", fall: "Heruntergefallen!", wall: "Wand getroffen!", eaten: "VON SHETOS GEFRESSEN!" },
-            ar: { play: "العب", shop: "المتجر", achieve: "إنجازات", friends: "أصدقاء", lead: "المتصدرين", ai: "محادثة ذكاء", redeem: "استرداد", high: "أعلى نتيجة", food: "طعام جاف", trophies: "الجوائز", games: "الألعاب", welcome: "مرحباً بكم في<br>فلاينج شيتوس", resWarn: "يرجى تغيير الدقة من زر الإعدادات (⚙️) إذا كانت لا تناسب شاشتك!", understand: "أنا أفهم", chooseMode: "اختر الوضع", story: "وضع القصة", endless: "وضع لا نهاية له", pvp: "وضع لاعب ضد لاعب", settings: "الإعدادات", b1_1: "أوه، ها أنت ذا", b1_2: "كنت في انتظارك", b2_1: "أنت تخرج عن السيطرة", b2_2: "لم يكن من المفترض أن تأتي إلى هنا", b2_3: "لقد فات الأوان للتراجع....", sys: "تجاوز النظام...", bypass: "جاري التجاوز...", admin: "تم منح حق المسؤول.", tbc: "يتبع...", cat: "تلك كانت قطة", kid: "لقد صدمك طفل لول", err1: "خطأ في الاتصال", fall: "سقطت!", wall: "اصطدمت بجدار!", eaten: "أكلك شيتوس!" },
-            it: { play: "GIOCA", shop: "NEGOZIO", achieve: "RISULTATI", friends: "AMICI", lead: "CLASSIFICA", ai: "CHAT AI", redeem: "RISCATTA", high: "Punteggio Max", food: "Cibo Secco", trophies: "Trofei", games: "Giochi", welcome: "BENVENUTO A<br>FLYING SHETOS", resWarn: "Modifica la risoluzione dalle Impostazioni (⚙️) se non si adatta!", understand: "CAPISCO", chooseMode: "Scegli Modalità", story: "MODALITÀ STORIA", endless: "MODALITÀ INFINITA", pvp: "MODALITÀ PVP", settings: "IMPOSTAZIONI", b1_1: "oh, eccoti qui", b1_2: "ti stavo aspettando", b2_1: "stai perdendo il controllo", b2_2: "non dovevi venire QUI", b2_3: "è troppo tardi per tornare indietro....", sys: "Override del Sistema...", bypass: "Bypass in corso...", admin: "Amministratore Concesso.", tbc: "Continua...", cat: "QUELLO ERA UN GATTO", kid: "ti ha colpito un bambino lmao", err1: "Errore di Connessione", fall: "Sei caduto!", wall: "Hai colpito un muro!", eaten: "MANGIATO DA SHETOS!" }
+            en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", understand: "I UNDERSTAND", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS", b1_1: "oh, here you are", b1_2: "I was waiting for you", b2_1: "you are getting out of control", b2_2: "you werent supposed to come HERE", b2_3: "Its too late to go back now....", sys: "System Override...", bypass: "Bypassing...", admin: "Administrator Granted.", tbc: "To Be Continued...", cat: "THAT WAS A CAT", kid: "you got clipped by a kid lmao", err1: "Connection Error", fall: "Fell down!", wall: "Hit a wall!", eaten: "EATEN BY SHETOS!" },
+            de: { play: "SPIELEN", shop: "GESCHÄFT", achieve: "ERFOLGE", friends: "FREUNDE", lead: "BESTEN", ai: "KI CHAT", redeem: "EINLÖSEN", high: "Höchstpunktzahl", food: "Trockenfutter", trophies: "Trophäen", games: "Spiele", welcome: "WILLKOMMEN BEI<br>FLYING SHETOS", understand: "ICH VERSTEHE", chooseMode: "Modus wählen", story: "GESCHICHTSMODUS", endless: "ENDLOSMODUS", pvp: "PVP-MODUS", settings: "EINSTELLUNGEN", b1_1: "oh, da bist du ja", b1_2: "ich habe auf dich gewartet", b2_1: "du gerätst außer kontrolle", b2_2: "du solltest nicht HIERHER kommen", b2_3: "es ist zu spät um umzukehren....", sys: "Systemüberschreibung...", bypass: "Umgehung...", admin: "Administrator gewährt.", tbc: "Fortsetzung folgt...", cat: "DAS WAR EINE KATZE", kid: "du wurdest von einem kind erwischt lmao", err1: "Verbindungsfehler", fall: "Heruntergefallen!", wall: "Wand getroffen!", eaten: "VON SHETOS GEFRESSEN!" },
+            ar: { play: "العب", shop: "المتجر", achieve: "إنجازات", friends: "أصدقاء", lead: "المتصدرين", ai: "محادثة ذكاء", redeem: "استرداد", high: "أعلى نتيجة", food: "طعام جاف", trophies: "الجوائز", games: "الألعاب", welcome: "مرحباً بكم في<br>فلاينج شيتوس", understand: "أنا أفهم", chooseMode: "اختر الوضع", story: "وضع القصة", endless: "وضع لا نهاية له", pvp: "وضع لاعب ضد لاعب", settings: "الإعدادات", b1_1: "أوه، ها أنت ذا", b1_2: "كنت في انتظارك", b2_1: "أنت تخرج عن السيطرة", b2_2: "لم يكن من المفترض أن تأتي إلى هنا", b2_3: "لقد فات الأوان للتراجع....", sys: "تجاوز النظام...", bypass: "جاري التجاوز...", admin: "تم منح حق المسؤول.", tbc: "يتبع...", cat: "تلك كانت قطة", kid: "لقد صدمك طفل لول", err1: "خطأ في الاتصال", fall: "سقطت!", wall: "اصطدمت بجدار!", eaten: "أكلك شيتوس!" },
+            it: { play: "GIOCA", shop: "NEGOZIO", achieve: "RISULTATI", friends: "AMICI", lead: "CLASSIFICA", ai: "CHAT AI", redeem: "RISCATTA", high: "Punteggio Max", food: "Cibo Secco", trophies: "Trofei", games: "Giochi", welcome: "BENVENUTO A<br>FLYING SHETOS", understand: "CAPISCO", chooseMode: "Scegli Modalità", story: "MODALITÀ STORIA", endless: "MODALITÀ INFINITA", pvp: "MODALITÀ PVP", settings: "IMPOSTAZIONI", b1_1: "oh, eccoti qui", b1_2: "ti stavo aspettando", b2_1: "stai perdendo il controllo", b2_2: "non dovevi venire QUI", b2_3: "è troppo tardi per tornare indietro....", sys: "Override del Sistema...", bypass: "Bypass in corso...", admin: "Amministratore Concesso.", tbc: "Continua...", cat: "QUELLO ERA UN GATTO", kid: "ti ha colpito un bambino lmao", err1: "Errore di Connessione", fall: "Sei caduto!", wall: "Hai colpito un muro!", eaten: "MANGIATO DA SHETOS!" }
         };
 
         function getLangText(key) { return TRANSLATIONS[currentLang][key] || key; }
@@ -544,7 +529,6 @@
             document.getElementById('lang-stat-trophies').innerText = t.trophies;
             document.getElementById('lang-stat-games').innerText = t.games;
             document.getElementById('lang-welcome').innerHTML = t.welcome;
-            document.getElementById('lang-res-warn').innerText = t.resWarn;
             document.getElementById('lang-btn-understand').innerText = t.understand;
             document.getElementById('lang-choose-mode').innerText = t.chooseMode;
             document.getElementById('lang-story').innerText = t.story;
@@ -560,31 +544,13 @@
 
         window.applyScale = function() {
             let container = document.getElementById('game-container');
-            if (currentResValue === 'fullscreen') {
-                container.style.transform = 'none';
-                container.style.width = '100vw';
-                container.style.height = '100vh';
-                CANVAS_WIDTH = window.innerWidth;
-                CANVAS_HEIGHT = window.innerHeight;
-                myCanvas.width = CANVAS_WIDTH;
-                myCanvas.height = CANVAS_HEIGHT;
-            } else {
-                container.style.transform = 'none';
-                let parts = currentResValue.split('x'); 
-                let w = parseInt(parts[0]) || 640; 
-                let h = parseInt(parts[1]) || 480;
-                CANVAS_WIDTH = w;
-                CANVAS_HEIGHT = h;
-                myCanvas.width = w;
-                myCanvas.height = h;
-
-                let scaleX = window.innerWidth / w;
-                let scaleY = window.innerHeight / h;
-                let scale = Math.min(scaleX, scaleY);
-                container.style.width = w + 'px';
-                container.style.height = h + 'px';
-                container.style.transform = `scale(${scale})`;
-            }
+            container.style.width = window.innerWidth + 'px';
+            container.style.height = window.innerHeight + 'px';
+            container.style.transform = 'none'; // Ensure perfect fullscreen sizing
+            CANVAS_WIDTH = window.innerWidth;
+            CANVAS_HEIGHT = window.innerHeight;
+            myCanvas.width = CANVAS_WIDTH;
+            myCanvas.height = CANVAS_HEIGHT;
             if (bird && game_mode === 'waiting_for_website') { bird.x = CANVAS_WIDTH / 3; bird.y = CANVAS_HEIGHT / 2; }
         }
         window.addEventListener('resize', applyScale);
@@ -610,7 +576,7 @@
             'bg1.png', 'bg2.png', 'bg3.png', 'bg4.png', 'bg5.png',
             'main_menu.mp3', 'woof.mp3', 'bg_song.mp3', 'void.mp3', 'song_connector.mp3', 'alarm_clock.mp3',
             'breathing.mp3', 'shield_breaking.mp3', 'damage.mp3', 'explosion.mp3', 'nose.mp3', 'button.mp3', 'buy.mp3',
-            'dash.mp3', 'boss_1.mp3', 'boss_2.mp3'
+            'dash.mp3', 'boss_1.mp3', 'boss_2.mp3', 'death.mp3'
         ];
         
         let assetsLoaded = 0;
@@ -988,25 +954,6 @@ window.triggerPvpTrashTalk = async function() {
 
         let CANVAS_WIDTH = 640; 
         let CANVAS_HEIGHT = 480;
-        let currentResValue = "640x480";
-
-        window.changeResolution = function(val) {
-            playClickSound();
-            if (game_mode !== 'waiting_for_website') { alert("You can only change the resolution from the Main Menu!"); document.getElementById('res-select').value = currentResValue; return; }
-            currentResValue = val; localStorage.setItem('flappyRes', val); 
-            
-            if (currentResValue === 'fullscreen') {
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen().catch(e=>console.log(e));
-                }
-            } else {
-                if (document.fullscreenElement && document.exitFullscreen) {
-                    document.exitFullscreen().catch(e=>console.log(e));
-                }
-            }
-            applyScale();
-            if(backgroundImages[0] && backgroundImages[0].complete && game_mode === 'waiting_for_website') { ctx.drawImage(backgroundImages[0], 0, 0, myCanvas.width, myCanvas.height); }
-        }
 
         var game_mode = 'waiting_for_website'; var myCanvas, ctx; var gameInterval = null; var FPS = 40; let isPaused = false; let voidUIErrorTimer = 0; 
         const BOSS_IMG = new Image(); BOSS_IMG.src = 'boss.png'; const BOSS2_IMG = new Image(); BOSS2_IMG.src = 'boss_2.png'; const PLAYER_IMG = new Image(); PLAYER_IMG.src = 'player.png'; const CHOCO_IMG = new Image(); CHOCO_IMG.src = 'chocolate.png'; const SHIELD_IMG = new Image(); SHIELD_IMG.src = 'shield.png'; const SHIELDED_BIRD_IMG = new Image(); SHIELDED_BIRD_IMG.src = 'player_shielded.png'; const POTION_IMG = new Image(); POTION_IMG.src = 'potion.png'; const SLOW_POTION_IMG = new Image(); SLOW_POTION_IMG.src = 'slow_potion.png'; const STAR_IMG = new Image(); STAR_IMG.src = 'dryfood.png'; const DOORDASH_IMG = new Image(); DOORDASH_IMG.src = 'doordash_cheetos.png'; const PORTAL_IMG = new Image(); PORTAL_IMG.src = 'portal.png'; const ELLIE_IMG = new Image(); ELLIE_IMG.src = 'ellie.png'; var bottom_bar = new Image(); bottom_bar.src = 'red.png'; var pipe_piece = new Image(); pipe_piece.src = 'wall.png';
@@ -1015,10 +962,10 @@ window.triggerPvpTrashTalk = async function() {
         let masterMusicVol = 0.3; let masterSFXVol = 0.5;
         const mainMenuMusic = new Audio('main_menu.mp3'); mainMenuMusic.loop = true; mainMenuMusic.volume = masterMusicVol; const flapSound = new Audio('woof.mp3'); flapSound.volume = masterSFXVol * 0.5; const bgMusic = new Audio('bg_song.mp3'); bgMusic.loop = true; bgMusic.volume = masterMusicVol * 1.5; const voidMusic = new Audio('void.mp3'); voidMusic.loop = true; voidMusic.volume = masterMusicVol * 3.0; const connectorMusic = new Audio('song_connector.mp3'); connectorMusic.loop = false; connectorMusic.volume = masterMusicVol * 2.5; const boss1Music = new Audio('boss_1.mp3'); boss1Music.loop = true; boss1Music.volume = masterMusicVol * 1.5; const boss2Music = new Audio('boss_2.mp3'); boss2Music.loop = true; boss2Music.volume = masterMusicVol * 1.5;
         connectorMusic.onended = function() { if (!musicMuted && (game_mode === 'running' || game_mode === 'pvp_shetos')) { voidMusic.currentTime = 0; voidMusic.play().catch(e => console.log(e)); } };
-        const alarmSound = new Audio('alarm_clock.mp3'); alarmSound.volume = masterSFXVol; const breathingSound = new Audio('breathing.mp3'); breathingSound.volume = masterSFXVol; const shieldBreakSound = new Audio('shield_breaking.mp3'); shieldBreakSound.volume = masterSFXVol; const damageSound = new Audio('damage.mp3'); damageSound.volume = masterSFXVol; const explosionSound = new Audio('explosion.mp3'); explosionSound.volume = masterSFXVol; const noseSound = new Audio('nose.mp3'); noseSound.volume = masterSFXVol; const buttonSound = new Audio('button.mp3'); buttonSound.volume = masterSFXVol; const buySound = new Audio('buy.mp3'); buySound.volume = masterSFXVol; const dashSound = new Audio('dash.mp3'); dashSound.volume = masterSFXVol;
+        const alarmSound = new Audio('alarm_clock.mp3'); alarmSound.volume = masterSFXVol; const breathingSound = new Audio('breathing.mp3'); breathingSound.volume = masterSFXVol; const shieldBreakSound = new Audio('shield_breaking.mp3'); shieldBreakSound.volume = masterSFXVol; const damageSound = new Audio('damage.mp3'); damageSound.volume = masterSFXVol; const explosionSound = new Audio('explosion.mp3'); explosionSound.volume = masterSFXVol; const noseSound = new Audio('nose.mp3'); noseSound.volume = masterSFXVol; const buttonSound = new Audio('button.mp3'); buttonSound.volume = masterSFXVol; const buySound = new Audio('buy.mp3'); buySound.volume = masterSFXVol; const dashSound = new Audio('dash.mp3'); dashSound.volume = masterSFXVol; const deathSound = new Audio('death.mp3'); deathSound.volume = masterSFXVol;
 
         window.updateMusicVolume = function(val) { masterMusicVol = parseFloat(val); mainMenuMusic.volume = masterMusicVol; bgMusic.volume = masterMusicVol * 1.5; voidMusic.volume = masterMusicVol * 3.0; connectorMusic.volume = masterMusicVol * 2.5; boss1Music.volume = masterMusicVol * 1.5; boss2Music.volume = masterMusicVol * 1.5; }
-        window.updateSFXVolume = function(val) { masterSFXVol = parseFloat(val); flapSound.volume = masterSFXVol * 0.5; alarmSound.volume = masterSFXVol; breathingSound.volume = masterSFXVol; shieldBreakSound.volume = masterSFXVol; damageSound.volume = masterSFXVol; explosionSound.volume = masterSFXVol; noseSound.volume = masterSFXVol; buttonSound.volume = masterSFXVol; buySound.volume = masterSFXVol; dashSound.volume = masterSFXVol; }
+        window.updateSFXVolume = function(val) { masterSFXVol = parseFloat(val); flapSound.volume = masterSFXVol * 0.5; alarmSound.volume = masterSFXVol; breathingSound.volume = masterSFXVol; shieldBreakSound.volume = masterSFXVol; damageSound.volume = masterSFXVol; explosionSound.volume = masterSFXVol; noseSound.volume = masterSFXVol; buttonSound.volume = masterSFXVol; buySound.volume = masterSFXVol; dashSound.volume = masterSFXVol; deathSound.volume = masterSFXVol; }
 
         let voidBreathingCount = 0; const MAX_BREATHING = 2; let musicMuted = false; let sfxMuted = false;
         window.addEventListener('click', () => { if(mainMenuMusic.paused && !musicMuted && game_mode === 'waiting_for_website') { mainMenuMusic.play().catch(e => console.log("Music auto-started")); } }, {once: true});
@@ -1337,7 +1284,7 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
                 if (!myHasCrashed) { 
                     myHasCrashed = true; 
                     window.roundEnding = false; 
-                    if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} 
+                    if(!sfxMuted){deathSound.currentTime = 0; deathSound.play().catch(e=>console.warn(e));} 
                     if (game_mode === 'online_match') { 
                         if (!activeMatchID) return triggerGameOver(msg); 
                         let updateData = {}; 
@@ -1363,15 +1310,13 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
             if (currentSkinKey === 'custom') { let tempImg = new Image(); tempImg.onload = function() { bird.MyImg = tempImg; }; tempImg.src = SKINS[customStats.visualSkin] ? SKINS[customStats.visualSkin].src : 'player.png'; } else if (!SKINS[currentSkinKey]) { currentSkinKey = 'default'; localStorage.setItem('currentSkin', 'default'); }
             bird.x = myCanvas.width / 3; bird.y = myCanvas.height / 2; bird.angle = 0; bird.velocity_y = 0; pipes = []; stars = []; shields = []; potions = []; slowPotions = []; errorSigns = []; trailHistory = []; portals = []; currentScore = 0; pipe_spawn_timer = 0; floatingTexts = []; myCanvas.style.filter = "none";
             
-            let savedRes = localStorage.getItem('flappyRes'); if(savedRes) currentResValue = savedRes;
             let container = document.getElementById('game-container');
-            if (currentResValue === 'fullscreen') {
-                CANVAS_WIDTH = window.innerWidth;
-                CANVAS_HEIGHT = window.innerHeight;
-            } else { 
-                let parts = currentResValue.split('x'); CANVAS_WIDTH = parseInt(parts[0]) || 640; CANVAS_HEIGHT = parseInt(parts[1]) || 480; 
-            }
-            myCanvas.width = CANVAS_WIDTH; myCanvas.height = CANVAS_HEIGHT; container.classList.remove('portrait-shake');
+            CANVAS_WIDTH = window.innerWidth;
+            CANVAS_HEIGHT = window.innerHeight;
+            myCanvas.width = CANVAS_WIDTH; 
+            myCanvas.height = CANVAS_HEIGHT; 
+            container.classList.remove('portrait-shake');
+            
             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; showEllieImage = false; bossIntroState = 0; bossIntroTimer = 0; isBoss2 = false; boss2Hits = 0; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; hasPortalSpawnedInThisArea = false; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; transitionText = AREA_NAMES[0]; transitionTimer = 80; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; 
 
             isSherlockActive = false; sherlockCooldown = 0; sherlockTimer = 0;
@@ -1401,7 +1346,7 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
         let canQuitTimer = 0;
         function Do_a_Frame() {
             try {
-                if (game_mode === 'waiting_for_website') { document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none'); let savedRes = localStorage.getItem('flappyRes'); if(savedRes && document.getElementById('res-select').value !== savedRes) { document.getElementById('res-select').value = savedRes; currentResValue = savedRes; changeResolution(savedRes); } return; }
+                if (game_mode === 'waiting_for_website') { document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none'); return; }
                 if (game_mode === 'over_black_screen') { ctx.fillStyle = "black"; ctx.fillRect(0, 0, myCanvas.width, myCanvas.height); if (showEllieImage && ELLIE_IMG.complete && ELLIE_IMG.naturalWidth !== 0) { let imgW = ELLIE_IMG.naturalWidth; let imgH = ELLIE_IMG.naturalHeight; if (imgW > myCanvas.width * 0.8) { let scale = (myCanvas.width * 0.8) / imgW; imgW *= scale; imgH *= scale; } if (imgH > myCanvas.height * 0.8) { let scale = (myCanvas.height * 0.8) / imgH; imgW *= scale; imgH *= scale; } let imgX = (myCanvas.width - imgW) / 2; let imgY = (myCanvas.height - imgH) / 2; ctx.drawImage(ELLIE_IMG, imgX, imgY, imgW, imgH); } else { ctx.font = '16px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(blackScreenText, myCanvas.width / 2, myCanvas.height / 2); } blackScreenTimer--; if(blackScreenTimer <= 0) { quitToMenu(); } return; }
                 
                 if (isPaused && game_mode !== 'online_match' && game_mode !== 'pvp_shetos') return; if (!ctx) return;
@@ -1790,7 +1735,7 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
                 }
             }
             canQuitTimer = 60;
-            if(!sfxMuted){damageSound.currentTime=0; damageSound.play().catch(e=>{});}
+            if(!sfxMuted){deathSound.currentTime=0; deathSound.play().catch(e=>{});}
             bgMusic.pause(); voidMusic.pause(); boss1Music.pause(); boss2Music.pause(); connectorMusic.pause();
             totalGamesPlayed++;
             localStorage.setItem('flappyGamesPlayed', totalGamesPlayed);
@@ -1818,4 +1763,4 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
         setInterval(Do_a_Frame, 1000 / FPS);
 </script>
 </body>
-    </html>
+</html>
