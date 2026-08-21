@@ -35,20 +35,20 @@
         .btn-blue { background: #3498db; color: white; border-color: white; text-shadow: none; }
         .btn-red { background: #e74c3c; color: white; border-color: white; text-shadow: none; }
         
-        #landing-page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #041820; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #landing-page h1 { font-family: 'Pacifico', cursive; font-size: 50px; color: #f1c40f; margin-bottom: 10px; text-shadow: 2px 2px #e67e22; text-align: center; }
+        #landing-page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #041820; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; padding: 50px 16px 56px 16px; box-sizing: border-box; gap: 6px; -webkit-overflow-scrolling: touch; }
+        #landing-page h1 { font-family: 'Pacifico', cursive; font-size: clamp(28px, 6vw, 50px); color: #f1c40f; margin: 0 0 6px 0; text-shadow: 2px 2px #e67e22; text-align: center; line-height: 1.2; }
         
-        #splash-text { position: absolute; top: 25%; right: 15%; color: #ffff00; font-family: 'Press Start 2P', cursive; font-size: 10px; transform: rotate(-15deg); text-shadow: 2px 2px #000; animation: pulse-splash 0.5s alternate infinite; pointer-events: none; z-index: 60; max-width: 200px; text-align: center; }
+        #splash-text { position: absolute; top: 18%; right: 12%; color: #ffff00; font-family: 'Press Start 2P', cursive; font-size: clamp(7px, 1.5vw, 10px); transform: rotate(-15deg); text-shadow: 2px 2px #000; animation: pulse-splash 0.5s alternate infinite; pointer-events: none; z-index: 60; max-width: 180px; text-align: center; }
         @keyframes pulse-splash { 0% { transform: rotate(-15deg) scale(1); } 100% { transform: rotate(-15deg) scale(1.1); } }
 
-        .menu-stats { display: flex; gap: 15px; margin-bottom: 20px; }
-        .stat-box { background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 5px; text-align: center; border: 1px solid #fff; font-size: 12px; }
-        .stat-val { font-size: 18px; font-weight: bold; color: #f1c40f; }
+        .menu-stats { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; justify-content: center; max-width: 100%; }
+        .stat-box { background: rgba(255, 255, 255, 0.1); padding: 8px 6px; border-radius: 5px; text-align: center; border: 1px solid #fff; font-size: 11px; min-width: 68px; flex: 1 1 68px; max-width: 90px; }
+        .stat-val { font-size: 16px; font-weight: bold; color: #f1c40f; }
         
-        .menu-buttons { display: flex; flex-direction: column; gap: 10px; width: 320px; }
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+        .menu-buttons { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 320px; flex-shrink: 0; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
         
-        .preview-img { width: 80px; height: 80px; margin-bottom: 20px; cursor: pointer; transition: transform 0.2s; } .preview-img:hover { transform: scale(1.2); }
+        .preview-img { width: 60px; height: 60px; margin-bottom: 10px; cursor: pointer; transition: transform 0.2s; flex-shrink: 0; } .preview-img:hover { transform: scale(1.2); }
         
         #user-profile { position: absolute; top: 10px; right: 10px; z-index: 60; display: flex; align-items: center; gap: 10px; }
         .user-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; display: none; }
@@ -85,7 +85,8 @@
         .vol-slider { width: 100px; cursor: pointer; }
         
         
-        #mode-select-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 80; flex-direction: column; align-items: center; justify-content: center; }
+        #mode-select-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 80; flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; padding: 20px 16px; box-sizing: border-box; -webkit-overflow-scrolling: touch; }
+        #mode-main-menu, #pvp-sub-menu { padding-top: 10px; padding-bottom: 10px; }
         #mode-main-menu, #pvp-sub-menu { display: flex; flex-direction: column; gap: 15px; align-items: center; }
         .mode-card { width: 250px; padding: 15px; border: 2px solid white; border-radius: 10px; text-align: center; cursor: pointer; transition: transform 0.2s; }
         .mode-card:hover { transform: scale(1.05); }
@@ -150,6 +151,35 @@
         .rotate-title { font-family: 'Press Start 2P', cursive; font-size: 20px; color: #f1c40f; margin-top: 24px; line-height: 1.6; }
         .rotate-sub { font-family: Arial, sans-serif; font-size: 14px; color: #ccc; margin-top: 14px; }
         @keyframes rotate-phone { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(90deg); } }
+
+        /* --- Responsive: mobile / short height fixes for landing page --- */
+        @media (max-height: 600px) {
+            #landing-page { justify-content: flex-start; padding-top: 40px; padding-bottom: 40px; }
+            #landing-page h1 { font-size: 26px; margin-bottom: 4px; }
+            .preview-img { width: 48px; height: 48px; margin-bottom: 8px; }
+            .menu-stats { gap: 6px; margin-bottom: 8px; }
+            .stat-box { padding: 6px 4px; font-size: 10px; min-width: 60px; }
+            .stat-val { font-size: 13px; }
+            .menu-buttons { gap: 6px; max-width: 280px; }
+            .enter-btn, button { padding: 8px; font-size: 10px; }
+            #btn-play { font-size: 13px !important; padding: 10px !important; }
+            #splash-text { top: 14%; right: 8%; font-size: 7px; max-width: 130px; }
+        }
+        @media (min-height: 700px) {
+            #landing-page { justify-content: center; }
+            #mode-select-modal { justify-content: center; }
+        }
+        @media (max-width: 380px) {
+            .menu-buttons { max-width: 92vw; }
+            .menu-grid { gap: 6px; }
+            .stat-box { min-width: 62px; }
+        }
+        .landing-footer { position: absolute; bottom: 8px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 12px; pointer-events: none; font-size: 11px; color: rgba(255,255,255,0.6); box-sizing: border-box; z-index: 55; }
+        .landing-footer a, .landing-footer span { pointer-events: auto; }
+        @media (max-height: 500px) {
+            .landing-footer { position: relative; bottom: auto; left: auto; right: auto; margin-top: 12px; justify-content: center; gap: 14px; flex-wrap: wrap; padding-bottom: 4px; width: 100%; }
+            #landing-page { padding-bottom: 12px; }
+        }
 
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); border-radius: 4px; }
@@ -415,10 +445,10 @@
                  <button class="enter-btn btn-yellow btn-full-width" id="btn-redeem" data-i18n="redeem" style="font-size: 12px;" onclick="playClickSound(); openRedeemModal()">REDEEM CODE</button>
              </div>
              
-             <div style="position: absolute; bottom: 10px; left: 15px; color: rgba(255, 255, 255, 0.6); font-family: sans-serif; font-size: 12px; z-index: 100; pointer-events: auto;"><span data-i18n="bugsAdvice">Bugs/Advice:</span> Flyingshetos@gmail.com</div>
-             <div style="position: absolute; bottom: 10px; right: 15px; z-index: 100; pointer-events: auto;">
-                 <a href="#" onclick="openPrivacyPolicy(); return false;" style="color: rgba(255, 255, 255, 0.6); font-family: sans-serif; font-size: 12px; text-decoration: underline;" data-i18n="privacyLink">Privacy Policy</a>
-             </div>
+            <div class="landing-footer">
+                <span><span data-i18n="bugsAdvice">Bugs/Advice:</span> Flyingshetos@gmail.com</span>
+                <a href="#" onclick="openPrivacyPolicy(); return false;" style="color: rgba(255, 255, 255, 0.6); font-family: sans-serif; font-size: 12px; text-decoration: underline;" data-i18n="privacyLink">Privacy Policy</a>
+            </div>
          </div> 
          
          <div id="achievementsModal" class="modal">
@@ -832,6 +862,51 @@
                      redeemedCodes: redeemedCodes
                  }, {merge: true});
              } catch(e) { console.error("Save Error:", e); }
+         }
+
+         // --- ENDLESS LEADERBOARD FIX: submit score to Firestore ---
+         async function submitEndlessScore(score) {
+             if (!isEndless) return;
+             if (score <= 0) return;
+             if (!db) { console.warn("No DB, cannot submit leaderboard"); return; }
+             if (!currentUser) {
+                 console.warn("Not logged in: leaderboard requires login. Score", score, "saved locally as", endlessHighScore);
+                 showCheatFeedback("Login to save leaderboard score!");
+                 return;
+             }
+             try {
+                 const name = currentUser.displayName || "Player";
+                 const photo = currentUser.photoURL || "";
+                 const uid = currentUser.uid;
+                 const ts = firebase.firestore.FieldValue.serverTimestamp();
+                 // All-time leaderboard
+                 const allRef = db.collection('scores_v5_5').doc(uid);
+                 try {
+                     const allSnap = await allRef.get();
+                     if (!allSnap.exists || score > (allSnap.data().score || 0)) {
+                         await allRef.set({ name, photo, score, uid, timestamp: ts }, {merge: true});
+                         console.log("All-time leaderboard updated:", score);
+                     } else {
+                         console.log("All-time score not higher", score, "existing", allSnap.data().score);
+                     }
+                 } catch(e) { console.error("All-time submit error", e); await allRef.set({ name, photo, score, uid, timestamp: ts }, {merge: true}); }
+                 // Weekly leaderboard
+                 const weeklyRef = db.collection('weekly_scores_v5_5').doc(uid);
+                 try {
+                     const weeklySnap = await weeklyRef.get();
+                     if (!weeklySnap.exists || score > (weeklySnap.data().score || 0)) {
+                         await weeklyRef.set({ name, photo, score, uid, timestamp: ts }, {merge: true});
+                         console.log("Weekly leaderboard updated:", score);
+                     }
+                 } catch(e) { console.error("Weekly submit error", e); await weeklyRef.set({ name, photo, score, uid, timestamp: ts }, {merge: true}); }
+                 showCheatFeedback("Score saved to leaderboard!");
+             } catch(e) {
+                 console.error("Leaderboard submit failed:", e);
+                 try {
+                     await db.collection('scores_v5_5').add({ name: currentUser.displayName || "Player", photo: currentUser.photoURL || "", score, uid: currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                     await db.collection('weekly_scores_v5_5').add({ name: currentUser.displayName || "Player", photo: currentUser.photoURL || "", score, uid: currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                 } catch(e2) { console.error("Fallback also failed", e2); }
+             }
          }
 
          window.closeAllModals = function() {
@@ -1879,6 +1954,11 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
              localStorage.setItem('flappyGamesPlayed', totalGamesPlayed);
              updateMenuStats();
              saveUserData();
+             // Fix: submit endless score to leaderboard when in endless mode
+             if (isEndless) {
+                 // currentScore is already saved as endlessHighScore if higher; submit it
+                 submitEndlessScore(currentScore);
+             }
              document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none');
          }
 
