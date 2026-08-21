@@ -695,7 +695,7 @@
          };
 
          const firebaseConfig = {
-             apiKey: "AQ.Ab8RN6JcUnPF2h4IsQcdRb_NrALSetTTr1FpFhCg8RVpOoe-kQ",
+             apiKey: "AIzaSyACfcQJbIHDu_yeax7ALaTTMi7AQGMN0to",
              authDomain: "flyingshetos.firebaseapp.com",
              databaseURL: "https://flyingshetos-default-rtdb.europe-west1.firebasedatabase.app",
              projectId: "flyingshetos",
@@ -1001,7 +1001,7 @@
          }
 
 async function fetchGeminiResponse(userText, liveScore, liveHigh, dryFood, playerName, lbText) {
-             const API_KEY = "AQ.Ab8RN6JcUnPF2h4IsQcdRb_NrALSetTTr1FpFhCg8RVpOoe-kQ"; 
+             const API_KEY = "AIzaSyACfcQJbIHDu_yeax7ALaTTMi7AQGMN0to"; 
              const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
              let scoreContext = game_mode === 'waiting_for_website' ? `They are sitting in the main menu (not playing), so their live score is 0.` : `They are actively playing right now with a live score of ${liveScore}.`;
              const systemInstruction = `You are playing a fictional role: Shetos, an arrogant but funny dog boss inside a 2D indie game called "Flying Shetos" created by Omar (who has curly hair). You are talking to the player: ${playerName}. ${scoreContext} Their all-time high score is ${liveHigh} and they have ${dryFood} Dry Food (currency). Leaderboard Data: ${lbText}\nRules for responding:\n1. Be arrogant, witty, and sarcastic. Act like you are the best player in the world.\n2. DO NOT use any curse words at all. Keep it PG-rated.\n3. Poke fun at their high score, their lack of dry food, or compare them to the top players on the Leaderboard.\n4. Keep responses to 1 or 2 short sentences. All lowercase. No emojis.\n5. GAME COMMANDS: If asked to mute/unmute music or sound effects, secretly include ONE of these exact tags: [CMD:MUTE_MUSIC], [CMD:PLAY_MUSIC], [CMD:MUTE_SFX], [CMD:PLAY_SFX].`;
