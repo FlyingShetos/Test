@@ -929,7 +929,7 @@
                          activeInviteMatchId = data.matchId;
                          document.getElementById('inviteText').innerText = `${data.hostName} ${getLangText("challengedYou")}`;
                          document.getElementById('inviteModal').style.display = 'block';
-                         playPowerUpSound();
+                         playClickSound();
                      }
                  });
              });
@@ -989,7 +989,7 @@
                  localStorage.setItem('flappyTrophies', onlineTrophies); 
                  saveUserData(); 
                  updateMenuStats(); 
-                 playPowerUpSound(); 
+                 if(!sfxMuted){buySound.currentTime=0; buySound.play().catch(e=>{});} 
                  if (isUnlimited) {
                      showCheatFeedback(getLangText("unlimitedAir"));
                  } else {
@@ -1100,7 +1100,7 @@ window.triggerPvpTrashTalk = async function() {
          try { let cTrail = JSON.parse(localStorage.getItem('flappyCustomTrail')); if(cTrail) customTrailColors = {...customTrailColors, ...cTrail}; } catch(e) {}
 
          window.openLabMenu = function() { closeAllModals(); document.getElementById('labModal').style.display = 'block'; if (labUnlocked) { document.getElementById('lab-locked').style.display = 'none'; document.getElementById('lab-unlocked').style.display = 'block'; refreshLabUI(); } else { document.getElementById('lab-locked').style.display = 'block'; document.getElementById('lab-unlocked').style.display = 'none'; } }
-         window.purchaseLab = function() { playClickSound(); if (collectedStars >= 1500) { collectedStars -= 1500; localStorage.setItem('flappyStars', collectedStars); labUnlocked = true; localStorage.setItem('flappyLabUnlocked', 'true'); updateMenuStats(); saveUserData(); playPowerUpSound(); openLabMenu(); } else { alert("Not enough Dry Food! You need 1500."); } }
+         window.purchaseLab = function() { playClickSound(); if (collectedStars >= 1500) { collectedStars -= 1500; localStorage.setItem('flappyStars', collectedStars); labUnlocked = true; localStorage.setItem('flappyLabUnlocked', 'true'); updateMenuStats(); saveUserData(); if(!sfxMuted){buySound.currentTime=0; buySound.play().catch(e=>{});} openLabMenu(); } else { alert("Not enough Dry Food! You need 1500."); } }
 
          function refreshLabUI() {
              let usedPts = customStats.lives + customStats.dashes + customStats.bombs + (customStats.shrinks || 0) + (customStats.widens || 0);
@@ -1165,7 +1165,7 @@ window.triggerPvpTrashTalk = async function() {
              document.getElementById('lab-skin-preview').src = SKINS[customStats.visualSkin].src;
          }
 
-         window.saveAndEquipCustom = function() { playPowerUpSound(); localStorage.setItem('flappyCustomStats', JSON.stringify(customStats)); localStorage.setItem('flappyCustomTrail', JSON.stringify(customTrailColors)); saveUserData(); for (let k in SKINS) { SKINS[k].current = false; } for (let k in TRAILS) { TRAILS[k].current = false; } currentSkinKey = 'custom'; currentTrailKey = 'trail_custom'; localStorage.setItem('currentSkin', 'custom'); localStorage.setItem('currentTrail', 'trail_custom'); let tempImg = new Image(); tempImg.onload = function() { bird.MyImg = tempImg; }; tempImg.src = SKINS[customStats.visualSkin] ? SKINS[customStats.visualSkin].src : 'player.png'; closeModal('labModal'); showCheatFeedback(getLangText("customEquipped")); updateAbilityButtons(); }
+         window.saveAndEquipCustom = function() { if(!sfxMuted){buySound.currentTime=0; buySound.play().catch(e=>{});}  localStorage.setItem('flappyCustomStats', JSON.stringify(customStats)); localStorage.setItem('flappyCustomTrail', JSON.stringify(customTrailColors)); saveUserData(); for (let k in SKINS) { SKINS[k].current = false; } for (let k in TRAILS) { TRAILS[k].current = false; } currentSkinKey = 'custom'; currentTrailKey = 'trail_custom'; localStorage.setItem('currentSkin', 'custom'); localStorage.setItem('currentTrail', 'trail_custom'); let tempImg = new Image(); tempImg.onload = function() { bird.MyImg = tempImg; }; tempImg.src = SKINS[customStats.visualSkin] ? SKINS[customStats.visualSkin].src : 'player.png'; closeModal('labModal'); showCheatFeedback(getLangText("customEquipped")); updateAbilityButtons(); }
 
          let CANVAS_WIDTH = 640; 
          let CANVAS_HEIGHT = 480;
@@ -1186,7 +1186,7 @@ window.triggerPvpTrashTalk = async function() {
          window.addEventListener('click', () => { if(mainMenuMusic.paused && !musicMuted && game_mode === 'waiting_for_website') { mainMenuMusic.play().catch(e => console.log("Music auto-started")); } }, {once: true});
 
          let boss = { x: 9999, y: 100, width: 150, height: 150, stamina: 100, speedY: 2, movingIn: true }; let chocolates = []; let victoryTimer = 0; let deathMessage = "Game Over"; let bossIntroState = 0; let bossIntroTimer = 0; let boss1Defeated = false; let isBoss2 = false; let boss2Hits = 0; const BOSS2_MAX_HITS = 5; let deleteBtnTimer = 0; let deleteBtnSpawnTimer = 0; let errorSigns = []; let errorSignCooldown = 0; 
-         function getAreaName(i) { return getLangText("area" + i); } const GLITCH_TEXTS = ["thats not the reality", "404", "not found", "wake up", "null", "error"]; let currentBGIndex = 0; let transitionText = ""; let transitionTimer = 0; let flashColor = null; let flashTimer = 0; let levelReached = 1; let portals = []; const PORTAL_CHANCE = 0.02; let hasPortalSpawnedInThisArea = false; let cheatBuffer = ""; let floatingTexts = []; 
+         function getAreaName(i) { return getLangText("area" + i); } const GLITCH_TEXTS = ["thats not the reality", "404", "not found", "wake up", "null", "error"]; let currentBGIndex = 0; let transitionText = ""; let transitionTimer = 0; let flashColor = null; let flashTimer = 0; let bgLagTimer = 0; let levelReached = 1; let portals = []; const PORTAL_CHANCE = 0.02; let hasPortalSpawnedInThisArea = false; let cheatBuffer = ""; let floatingTexts = []; 
          var jump_amount = -7; var max_fall_speed = +8; var acceleration = 0.6; const SUPER_JUMP_AMOUNT = -3.8; const SUPER_ACCELERATION = 0.18; const SUPER_MAX_FALL_SPEED = +3.5; const VOID_ACCEL = 0.35; const VOID_MAX_FALL = 6.0; const MAGNET_RADIUS = 300; const INITIAL_LIVES = 3; let currentLives = 0; const MAX_DESTROY_CHARGES = 5; let wallDestroyCharges = 0; const WALLS_TO_DESTROY = 2; let dashCharges = 0; let isDashActive = false; const DASH_DURATION = 68; let dashTimer = 0; let shrinkCharges = 0; let isShrunk = false; let shrinkTimer = 0; const SHRINK_DURATION = 160; let widenCharges = 0; let isWidenActive = false; let widenTimer = 0; const WIDEN_DURATION = 240; let heisenBlinkTimer = 0; let pipe_speed = -2; let currentSpawnInterval = 2500; let speedMultiplier = 1; let trailRedTimer = 0; let trailGoldTimer = 0;
          var time_game_last_running; var bottom_bar_offset = 0; var pipes = []; var pipe_spawn_timer = 0; let currentScore = 0; let lastPipeY = 250; let totalGamesPlayed = 0; try { totalGamesPlayed = parseInt(localStorage.getItem('flappyGamesPlayed')) || 0; } catch(e) {}
          const SHIELD_DURATION_FRAMES = 240; const POTION_DURATION_FRAMES = 600; const SLOW_POTION_DURATION_FRAMES = 400; const SHIELD_SPAWN_CHANCE = 0.10; const POTION_SPAWN_CHANCE = 0.10; const SLOW_POTION_SPAWN_CHANCE = 0.08;
@@ -1423,12 +1423,12 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          function drawTimerBar(percent, color, label, stackIndex) { let barW = 200; let barH = 12; let barX = (CANVAS_WIDTH - barW) / 2; let barY = 50 + (stackIndex * 20); ctx.fillStyle = "black"; ctx.fillRect(barX, barY, barW, barH); ctx.fillStyle = color; ctx.fillRect(barX, barY, barW * percent, barH); ctx.strokeStyle = "white"; ctx.lineWidth = 2; ctx.strokeRect(barX, barY, barW, barH); ctx.fillStyle = "white"; ctx.font = "bold 10px Arial"; ctx.textAlign = "center"; ctx.fillText(label, barX + barW/2, barY + 10); }
 
          window.triggerDash = function() { if (!(currentSkinKey === 'doordash' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && dashCharges > 0)) || dashCharges <= 0 || isDashActive || (game_mode !== 'running' && game_mode !== 'online_match' && game_mode !== 'pvp_shetos' && game_mode !== 'boss') || isPaused) return; dashCharges--; isDashActive = true; dashTimer = DASH_DURATION; if(!sfxMuted) { dashSound.currentTime = 0; dashSound.play().catch(e => console.log(e)); } triggerFlash("rgba(255,165,0,0.3)"); }
-         window.triggerShrink = function() { if (!(currentSkinKey === 'luigi' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && shrinkCharges > 0)) || shrinkCharges <= 0 || isShrunk || (game_mode !== 'running' && game_mode !== 'online_match' && game_mode !== 'pvp_shetos' && game_mode !== 'boss') || isPaused) return; shrinkCharges--; isShrunk = true; shrinkTimer = SHRINK_DURATION; playPowerUpSound(); triggerFlash("rgba(46, 204, 113, 0.3)"); }
-         window.triggerWiden = function() { if (!(currentSkinKey === 'heisenbark' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && widenCharges > 0)) || widenCharges <= 0 || isWidenActive || (game_mode !== 'running' && game_mode !== 'online_match' && game_mode !== 'pvp_shetos' && game_mode !== 'boss') || isPaused) return; widenCharges--; isWidenActive = true; widenTimer = WIDEN_DURATION; playPowerUpSound(); triggerFlash("rgba(155, 89, 182, 0.3)"); for(let i=0; i<pipes.length; i++) { if(pipes[i].x > bird.x - 50 && pipes[i].flipV) { pipes[i].y += 140; if(pipes[i].oscillate) pipes[i].baseY += 140; } } }
+         window.triggerShrink = function() { if (!(currentSkinKey === 'luigi' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && shrinkCharges > 0)) || shrinkCharges <= 0 || isShrunk || (game_mode !== 'running' && game_mode !== 'online_match' && game_mode !== 'pvp_shetos' && game_mode !== 'boss') || isPaused) return; shrinkCharges--; isShrunk = true; shrinkTimer = SHRINK_DURATION; playClickSound(); triggerFlash("rgba(46, 204, 113, 0.3)"); }
+         window.triggerWiden = function() { if (!(currentSkinKey === 'heisenbark' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && widenCharges > 0)) || widenCharges <= 0 || isWidenActive || (game_mode !== 'running' && game_mode !== 'online_match' && game_mode !== 'pvp_shetos' && game_mode !== 'boss') || isPaused) return; widenCharges--; isWidenActive = true; widenTimer = WIDEN_DURATION; playClickSound(); triggerFlash("rgba(155, 89, 182, 0.3)"); for(let i=0; i<pipes.length; i++) { if(pipes[i].x > bird.x - 50 && pipes[i].flipV) { pipes[i].y += 140; if(pipes[i].oscillate) pipes[i].baseY += 140; } } }
          
-         window.triggerSherlock = function() { if (!(currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && customStats.sherlock)) || sherlockCooldown > 0 || isSherlockActive || isPaused || (game_mode !== 'running' && game_mode !== 'boss')) return; isSherlockActive = true; sherlockTimer = 240; playPowerUpSound(); }
-         window.triggerHRBreak = function() { if (!(currentSkinKey === 'employed' || (currentSkinKey === 'custom' && customStats.hrbreak)) || hrBreakCooldown > 0 || isHrBreakActive || isPaused || (game_mode !== 'running' && game_mode !== 'boss')) return; isHrBreakActive = true; hrBreakTimer = 6 * FPS; playPowerUpSound(); triggerFlash("rgba(255, 255, 255, 0.4)"); }
-         window.triggerArthur = function() { if (!(currentSkinKey === 'arthur' || (currentSkinKey === 'custom' && customStats.arthur)) || arthurCooldown > 0 || isArthurActive || isPaused || (game_mode !== 'running' && game_mode !== 'boss')) return; isArthurActive = true; arthurTimer = 5 * FPS; arthurShotUsed = false; myCanvas.style.filter = "sepia(100%) saturate(150%) brightness(80%)"; playPowerUpSound(); }
+         window.triggerSherlock = function() { if (!(currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && customStats.sherlock)) || sherlockCooldown > 0 || isSherlockActive || isPaused || (game_mode !== 'running' && game_mode !== 'boss')) return; isSherlockActive = true; sherlockTimer = 240; playClickSound(); }
+         window.triggerHRBreak = function() { if (!(currentSkinKey === 'employed' || (currentSkinKey === 'custom' && customStats.hrbreak)) || hrBreakCooldown > 0 || isHrBreakActive || isPaused || (game_mode !== 'running' && game_mode !== 'boss')) return; isHrBreakActive = true; hrBreakTimer = 6 * FPS; playClickSound(); triggerFlash("rgba(255, 255, 255, 0.4)"); }
+         window.triggerArthur = function() { if (!(currentSkinKey === 'arthur' || (currentSkinKey === 'custom' && customStats.arthur)) || arthurCooldown > 0 || isArthurActive || isPaused || (game_mode !== 'running' && game_mode !== 'boss')) return; isArthurActive = true; arthurTimer = 5 * FPS; arthurShotUsed = false; myCanvas.style.filter = "sepia(100%) saturate(150%) brightness(80%)"; playClickSound(); }
 
          function updateAbilityButtons() { 
              if (game_mode !== 'waiting_for_website') { 
@@ -1471,14 +1471,27 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
          window.closeFriendChat = function() { document.getElementById('friendChatModal').style.display = 'none'; if (friendChatListener) friendChatListener(); activeFriendChatID = null; }
          window.sendFriendMessage = async function() { const input = document.getElementById('fc-input'); const text = input.value.trim(); if (!text || !activeFriendChatID) return; const chatID = currentUser.uid < activeFriendChatID ? `${currentUser.uid}_${activeFriendChatID}` : `${activeFriendChatID}_${currentUser.uid}`; try { await db.collection('chats').doc(chatID).collection('messages').add({ text: text, senderId: currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); input.value = ''; } catch(e) { console.error("Msg Error", e); } }
          window.cancelMatchSearch = function() { playClickSound(); const loader = document.getElementById('temp-online-loader'); if(loader) loader.remove(); if(activeMatchID) { db.collection('matches').doc(activeMatchID).delete().catch(e=>console.log(e)); activeMatchID = null; } document.getElementById('landing-page').style.display = 'flex'; game_mode = 'waiting_for_website'; }
-         window.hitBossTwo = function() { if (!isBoss2 || game_mode !== 'boss' || deleteBtnTimer <= 0 || isPaused) return; boss2Hits++; playPowerUpSound(); document.getElementById('delete-boss-btn').style.display = 'none'; deleteBtnTimer = 0; triggerFlash("red"); if (boss2Hits >= BOSS2_MAX_HITS) { game_mode = 'terminal_ending'; window.endingState = 0; window.endingTimer = 150; window.terminalPercent = 0; document.getElementById('game-container').className = ""; boss2Music.pause(); boss2Music.currentTime = 0; } }
+         window.hitBossTwo = function() { if (!isBoss2 || game_mode !== 'boss' || deleteBtnTimer <= 0 || isPaused) return; boss2Hits++; playClickSound(); document.getElementById('delete-boss-btn').style.display = 'none'; deleteBtnTimer = 0; triggerFlash("red"); if (boss2Hits >= BOSS2_MAX_HITS) { game_mode = 'terminal_ending'; window.endingState = 0; window.endingTimer = 150; window.terminalPercent = 0; document.getElementById('game-container').className = ""; boss2Music.pause(); boss2Music.currentTime = 0; } }
 
          function triggerFlash(color) { flashColor = color; flashTimer = 10; }
+         function triggerBgLag() { bgLagTimer = 28; triggerFlash("rgba(255,255,255,0.35)"); let c=document.getElementById('game-container'); c.classList.add('shake'); setTimeout(()=>{c.classList.remove('shake');}, 320); }
          function updateMenuStats() { if(document.getElementById('menuHighScore')) { document.getElementById('menuHighScore').innerText = highScore; document.getElementById('menuStars').innerText = collectedStars; document.getElementById('menuTrophies').innerText = onlineTrophies; document.getElementById('menuGamesPlayed').innerText = totalGamesPlayed; } }
          function showCheatFeedback(text) { let el = document.getElementById('cheat-feedback'); el.innerText = text; el.style.display = 'block'; setTimeout(() => { el.style.display = 'none'; }, 2000); }
          function unlockAchievement(id) { let ach = ALL_ACHIEVEMENTS.find(a => a.id === id); if (ach && !ach.unlocked) { ach.unlocked = true; savedAchievements.push(id); localStorage.setItem('flappyAchievements', JSON.stringify(savedAchievements)); if (ach.reward > 0) { collectedStars += ach.reward; localStorage.setItem('flappyStars', collectedStars); updateMenuStats(); showCheatFeedback(getLangText("achReward") + " +" + ach.reward + " " + getLangText("food") + "!"); } } }
-         function triggerPortalEffect() { playPowerUpSound(); let outcome = Math.random() < 0.5 ? 10 : -10; let tempScore = currentScore + outcome; if (tempScore < 0) tempScore = 0; if (currentScore < 50 && tempScore >= 50) { tempScore = 49; } if (currentScore < 100 && tempScore >= 100) { tempScore = 99; } currentScore = tempScore; pipes = []; let oldIndex = currentBGIndex; currentBGIndex = Math.floor(currentScore / 10); if (currentBGIndex > 4) currentBGIndex = 4; if (currentBGIndex < 0) currentBGIndex = 0; hasPortalSpawnedInThisArea = false; updateDifficulty(); if (oldIndex !== currentBGIndex) { if (currentBGIndex === 4) { bgMusic.pause(); bgMusic.currentTime = 0; if (!musicMuted) voidMusic.play(); } else if (oldIndex === 4) { voidMusic.pause(); voidMusic.currentTime = 0; if (!musicMuted) bgMusic.play(); } } if (outcome > 0) { showCheatFeedback(getLangText("warpAhead")); triggerFlash("cyan"); } else { showCheatFeedback(getLangText("warpBack")); triggerFlash("purple"); transitionText = getAreaName(currentBGIndex); transitionTimer = 80; } }
-         function updateDifficulty() { if (currentBGIndex === 0) { pipe_speed = -2; currentSpawnInterval = 2500; } else if (currentBGIndex === 1) { pipe_speed = -3; currentSpawnInterval = 2200; } else if (currentBGIndex === 2) { pipe_speed = -3.5; currentSpawnInterval = 2000; } else if (currentBGIndex === 3) { pipe_speed = -4; currentSpawnInterval = 1800; } else if (currentBGIndex === 4) { pipe_speed = -5; currentSpawnInterval = 1500; } if (isEndless) { pipe_speed -= (currentScore / 50); currentSpawnInterval = Math.max(800, 2500 - (currentScore * 20)); } [shields, stars, potions, slowPotions, portals].forEach(arr => { for (let i = 0; i < arr.length; i++) { arr[i].velocity_x = pipe_speed; } }); }
+         function triggerPortalEffect() { if(!sfxMuted){buttonSound.currentTime=0; buttonSound.play().catch(e=>{});}  let outcome = Math.random() < 0.5 ? 10 : -10; let tempScore = currentScore + outcome; if (tempScore < 0) tempScore = 0; if (currentScore < 50 && tempScore >= 50) { tempScore = 49; } if (currentScore < 100 && tempScore >= 100) { tempScore = 99; } currentScore = tempScore; pipes = []; let oldIndex = currentBGIndex; if (isEndless) { currentBGIndex = 0; hasPortalSpawnedInThisArea = false; updateDifficulty(); } else { currentBGIndex = Math.floor(currentScore / 10); if (currentBGIndex > 4) currentBGIndex = 4; if (currentBGIndex < 0) currentBGIndex = 0; hasPortalSpawnedInThisArea = false; updateDifficulty(); if (oldIndex !== currentBGIndex) { if (currentBGIndex !== 4 && oldIndex !== 4) { triggerBgLag(); } if (currentBGIndex === 4) { bgMusic.pause(); bgMusic.currentTime = 0; if (!musicMuted) voidMusic.play(); } else if (oldIndex === 4) { voidMusic.pause(); voidMusic.currentTime = 0; if (!musicMuted) bgMusic.play(); } } } if (outcome > 0) { showCheatFeedback(getLangText("warpAhead")); triggerFlash("cyan"); } else { showCheatFeedback(getLangText("warpBack")); triggerFlash("purple"); transitionText = getAreaName(currentBGIndex); transitionTimer = 80; } }
+         function updateDifficulty() {
+             if (isEndless) {
+                 // Infinite mode: only beginning background, speed ramps HARD
+                 let base = -3;
+                 let add = currentScore * 0.14 + Math.floor(currentScore/8)*0.6;
+                 pipe_speed = base - add;
+                 if (pipe_speed < -15) pipe_speed = -15 - (currentScore - 80) * 0.02;
+                 if (pipe_speed < -18) pipe_speed = -18;
+                 currentSpawnInterval = Math.max(480, 2400 - (currentScore * 38));
+             } else {
+                 if (currentBGIndex === 0) { pipe_speed = -2; currentSpawnInterval = 2500; } else if (currentBGIndex === 1) { pipe_speed = -3; currentSpawnInterval = 2200; } else if (currentBGIndex === 2) { pipe_speed = -3.5; currentSpawnInterval = 2000; } else if (currentBGIndex === 3) { pipe_speed = -4; currentSpawnInterval = 1800; } else if (currentBGIndex === 4) { pipe_speed = -5; currentSpawnInterval = 1500; }
+             }
+             [shields, stars, potions, slowPotions, portals].forEach(arr => { for (let i = 0; i < arr.length; i++) { arr[i].velocity_x = pipe_speed; } }); }
 
          window.openModeSelect = function() { closeAllModals(); game_mode = 'waiting_for_website'; document.getElementById('landing-page').style.display = 'none'; document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none'); document.getElementById('mode-select-modal').style.display = 'flex'; document.getElementById('modeTrophyDisplay').innerText = onlineTrophies; document.getElementById('mode-main-menu').style.display = 'flex'; document.getElementById('pvp-sub-menu').style.display = 'none'; ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); if(backgroundImages[0] && backgroundImages[0].complete) { ctx.drawImage(backgroundImages[0], 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); } else { ctx.fillStyle = "#4ec0ca"; ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT); } }
          window.closeModeSelect = function() { document.getElementById('mode-select-modal').style.display = 'none'; document.getElementById('landing-page').style.display = 'flex'; }
@@ -1548,9 +1561,9 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
              let minGapY = Math.max(50, lastPipeY - 150); let maxGapY = Math.min(CANVAS_HEIGHT - 150 - gap_width, lastPipeY + 150); if (maxGapY < minGapY) maxGapY = minGapY; let newGapY = Math.floor(Math.random() * (maxGapY - minGapY + 1)) + minGapY; lastPipeY = newGapY;
              var top_pipe = new MySprite(); top_pipe.MyImg = pipe_piece; top_pipe.x = x_pos; top_pipe.y = newGapY - pipe_piece.height; top_pipe.velocity_x = pipe_speed; top_pipe.isScorable = true; 
              var bottom_pipe = new MySprite(); bottom_pipe.MyImg = pipe_piece; bottom_pipe.flipV = true; bottom_pipe.x = x_pos; bottom_pipe.y = newGapY + gap_width; bottom_pipe.velocity_x = pipe_speed;
-             let voidPhase = 0; if (currentBGIndex === 4 || (isEndless && currentScore >= 50)) { voidPhase = Date.now(); top_pipe.oscillate = true; top_pipe.baseY = top_pipe.y; top_pipe.phase = voidPhase; bottom_pipe.oscillate = true; bottom_pipe.baseY = bottom_pipe.y; bottom_pipe.phase = voidPhase; } pipes.push(top_pipe); pipes.push(bottom_pipe);
+             let voidPhase = 0; if (currentBGIndex === 4) { voidPhase = Date.now(); top_pipe.oscillate = true; top_pipe.baseY = top_pipe.y; top_pipe.phase = voidPhase; bottom_pipe.oscillate = true; bottom_pipe.baseY = bottom_pipe.y; bottom_pipe.phase = voidPhase; } pipes.push(top_pipe); pipes.push(bottom_pipe);
              if (!hasPortalSpawnedInThisArea && currentBGIndex !== 4 && Math.random() < PORTAL_CHANCE && !isBoss2 && game_mode !== 'online_match' && !isEndless && game_mode !== 'pvp_shetos') { top_pipe.visible = false; bottom_pipe.visible = false; let p = new MySprite(); p.MyImg = PORTAL_IMG; p.parentPipe = bottom_pipe; p.y = CANVAS_HEIGHT / 2 - 50; portals.push(p); hasPortalSpawnedInThisArea = true; }
-             function syncVoidItem(obj, yPos) { obj.x = x_pos + 16; obj.y = yPos; obj.velocity_x = pipe_speed; if (currentBGIndex === 4 || (isEndless && currentScore >= 50)) { obj.oscillate = true; obj.baseY = obj.y; obj.phase = voidPhase; } return obj; } let rand = Math.random(); if (rand < SHIELD_SPAWN_CHANCE) { let newShield = new MySprite(); newShield.MyImg = SHIELD_IMG; shields.push(syncVoidItem(newShield, newGapY + gap_width/2 - 32)); } else if (rand < SHIELD_SPAWN_CHANCE + POTION_SPAWN_CHANCE) { let newPotion = new MySprite(); newPotion.MyImg = POTION_IMG; potions.push(syncVoidItem(newPotion, newGapY + gap_width/2 - 15)); } else if (rand < SHIELD_SPAWN_CHANCE + POTION_SPAWN_CHANCE + SLOW_POTION_SPAWN_CHANCE) { if (currentScore > 20) { let newSlow = new MySprite(); newSlow.MyImg = SLOW_POTION_IMG; slowPotions.push(syncVoidItem(newSlow, newGapY + gap_width/2 - 15)); } } let currentStarChance = 0.5 + (currentBGIndex * 0.1); if (Math.random() < currentStarChance) { let newStar = new MySprite(); newStar.MyImg = STAR_IMG; stars.push(syncVoidItem(newStar, newGapY + gap_width*0.75 - 10)); }
+             function syncVoidItem(obj, yPos) { obj.x = x_pos + 16; obj.y = yPos; obj.velocity_x = pipe_speed; if (currentBGIndex === 4) { obj.oscillate = true; obj.baseY = obj.y; obj.phase = voidPhase; } return obj; } let rand = Math.random(); if (rand < SHIELD_SPAWN_CHANCE) { let newShield = new MySprite(); newShield.MyImg = SHIELD_IMG; shields.push(syncVoidItem(newShield, newGapY + gap_width/2 - 32)); } else if (rand < SHIELD_SPAWN_CHANCE + POTION_SPAWN_CHANCE) { let newPotion = new MySprite(); newPotion.MyImg = POTION_IMG; potions.push(syncVoidItem(newPotion, newGapY + gap_width/2 - 15)); } else if (rand < SHIELD_SPAWN_CHANCE + POTION_SPAWN_CHANCE + SLOW_POTION_SPAWN_CHANCE) { if (currentScore > 20) { let newSlow = new MySprite(); newSlow.MyImg = SLOW_POTION_IMG; slowPotions.push(syncVoidItem(newSlow, newGapY + gap_width/2 - 15)); } } let currentStarChance = 0.5 + (currentBGIndex * 0.1); if (Math.random() < currentStarChance) { let newStar = new MySprite(); newStar.MyImg = STAR_IMG; stars.push(syncVoidItem(newStar, newGapY + gap_width*0.75 - 10)); }
          }
 
          function display_star_count() { ctx.font = '20px Arial'; ctx.textAlign = 'left'; if (voidUIErrorTimer > 0) { ctx.fillStyle = 'red'; ctx.fillText(getLangText('error'), 10, 80); } else { ctx.fillStyle = 'yellow'; ctx.fillText(getLangText('foodLabel') + collectedStars, 10, 80); } let stackIndex = 0; if (isShieldActive) { let pct = shieldTimer / SHIELD_DURATION_FRAMES; drawTimerBar(pct, "cyan", getLangText("shield"), stackIndex++); } if (isDoubleStarsActive) { let pct = doubleStarTimer / POTION_DURATION_FRAMES; drawTimerBar(pct, "#ff00ff", getLangText("doubleDryfood"), stackIndex++); } if (isSlowMotionActive) { let pct = slowMoTimer / SLOW_POTION_DURATION_FRAMES; drawTimerBar(pct, "#00ffff", getLangText("slowMotion"), stackIndex++); } }
@@ -1712,6 +1725,27 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
                  if (victoryTimer > 0) { ctx.font = 'bold 50px Arial'; ctx.fillStyle = 'lime'; ctx.strokeStyle = 'black'; ctx.lineWidth = 5; ctx.textAlign = 'center'; ctx.strokeText(getLangText("victory"), CANVAS_WIDTH/2, CANVAS_HEIGHT/2); ctx.fillText(getLangText("victory"), CANVAS_WIDTH/2, CANVAS_HEIGHT/2); victoryTimer--; }
                  if (transitionTimer > 0) { ctx.font = 'bold 40px Arial'; ctx.fillStyle = 'white'; ctx.strokeStyle = 'black'; ctx.lineWidth = 4; ctx.textAlign = 'center'; ctx.strokeText(transitionText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2); ctx.fillText(transitionText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2); transitionTimer--; }
                  if (flashTimer > 0) { ctx.fillStyle = flashColor; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); flashTimer--; }
+                 if (bgLagTimer > 0) {
+                     // Lag/glitch transition overlay
+                     bgLagTimer--;
+                     // freeze/slow pipes to simulate lag
+                     // draw lag overlay
+                     ctx.save();
+                     ctx.fillStyle = `rgba(255,255,255,${0.08 + Math.random()*0.12})`;
+                     ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
+                     // glitch lines
+                     for(let gl=0; gl<4; gl++) {
+                         let gy = Math.random()*CANVAS_HEIGHT;
+                         ctx.fillStyle = Math.random()<0.5 ? 'rgba(0,255,0,0.18)' : 'rgba(255,0,0,0.18)';
+                         ctx.fillRect(0, gy, CANVAS_WIDTH, 2+Math.random()*4);
+                     }
+                     ctx.font='bold 18px "Press Start 2P"'; ctx.fillStyle='white'; ctx.textAlign='center'; ctx.strokeStyle='black'; ctx.lineWidth=3;
+                     ctx.strokeText('LOADING...', CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
+                     ctx.fillText('LOADING...', CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
+                     ctx.restore();
+                     // actually slow game during lag
+                     speedMultiplier *= 0.18;
+                 }
                  if (heisenBlinkTimer > 0) { let alpha = Math.abs(Math.sin((heisenBlinkTimer / 80) * Math.PI * 2)); ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); heisenBlinkTimer--; }
 
                  if (isSherlockActive && bird.visible) {
@@ -1845,7 +1879,6 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
                  if (pipes[i].isScorable && !pipes[i].passed && pipes[i].x < bird.x) {
                      pipes[i].passed = true;
                      currentScore++;
-                     if(!sfxMuted){flapSound.currentTime = 0; flapSound.play().catch(e=>console.log(e));}
                      if(currentScore > highScore && !isEndless) {
                          highScore = currentScore;
                          localStorage.setItem('flappyHighScore', highScore);
@@ -1859,6 +1892,10 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
                          currentBGIndex = Math.floor(currentScore / 10);
                          if (currentBGIndex > 4) currentBGIndex = 4;
                          if (oldIndex !== currentBGIndex) {
+                             // Lag transition for every BG except to void
+                             if (oldIndex !== currentBGIndex && currentBGIndex !== 4 && oldIndex !== 4) {
+                                 triggerBgLag();
+                             }
                              transitionText = getAreaName(currentBGIndex) || getLangText("unknownArea");
                              transitionTimer = 80;
                              updateDifficulty();
@@ -1886,9 +1923,10 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
              }
 
              checkPowerups(shields, () => { isShieldActive = true; shieldTimer = SHIELD_DURATION_FRAMES; playPowerUpSound(); });
-             checkPowerups(potions, () => activateDoubleStars());
-             checkPowerups(slowPotions, () => activateSlowMotion());
+             checkPowerups(potions, () => { activateDoubleStars(); playPowerUpSound(); });
+             checkPowerups(slowPotions, () => { activateSlowMotion(); playPowerUpSound(); });
              checkPowerups(stars, () => {
+                 playPowerUpSound();
                  let gain = isDoubleStarsActive ? STAR_VALUE * 2 : STAR_VALUE;
                  collectedStars += gain;
                  localStorage.setItem('flappyStars', collectedStars);
@@ -1926,8 +1964,19 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
                  let dy = bird.y - arr[i].y;
                  let dist = Math.sqrt(dx*dx + dy*dy);
                  if(dist < MAGNET_RADIUS) {
-                     arr[i].x += (dx/dist) * 8;
-                     arr[i].y += (dy/dist) * 8;
+                     // Fix: snap when very close to prevent infinite orbiting / trailing
+                     if(dist < 18) {
+                         arr[i].x = bird.x;
+                         arr[i].y = bird.y;
+                     } else {
+                         let pull = Math.min(14, dist * 0.12 + 6);
+                         arr[i].x += (dx/dist) * pull;
+                         arr[i].y += (dy/dist) * pull;
+                     }
+                     // If item is far behind bird, push it offscreen faster so it doesn't chase forever
+                     if(arr[i].x < bird.x - 120) {
+                         arr[i].x -= 5;
+                     }
                  }
              }
          }
