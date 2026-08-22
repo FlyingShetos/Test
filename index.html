@@ -2195,15 +2195,34 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
         // The old setInterval version drifted and piled up backlog whenever a frame ran
         // long (Firestore snapshots, GC, ...), which made the game stutter and run slow.
         // This version always advances real-time gameplay and never queues a backlog.
-        (function startGameLoop() {
+         (function startGameLoop() {
             const STEP = 1000 / FPS; // fixed logic step (25ms)
             let last = performance.now();
             let accum = 0;
+            // --- "Pre-void lag" ----------------------------------------------------------------
+            // In THE NIGHT (the area right before the Void) the world starts to subtly
+            // stutter: tiny frame hitches that are hard to notice, growing slightly as
+            // the Void gets closer. Story mode only, purely a frame-freeze effect.
+            let preVoidNextHitch = 0, preVoidHitchUntil = 0;
+            function preVoidLag(now) {
+                if (game_mode !== 'running' || isEndless || currentBGIndex !== 3) { preVoidNextHitch = 0; preVoidHitchUntil = 0; return false; }
+                if (now < preVoidHitchUntil) return true; // mid-hitch: hold the last frame
+                if (preVoidNextHitch === 0) { preVoidNextHitch = now + 1500 + Math.random() * 1500; return false; }
+                if (now >= preVoidNextHitch) {
+                    const dread = Math.min(1, Math.max(0, (currentScore - 30) / 9)); // 0 entering night → 1 near the Void
+                    preVoidHitchUntil = now + 30 + Math.random() * 50 + dread * 25;   // 30-105ms micro-freeze
+                    preVoidNextHitch = now + 2800 - dread * 1300 + Math.random() * 1400;
+                    return true;
+                }
+                return false;
+            }
+            // -------------------------------------------------------------------------------------
             function frameTick(now) {
                 requestAnimationFrame(frameTick);
                 let elapsed = now - last; last = now;
                 if (elapsed > 250) elapsed = STEP; // tab was hidden — don't burst catch-up frames
                 if (elapsed <= 0) return;
+                if (preVoidLag(now)) return; // the Void is pulling at the world — freeze this frame
                 accum += elapsed;
                 let steps = 0;
                 while (accum >= STEP && steps < 3) { Do_a_Frame(); accum -= STEP; steps++; }
