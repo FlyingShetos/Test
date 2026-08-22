@@ -1236,7 +1236,7 @@ window.triggerPvpTrashTalk = async function() {
          let voidBreathingCount = 0; const MAX_BREATHING = 2; let musicMuted = false; let sfxMuted = false;
          window.addEventListener('click', () => { if(mainMenuMusic.paused && !musicMuted && game_mode === 'waiting_for_website') { mainMenuMusic.play().catch(e => console.log("Music auto-started")); } }, {once: true});
 
-         let boss = { x: 9999, y: 100, width: 150, height: 150, stamina: 100, speedY: 2, movingIn: true }; let chocolates = []; let victoryTimer = 0; let deathMessage = "Game Over"; let bossIntroState = 0; let bossIntroTimer = 0; let boss1Defeated = false; let isBoss2 = false; let isBoss3 = false; let dragonDefeated = false; let dragonHP = 100; let dragonPhase = 1; let dragonAtkState = 'idle'; let dragonAtkTimer = 0; let dragonCycle = 0; let dragonDashesDone = 0; let dragonDashVec = null; let dragonDashContact = false; let dragonDashSpeed = 10.5; let dragonDizzyDone = false; let dragonDizzyTimer = 0; let dragonDefeatTimer = 0; let dragonBob = 0; let dragonFire = []; let dragonTauntFx = []; const BOSS2_MAX_HITS = 5; let deleteBtnTimer = 0; let deleteBtnSpawnTimer = 0; let errorSigns = []; let errorSignCooldown = 0; 
+         let boss = { x: 9999, y: 100, width: 150, height: 150, stamina: 100, speedY: 2, movingIn: true }; let chocolates = []; let victoryTimer = 0; let deathMessage = "Game Over"; let bossIntroState = 0; let bossIntroTimer = 0; let boss1Defeated = false; let isBoss2 = false; let isBoss3 = false; let dragonDefeated = false; let dragonHP = 100; let dragonPhase = 1; let dragonAtkState = 'idle'; let dragonAtkTimer = 0; let dragonCycle = 0; let dragonDashesDone = 0; let dragonDashVec = null; let dragonBodyCd = 0; let dragonDashSpeed = 13.5; let dragonDizzyDone = false; let dragonDizzyTimer = 0; let dragonDefeatTimer = 0; let dragonBob = 0; let dragonFire = []; let dragonTauntFx = []; const BOSS2_MAX_HITS = 5; let deleteBtnTimer = 0; let deleteBtnSpawnTimer = 0; let errorSigns = []; let errorSignCooldown = 0; 
          function getAreaName(i) { return getLangText("area" + i); } const GLITCH_TEXTS = ["thats not the reality", "404", "not found", "wake up", "null", "error"]; let currentBGIndex = 0; let previousBGIndex = 0; let transitionText = ""; let transitionTimer = 0; let transitionType = "normal"; let transitionDuration = 0; const NORMAL_TRANSITION_DURATION = 32; const GLITCH_TRANSITION_DURATION = 80; let flashColor = null; let flashTimer = 0; let levelReached = 1; let cheatBuffer = ""; let floatingTexts = []; 
          var jump_amount = -7; var max_fall_speed = +8; var acceleration = 0.6; const SUPER_JUMP_AMOUNT = -3.8; const SUPER_ACCELERATION = 0.18; const SUPER_MAX_FALL_SPEED = +3.5; const VOID_ACCEL = 0.35; const VOID_MAX_FALL = 6.0; const MAGNET_RADIUS = 300; const INITIAL_LIVES = 3; let currentLives = 0; const MAX_DESTROY_CHARGES = 5; let wallDestroyCharges = 0; const WALLS_TO_DESTROY = 2; let dashCharges = 0; let isDashActive = false; const DASH_DURATION = 68; let dashTimer = 0; let shrinkCharges = 0; let isShrunk = false; let shrinkTimer = 0; const SHRINK_DURATION = 160; let widenCharges = 0; let isWidenActive = false; let widenTimer = 0; const WIDEN_DURATION = 240; let heisenBlinkTimer = 0; let pipe_speed = -2; let currentSpawnInterval = 2500; let speedMultiplier = 1; let trailRedTimer = 0; let trailGoldTimer = 0;
          var time_game_last_running; var bottom_bar_offset = 0; var pipes = []; var pipe_spawn_timer = 0; let currentScore = 0; let lastPipeY = 250; let totalGamesPlayed = 0; try { totalGamesPlayed = parseInt(localStorage.getItem('flappyGamesPlayed')) || 0; } catch(e) {}
@@ -1590,7 +1590,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          function finishDragonFight() {
              unlockAchievement('dragonslayer'); triggerFlash("lime"); showCheatFeedback(getLangText("boss3Defeated"));
              currentLives += 2; victoryTimer = 100; game_mode = 'running'; currentScore = 26; dragonDefeated = true; isBoss3 = false; bossIntroState = 0;
-             boss.x = CANVAS_WIDTH + 500; boss.movingIn = true; boss.stamina = 100; boss.width = 150; boss.height = 150; boss.speedY = 2;
+             boss.x = CANVAS_WIDTH + 500; boss.y = 120; boss.movingIn = true; boss.stamina = 100; boss.width = 150; boss.height = 150; boss.speedY = 2;
              dragonFire = []; dragonTauntFx = []; boss1Music.pause(); boss1Music.currentTime = 0; boss1Music.playbackRate = 1;
              if (!musicMuted) { bgMusic.currentTime = 0; bgMusic.play().catch(e => console.log(e)); }
              updateDifficulty();
@@ -1658,19 +1658,12 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
                      const bcx = bird.x + 20, bcy = bird.y + 18;
                      const d = Math.max(1, Math.hypot(bcx - bx, bcy - by));
                      dragonDashVec = { x: (bcx - bx) / d, y: (bcy - by) / d };
-                     dragonAtkState = 'dashGo'; dragonDashContact = false;
+                     dragonAtkState = 'dashGo';
                      playDragonSfx('dash.mp3', 0.8); triggerFlash("rgba(255,48,0,0.25)");
                  }
              } else if (dragonAtkState === 'dashGo') { // LAUNCH: full-speed ram across the screen
                  boss.x += dragonDashVec.x * dragonDashSpeed * speedMultiplier;
                  boss.y += dragonDashVec.y * dragonDashSpeed * speedMultiplier;
-                 if (!dragonDashContact && dragonBodyHitsBird()) {
-                     dragonDashContact = true; // one hit per pass
-                     if (isDashActive) { dragonHP -= 3; playDragonSfx('shield_breaking.mp3', 1.1); triggerFlash("lime"); } // counter!
-                     else if (isShieldActive) { deactivateShield(); playDragonSfx('shield_breaking.mp3', 1); }
-                     else if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; if (!sfxMuted) { damageSound.currentTime = 0; damageSound.play().catch(e => console.warn(e)); } trailRedTimer = 120; }
-                     else { if (!sfxMuted) { damageSound.currentTime = 0; damageSound.play().catch(e => console.warn(e)); } triggerPlayerDeath(); return; }
-                 }
                  if (boss.x < -220 || boss.x > CANVAS_WIDTH + 260 || boss.y < -160 || boss.y > CANVAS_HEIGHT + 160) { dragonAtkState = 'dashBack'; }
              } else if (dragonAtkState === 'dashBack') { // fly back to his perch and go again
                  const perchX = CANVAS_WIDTH - boss.width - 12, perchY = CANVAS_HEIGHT / 2 - boss.height / 2;
@@ -1680,6 +1673,14 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              } else if (dragonAtkState === 'recover') {
                  dragonAtkTimer--;
                  if (dragonAtkTimer <= 0) { dragonAtkState = 'idle'; dragonAtkTimer = (dragonPhase === 2 ? 40 : 96) + Math.floor(Math.random() * 25); }
+             }
+             // ---- body contact: touching the dragon hurts at ALL times (dizzy excepted - that's the punish window) ----
+             if (dragonBodyCd > 0) dragonBodyCd--;
+             else if (dragonDizzyTimer <= 0 && dragonBodyHitsBird()) {
+                 if (isDashActive) { dragonHP -= 3; dragonBodyCd = 30; playDragonSfx('shield_breaking.mp3', 1.1); triggerFlash("lime"); } // counter!
+                 else if (isShieldActive) { deactivateShield(); dragonBodyCd = 40; playDragonSfx('shield_breaking.mp3', 1); }
+                 else if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; dragonBodyCd = 50; if (!sfxMuted) { damageSound.currentTime = 0; damageSound.play().catch(e => console.warn(e)); } trailRedTimer = 120; }
+                 else { if (!sfxMuted) { damageSound.currentTime = 0; damageSound.play().catch(e => console.warn(e)); } triggerPlayerDeath(); return; }
              }
              // ---- fireballs ----
              for (let i = dragonFire.length - 1; i >= 0; i--) {
@@ -1870,7 +1871,7 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
              
              bird.x = CANVAS_WIDTH / 3; bird.y = CANVAS_HEIGHT / 2; bird.angle = 0; bird.velocity_y = 0; pipes = []; stars = []; shields = []; potions = []; slowPotions = []; errorSigns = []; trailHistory = [];  currentScore = 0; pipe_spawn_timer = 0; floatingTexts = []; myCanvas.style.filter = "none";
              
-             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; showEllieImage = false; bossIntroState = 0; bossIntroTimer = 0; isBoss2 = false; boss2Hits = 0; isBoss3 = false; dragonDefeated = false; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 0; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonDashContact = false; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; boss.width = 150; boss.height = 150; boss.speedY = 2; boss1Music.playbackRate = 1; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; previousBGIndex = 0; transitionType = "normal"; transitionDuration = 0; transitionText = ""; transitionTimer = 0; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; 
+             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; showEllieImage = false; bossIntroState = 0; bossIntroTimer = 0; isBoss2 = false; boss2Hits = 0; isBoss3 = false; dragonDefeated = false; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 0; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; boss.width = 150; boss.height = 150; boss.speedY = 2; boss1Music.playbackRate = 1; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; previousBGIndex = 0; transitionType = "normal"; transitionDuration = 0; transitionText = ""; transitionTimer = 0; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; 
 
              isSherlockActive = false; sherlockCooldown = 0; sherlockTimer = 0;
              isHrBreakActive = false; hrBreakCooldown = 0; hrBreakTimer = 0;
@@ -1992,8 +1993,8 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
                      updateBoss(); break;
                      case 'running':
                          time_game_last_running = new Date(); bottom_bar_offset += pipe_speed * speedMultiplier;
-                         if (!isEndless && currentScore >= 25 && !dragonDefeated) { game_mode = 'boss'; isBoss3 = true; pipes = []; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 140; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonDashContact = false; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; bossIntroState = 0; boss.width = 185; boss.height = 98; boss.speedY = 1.2; bgMusic.pause(); voidMusic.pause(); }
-                         else if (!isEndless && currentScore >= 50 && !boss1Defeated && currentScore < 100) { game_mode = 'boss'; pipes = []; bgMusic.pause(); voidMusic.pause(); } else if (!isEndless && currentScore >= 100) { game_mode = 'boss'; pipes = []; isBoss2 = true; boss2Hits = 0; bgMusic.pause(); voidMusic.pause(); } 
+                         if (!isEndless && currentScore >= 25 && !dragonDefeated) { game_mode = 'boss'; isBoss3 = true; pipes = []; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 140; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; bossIntroState = 0; boss.width = 185; boss.height = 98; boss.speedY = 1.2; bgMusic.pause(); voidMusic.pause(); }
+                         else if (!isEndless && currentScore >= 50 && !boss1Defeated && currentScore < 100) { game_mode = 'boss'; pipes = []; bgMusic.pause(); voidMusic.pause(); boss.x = CANVAS_WIDTH + 500; boss.y = 120; boss.movingIn = true; boss.stamina = 100; boss.width = 150; boss.height = 150; boss.speedY = 2; bossIntroState = 0; } else if (!isEndless && currentScore >= 100) { game_mode = 'boss'; pipes = []; isBoss2 = true; boss2Hits = 0; bgMusic.pause(); voidMusic.pause(); } 
                          for (var i = 0; i < pipes.length; i++) { pipes[i].velocity_x = pipe_speed; pipes[i].Do_Frame_Things(); } pipe_spawn_timer += (1000 / FPS) * speedMultiplier; let lastPipeX = pipes.length > 0 ? pipes[pipes.length - 1].x : -999;
                          if (pipe_spawn_timer > currentSpawnInterval && (CANVAS_WIDTH - lastPipeX > 220)) { let gap_size = isWidenActive ? 280 : 140; let safe_area = CANVAS_HEIGHT - gap_size - 50; if(safe_area < 50) safe_area = 50; let top_of_gap = Math.floor(Math.random() * (safe_area - 50)) + 50; add_pipe(CANVAS_WIDTH, top_of_gap, gap_size); pipe_spawn_timer = 0; } 
                          make_bird_slow_and_fall(); 
