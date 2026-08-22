@@ -1186,7 +1186,7 @@ window.triggerPvpTrashTalk = async function() {
          window.addEventListener('click', () => { if(mainMenuMusic.paused && !musicMuted && game_mode === 'waiting_for_website') { mainMenuMusic.play().catch(e => console.log("Music auto-started")); } }, {once: true});
 
          let boss = { x: 9999, y: 100, width: 150, height: 150, stamina: 100, speedY: 2, movingIn: true }; let chocolates = []; let victoryTimer = 0; let deathMessage = "Game Over"; let bossIntroState = 0; let bossIntroTimer = 0; let boss1Defeated = false; let isBoss2 = false; let boss2Hits = 0; const BOSS2_MAX_HITS = 5; let deleteBtnTimer = 0; let deleteBtnSpawnTimer = 0; let errorSigns = []; let errorSignCooldown = 0; 
-         function getAreaName(i) { return getLangText("area" + i); } const GLITCH_TEXTS = ["thats not the reality", "404", "not found", "wake up", "null", "error"]; let currentBGIndex = 0; let transitionText = ""; let transitionTimer = 0; let flashColor = null; let flashTimer = 0; let bgLagTimer = 0; let levelReached = 1; let portals = []; const PORTAL_CHANCE = 0.02; let hasPortalSpawnedInThisArea = false; let cheatBuffer = ""; let floatingTexts = []; 
+         function getAreaName(i) { return getLangText("area" + i); } const GLITCH_TEXTS = ["thats not the reality", "404", "not found", "wake up", "null", "error"]; let currentBGIndex = 0; let previousBGIndex = 0; let transitionText = ""; let transitionTimer = 0; let transitionType = "normal"; let transitionDuration = 0; const NORMAL_TRANSITION_DURATION = 32; const GLITCH_TRANSITION_DURATION = 80; let flashColor = null; let flashTimer = 0; let levelReached = 1; let portals = []; const PORTAL_CHANCE = 0.02; let hasPortalSpawnedInThisArea = false; let cheatBuffer = ""; let floatingTexts = []; 
          var jump_amount = -7; var max_fall_speed = +8; var acceleration = 0.6; const SUPER_JUMP_AMOUNT = -3.8; const SUPER_ACCELERATION = 0.18; const SUPER_MAX_FALL_SPEED = +3.5; const VOID_ACCEL = 0.35; const VOID_MAX_FALL = 6.0; const MAGNET_RADIUS = 300; const INITIAL_LIVES = 3; let currentLives = 0; const MAX_DESTROY_CHARGES = 5; let wallDestroyCharges = 0; const WALLS_TO_DESTROY = 2; let dashCharges = 0; let isDashActive = false; const DASH_DURATION = 68; let dashTimer = 0; let shrinkCharges = 0; let isShrunk = false; let shrinkTimer = 0; const SHRINK_DURATION = 160; let widenCharges = 0; let isWidenActive = false; let widenTimer = 0; const WIDEN_DURATION = 240; let heisenBlinkTimer = 0; let pipe_speed = -2; let currentSpawnInterval = 2500; let speedMultiplier = 1; let trailRedTimer = 0; let trailGoldTimer = 0;
          var time_game_last_running; var bottom_bar_offset = 0; var pipes = []; var pipe_spawn_timer = 0; let currentScore = 0; let lastPipeY = 250; let totalGamesPlayed = 0; try { totalGamesPlayed = parseInt(localStorage.getItem('flappyGamesPlayed')) || 0; } catch(e) {}
          const SHIELD_DURATION_FRAMES = 240; const POTION_DURATION_FRAMES = 600; const SLOW_POTION_DURATION_FRAMES = 400; const SHIELD_SPAWN_CHANCE = 0.10; const POTION_SPAWN_CHANCE = 0.10; const SLOW_POTION_SPAWN_CHANCE = 0.08;
@@ -1474,11 +1474,23 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
          window.hitBossTwo = function() { if (!isBoss2 || game_mode !== 'boss' || deleteBtnTimer <= 0 || isPaused) return; boss2Hits++; playClickSound(); document.getElementById('delete-boss-btn').style.display = 'none'; deleteBtnTimer = 0; triggerFlash("red"); if (boss2Hits >= BOSS2_MAX_HITS) { game_mode = 'terminal_ending'; window.endingState = 0; window.endingTimer = 150; window.terminalPercent = 0; document.getElementById('game-container').className = ""; boss2Music.pause(); boss2Music.currentTime = 0; } }
 
          function triggerFlash(color) { flashColor = color; flashTimer = 10; }
-         function triggerBgLag() { bgLagTimer = 28; triggerFlash("rgba(255,255,255,0.35)"); let c=document.getElementById('game-container'); c.classList.add('shake'); setTimeout(()=>{c.classList.remove('shake');}, 320); }
+         function startAreaTransition(oldIndex, newIndex) {
+             previousBGIndex = oldIndex;
+             transitionText = getAreaName(newIndex) || getLangText("unknownArea");
+             transitionType = newIndex === 4 ? "glitch" : "normal";
+             transitionDuration = transitionType === "glitch" ? GLITCH_TRANSITION_DURATION : NORMAL_TRANSITION_DURATION;
+             transitionTimer = transitionDuration;
+             if (transitionType === "glitch") {
+                 triggerFlash("rgba(255,255,255,0.35)");
+                 let container = document.getElementById('game-container');
+                 container.classList.add('shake');
+                 setTimeout(() => container.classList.remove('shake'), 700);
+             }
+         }
          function updateMenuStats() { if(document.getElementById('menuHighScore')) { document.getElementById('menuHighScore').innerText = highScore; document.getElementById('menuStars').innerText = collectedStars; document.getElementById('menuTrophies').innerText = onlineTrophies; document.getElementById('menuGamesPlayed').innerText = totalGamesPlayed; } }
          function showCheatFeedback(text) { let el = document.getElementById('cheat-feedback'); el.innerText = text; el.style.display = 'block'; setTimeout(() => { el.style.display = 'none'; }, 2000); }
          function unlockAchievement(id) { let ach = ALL_ACHIEVEMENTS.find(a => a.id === id); if (ach && !ach.unlocked) { ach.unlocked = true; savedAchievements.push(id); localStorage.setItem('flappyAchievements', JSON.stringify(savedAchievements)); if (ach.reward > 0) { collectedStars += ach.reward; localStorage.setItem('flappyStars', collectedStars); updateMenuStats(); showCheatFeedback(getLangText("achReward") + " +" + ach.reward + " " + getLangText("food") + "!"); } } }
-         function triggerPortalEffect() { if(!sfxMuted){buttonSound.currentTime=0; buttonSound.play().catch(e=>{});}  let outcome = Math.random() < 0.5 ? 10 : -10; let tempScore = currentScore + outcome; if (tempScore < 0) tempScore = 0; if (currentScore < 50 && tempScore >= 50) { tempScore = 49; } if (currentScore < 100 && tempScore >= 100) { tempScore = 99; } currentScore = tempScore; pipes = []; let oldIndex = currentBGIndex; if (isEndless) { currentBGIndex = 0; hasPortalSpawnedInThisArea = false; updateDifficulty(); } else { currentBGIndex = Math.floor(currentScore / 10); if (currentBGIndex > 4) currentBGIndex = 4; if (currentBGIndex < 0) currentBGIndex = 0; hasPortalSpawnedInThisArea = false; updateDifficulty(); if (oldIndex !== currentBGIndex) { if (currentBGIndex !== 4 && oldIndex !== 4) { triggerBgLag(); } if (currentBGIndex === 4) { bgMusic.pause(); bgMusic.currentTime = 0; if (!musicMuted) voidMusic.play(); } else if (oldIndex === 4) { voidMusic.pause(); voidMusic.currentTime = 0; if (!musicMuted) bgMusic.play(); } } } if (outcome > 0) { showCheatFeedback(getLangText("warpAhead")); triggerFlash("cyan"); } else { showCheatFeedback(getLangText("warpBack")); triggerFlash("purple"); transitionText = getAreaName(currentBGIndex); transitionTimer = 80; } }
+         function triggerPortalEffect() { if(!sfxMuted){buttonSound.currentTime=0; buttonSound.play().catch(e=>{});}  let outcome = Math.random() < 0.5 ? 10 : -10; let tempScore = currentScore + outcome; if (tempScore < 0) tempScore = 0; if (currentScore < 50 && tempScore >= 50) { tempScore = 49; } if (currentScore < 100 && tempScore >= 100) { tempScore = 99; } currentScore = tempScore; pipes = []; let oldIndex = currentBGIndex; if (isEndless) { currentBGIndex = 0; hasPortalSpawnedInThisArea = false; updateDifficulty(); } else { currentBGIndex = Math.floor(currentScore / 10); if (currentBGIndex > 4) currentBGIndex = 4; if (currentBGIndex < 0) currentBGIndex = 0; hasPortalSpawnedInThisArea = false; updateDifficulty(); if (oldIndex !== currentBGIndex) { startAreaTransition(oldIndex, currentBGIndex); if (currentBGIndex === 4) { bgMusic.pause(); bgMusic.currentTime = 0; if (!musicMuted) voidMusic.play(); } else if (oldIndex === 4) { voidMusic.pause(); voidMusic.currentTime = 0; if (!musicMuted) bgMusic.play(); } } } if (outcome > 0) { showCheatFeedback(getLangText("warpAhead")); triggerFlash("cyan"); } else { showCheatFeedback(getLangText("warpBack")); triggerFlash("purple"); } }
          function updateDifficulty() {
              if (isEndless) {
                  // Infinite mode: only beginning background, speed ramps HARD
@@ -1544,7 +1556,7 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
              
              bird.x = CANVAS_WIDTH / 3; bird.y = CANVAS_HEIGHT / 2; bird.angle = 0; bird.velocity_y = 0; pipes = []; stars = []; shields = []; potions = []; slowPotions = []; errorSigns = []; trailHistory = []; portals = []; currentScore = 0; pipe_spawn_timer = 0; floatingTexts = []; myCanvas.style.filter = "none";
              
-             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; showEllieImage = false; bossIntroState = 0; bossIntroTimer = 0; isBoss2 = false; boss2Hits = 0; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; hasPortalSpawnedInThisArea = false; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; transitionText = getAreaName(0); transitionTimer = 80; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; 
+             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; showEllieImage = false; bossIntroState = 0; bossIntroTimer = 0; isBoss2 = false; boss2Hits = 0; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; hasPortalSpawnedInThisArea = false; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; previousBGIndex = 0; transitionType = "normal"; transitionDuration = 0; transitionText = ""; transitionTimer = 0; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; 
 
              isSherlockActive = false; sherlockCooldown = 0; sherlockTimer = 0;
              isHrBreakActive = false; hrBreakCooldown = 0; hrBreakTimer = 0;
@@ -1629,7 +1641,26 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
                  }
 
                  if (isDashActive) { speedMultiplier = 3; dashTimer--; if (dashTimer <= 0) { isDashActive = false; speedMultiplier = 1; } } else { if (!isSlowMotionActive && !isArthurActive) speedMultiplier = 1; }
-                 ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); if (backgroundImages[currentBGIndex] && backgroundImages[currentBGIndex].complete) { ctx.drawImage(backgroundImages[currentBGIndex], 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); } else { ctx.fillStyle = "#222"; ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT); }
+                 ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                 const currentBackground = backgroundImages[currentBGIndex];
+                 if (transitionTimer > 0 && transitionType === "normal") {
+                     // A quiet crossfade affects only the background; gameplay and UI stay unchanged.
+                     const rawProgress = 1 - (transitionTimer / transitionDuration);
+                     const fadeProgress = rawProgress * rawProgress * (3 - 2 * rawProgress);
+                     const oldBackground = backgroundImages[previousBGIndex];
+                     if (oldBackground && oldBackground.complete) ctx.drawImage(oldBackground, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                     if (currentBackground && currentBackground.complete) {
+                         ctx.save();
+                         ctx.globalAlpha = fadeProgress;
+                         ctx.drawImage(currentBackground, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                         ctx.restore();
+                     }
+                 } else if (currentBackground && currentBackground.complete) {
+                     ctx.drawImage(currentBackground, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                 } else {
+                     ctx.fillStyle = "#222";
+                     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                 }
                  bird.Do_Frame_Things(); if (bottom_bar.complete && bossIntroState >= 3) { if (bottom_bar_offset < -23) bottom_bar_offset = 0; ctx.drawImage(bottom_bar, bottom_bar_offset, CANVAS_HEIGHT - bottom_bar.height); } else if (bottom_bar.complete && game_mode !== 'boss' && game_mode !== 'terminal_ending') { if (bottom_bar_offset < -23) bottom_bar_offset = 0; ctx.drawImage(bottom_bar, bottom_bar_offset, CANVAS_HEIGHT - bottom_bar.height); } else if (bottom_bar.complete && game_mode !== 'terminal_ending') { ctx.drawImage(bottom_bar, bottom_bar_offset, CANVAS_HEIGHT - bottom_bar.height); }
 
                  switch (game_mode) {
@@ -1723,29 +1754,33 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
                  if (game_mode === 'running' || game_mode === 'boss' || game_mode === 'online_match' || game_mode === 'pvp_shetos') { display_star_count(); display_score(); display_lives(); }
                  for(let i=floatingTexts.length-1; i>=0; i--) { let ft = floatingTexts[i]; ft.y -= 2; ft.timer--; ctx.globalAlpha = Math.max(0, ft.timer / 40); ctx.font = 'bold 24px "Press Start 2P"'; ctx.fillStyle = (ft.text === "+2") ? '#ff00ff' : 'lime'; ctx.strokeStyle = "black"; ctx.lineWidth = 3; ctx.strokeText(ft.text, ft.x, ft.y); ctx.fillText(ft.text, ft.x, ft.y); ctx.globalAlpha = 1.0; if(ft.timer <= 0) floatingTexts.splice(i, 1); }
                  if (victoryTimer > 0) { ctx.font = 'bold 50px Arial'; ctx.fillStyle = 'lime'; ctx.strokeStyle = 'black'; ctx.lineWidth = 5; ctx.textAlign = 'center'; ctx.strokeText(getLangText("victory"), CANVAS_WIDTH/2, CANVAS_HEIGHT/2); ctx.fillText(getLangText("victory"), CANVAS_WIDTH/2, CANVAS_HEIGHT/2); victoryTimer--; }
-                 if (transitionTimer > 0) { ctx.font = 'bold 40px Arial'; ctx.fillStyle = 'white'; ctx.strokeStyle = 'black'; ctx.lineWidth = 4; ctx.textAlign = 'center'; ctx.strokeText(transitionText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2); ctx.fillText(transitionText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2); transitionTimer--; }
-                 if (flashTimer > 0) { ctx.fillStyle = flashColor; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); flashTimer--; }
-                 if (bgLagTimer > 0) {
-                     // Lag/glitch transition overlay
-                     bgLagTimer--;
-                     // freeze/slow pipes to simulate lag
-                     // draw lag overlay
-                     ctx.save();
-                     ctx.fillStyle = `rgba(255,255,255,${0.08 + Math.random()*0.12})`;
-                     ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
-                     // glitch lines
-                     for(let gl=0; gl<4; gl++) {
-                         let gy = Math.random()*CANVAS_HEIGHT;
-                         ctx.fillStyle = Math.random()<0.5 ? 'rgba(0,255,0,0.18)' : 'rgba(255,0,0,0.18)';
-                         ctx.fillRect(0, gy, CANVAS_WIDTH, 2+Math.random()*4);
+                 if (transitionTimer > 0) {
+                     if (transitionType === "glitch") {
+                         const progress = 1 - (transitionTimer / transitionDuration);
+                         const intensity = Math.sin(progress * Math.PI);
+                         ctx.save();
+                         ctx.fillStyle = `rgba(0,0,0,${0.18 + intensity * 0.42})`;
+                         ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                         for (let gl = 0; gl < 12; gl++) {
+                             const gy = Math.random() * CANVAS_HEIGHT;
+                             const gh = 2 + Math.random() * 12;
+                             const offset = (Math.random() - 0.5) * 55 * intensity;
+                             ctx.fillStyle = gl % 3 === 0 ? 'rgba(255,0,70,0.35)' : (gl % 3 === 1 ? 'rgba(0,255,255,0.3)' : 'rgba(255,255,255,0.22)');
+                             ctx.fillRect(offset, gy, CANVAS_WIDTH, gh);
+                         }
+                         ctx.translate((Math.random() - 0.5) * 12 * intensity, (Math.random() - 0.5) * 8 * intensity);
+                         ctx.font = 'bold 40px "Courier New", monospace';
+                         ctx.fillStyle = Math.random() < 0.35 ? '#00ffff' : 'white';
+                         ctx.strokeStyle = '#ff0046';
+                         ctx.lineWidth = 4;
+                         ctx.textAlign = 'center';
+                         ctx.strokeText(transitionText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+                         ctx.fillText(transitionText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+                         ctx.restore();
                      }
-                     ctx.font='bold 18px "Press Start 2P"'; ctx.fillStyle='white'; ctx.textAlign='center'; ctx.strokeStyle='black'; ctx.lineWidth=3;
-                     ctx.strokeText('LOADING...', CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
-                     ctx.fillText('LOADING...', CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
-                     ctx.restore();
-                     // actually slow game during lag
-                     speedMultiplier *= 0.18;
+                     transitionTimer--;
                  }
+                 if (flashTimer > 0) { ctx.fillStyle = flashColor; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); flashTimer--; }
                  if (heisenBlinkTimer > 0) { let alpha = Math.abs(Math.sin((heisenBlinkTimer / 80) * Math.PI * 2)); ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); heisenBlinkTimer--; }
 
                  if (isSherlockActive && bird.visible) {
@@ -1892,12 +1927,8 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
                          currentBGIndex = Math.floor(currentScore / 10);
                          if (currentBGIndex > 4) currentBGIndex = 4;
                          if (oldIndex !== currentBGIndex) {
-                             // Lag transition for every BG except to void
-                             if (oldIndex !== currentBGIndex && currentBGIndex !== 4 && oldIndex !== 4) {
-                                 triggerBgLag();
-                             }
-                             transitionText = getAreaName(currentBGIndex) || getLangText("unknownArea");
-                             transitionTimer = 80;
+                             // Story areas fade normally; entering the Void deliberately glitches.
+                             startAreaTransition(oldIndex, currentBGIndex);
                              updateDifficulty();
                              hasPortalSpawnedInThisArea = false;
                              if (currentBGIndex === 4) {
