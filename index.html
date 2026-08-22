@@ -1650,12 +1650,10 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
                  gg.addColorStop(0, '#FFF6B0'); gg.addColorStop(0.5, '#FF9500'); gg.addColorStop(1, 'rgba(255,60,0,0)');
                  ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(m.x, m.y + bobY, glow, 0, Math.PI * 2); ctx.fill(); ctx.restore();
                  if (dragonAtkTimer <= 0) { spawnDragonFan(); dragonAtkState = 'recover'; dragonAtkTimer = 46; }
-             } else if (dragonAtkState === 'dashTele') { // rearing back, aiming line tracks the player
+             } else if (dragonAtkState === 'dashTele') { // rearing back: he shakes and snarls, then commits to the launch
                  boss.speedY = 0; dragonAtkTimer--;
-                 ctx.save(); ctx.globalAlpha = 0.30 + Math.sin(dragonBob * 0.9) * 0.15; ctx.strokeStyle = "#FF3000"; ctx.lineWidth = 3; ctx.setLineDash([8, 8]);
-                 ctx.beginPath(); ctx.moveTo(boss.x + boss.width / 2, boss.y + boss.height / 2); ctx.lineTo(bird.x + 20, bird.y + 18); ctx.stroke(); ctx.restore();
                  if (dragonAtkTimer <= 0) {
-                     dragonDashSpeed = 10.5 + dragonDashesDone * 0.7;
+                     dragonDashSpeed = 13.5 + dragonDashesDone * 0.9;
                      const bx = boss.x + boss.width / 2, by = boss.y + boss.height / 2;
                      const bcx = bird.x + 20, bcy = bird.y + 18;
                      const d = Math.max(1, Math.hypot(bcx - bx, bcy - by));
@@ -1678,7 +1676,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
                  const perchX = CANVAS_WIDTH - boss.width - 12, perchY = CANVAS_HEIGHT / 2 - boss.height / 2;
                  const dx = perchX - boss.x, dy = perchY - boss.y, dist = Math.hypot(dx, dy);
                  if (dist < 8) { boss.x = perchX; boss.y = perchY; boss.speedY = 1.2; dragonAtkState = 'recover'; dragonAtkTimer = 26; dragonDashesDone++; }
-                 else { boss.x += dx / dist * 6.5 * speedMultiplier; boss.y += dy / dist * 6.5 * speedMultiplier; }
+                 else { boss.x += dx / dist * 8.5 * speedMultiplier; boss.y += dy / dist * 8.5 * speedMultiplier; }
              } else if (dragonAtkState === 'recover') {
                  dragonAtkTimer--;
                  if (dragonAtkTimer <= 0) { dragonAtkState = 'idle'; dragonAtkTimer = (dragonPhase === 2 ? 40 : 96) + Math.floor(Math.random() * 25); }
@@ -1703,11 +1701,20 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          }
          // =====================================================================================
 
+         function drawBossGlow() { // boss_1 is very dark and his fight happens over the near-black Void bg: light him up
+             if (isBoss2 || isBoss3) return;
+             ctx.save();
+             const gx = boss.x + boss.width / 2, gy = boss.y + boss.height / 2, gr = boss.width * 0.95;
+             const g = ctx.createRadialGradient(gx, gy, boss.width * 0.2, gx, gy, gr);
+             g.addColorStop(0, 'rgba(255,120,60,0.34)'); g.addColorStop(0.55, 'rgba(255,60,30,0.20)'); g.addColorStop(1, 'rgba(255,0,0,0)');
+             ctx.fillStyle = g; ctx.beginPath(); ctx.arc(gx, gy, gr, 0, Math.PI * 2); ctx.fill();
+             ctx.restore();
+         }
          function updateBoss() {
-             if (boss.movingIn) { boss.x -= 2 * speedMultiplier; let bossStopX = Math.min(bird.x + 300, CANVAS_WIDTH - boss.width - 10); if (boss.x <= bossStopX) { boss.x = bossStopX; boss.movingIn = false; } let img = (isBoss2) ? BOSS2_IMG : (isBoss3 ? DRAGON_IMG : BOSS_IMG); if (img.complete && img.naturalWidth !== 0) ctx.drawImage(img, boss.x, boss.y, boss.width, boss.height); return; }
-             if (bossIntroState < 4) { updateAbilityButtons(); let img = (isBoss2) ? BOSS2_IMG : (isBoss3 ? DRAGON_IMG : BOSS_IMG); if (img.complete && img.naturalWidth !== 0) ctx.drawImage(img, boss.x, boss.y, boss.width, boss.height); else { ctx.fillStyle = "red"; ctx.fillRect(boss.x, boss.y, boss.width, boss.height); } if (bossIntroState === 0) { bossIntroState = 1; bossIntroTimer = 120; } if (isBoss3) { if (bossIntroState === 1) { drawDialogueBox(getLangText('b3_1')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=2; bossIntroTimer=120;} } else if (bossIntroState === 2) { drawDialogueBox(getLangText('b3_2')); bossIntroTimer--; if(bossIntroTimer<=0){ bossIntroState=5; if(!musicMuted) { boss1Music.playbackRate = 1.12; boss1Music.play().catch(e=>console.log(e)); } } } } else if (!isBoss2) { if (bossIntroState === 1) { drawDialogueBox(getLangText('b1_1')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=2; bossIntroTimer=120;} } else if (bossIntroState === 2) { drawDialogueBox(getLangText('b1_2')); bossIntroTimer--; if(bossIntroTimer<=0){ bossIntroState=5; if(!musicMuted) { boss1Music.playbackRate = 1; boss1Music.play().catch(e=>console.log(e)); } } } } else { if (bossIntroState === 1) { drawDialogueBox(getLangText('b2_1')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=2; bossIntroTimer=120;} } else if (bossIntroState === 2) { drawDialogueBox(getLangText('b2_2')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=3; bossIntroTimer=120;} } else if (bossIntroState === 3) { drawDialogueBox(getLangText('b2_3')); bossIntroTimer--; if(bossIntroTimer<=0){ bossIntroState=5; if(!musicMuted) boss2Music.play().catch(e=>console.log(e)); } } } return; }
+             if (boss.movingIn) { boss.x -= 2 * speedMultiplier; let bossStopX = Math.min(bird.x + 300, CANVAS_WIDTH - boss.width - 10); if (boss.x <= bossStopX) { boss.x = bossStopX; boss.movingIn = false; } let img = (isBoss2) ? BOSS2_IMG : (isBoss3 ? DRAGON_IMG : BOSS_IMG); if (img.complete && img.naturalWidth !== 0) { drawBossGlow(); ctx.drawImage(img, boss.x, boss.y, boss.width, boss.height); } return; }
+             if (bossIntroState < 4) { updateAbilityButtons(); let img = (isBoss2) ? BOSS2_IMG : (isBoss3 ? DRAGON_IMG : BOSS_IMG); if (img.complete && img.naturalWidth !== 0) { drawBossGlow(); ctx.drawImage(img, boss.x, boss.y, boss.width, boss.height); } else { ctx.fillStyle = "red"; ctx.fillRect(boss.x, boss.y, boss.width, boss.height); } if (bossIntroState === 0) { bossIntroState = 1; bossIntroTimer = 120; } if (isBoss3) { if (bossIntroState === 1) { drawDialogueBox(getLangText('b3_1')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=2; bossIntroTimer=120;} } else if (bossIntroState === 2) { drawDialogueBox(getLangText('b3_2')); bossIntroTimer--; if(bossIntroTimer<=0){ bossIntroState=5; if(!musicMuted) { boss1Music.playbackRate = 1.12; boss1Music.play().catch(e=>console.log(e)); } } } } else if (!isBoss2) { if (bossIntroState === 1) { drawDialogueBox(getLangText('b1_1')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=2; bossIntroTimer=120;} } else if (bossIntroState === 2) { drawDialogueBox(getLangText('b1_2')); bossIntroTimer--; if(bossIntroTimer<=0){ bossIntroState=5; if(!musicMuted) { boss1Music.playbackRate = 1; boss1Music.play().catch(e=>console.log(e)); } } } } else { if (bossIntroState === 1) { drawDialogueBox(getLangText('b2_1')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=2; bossIntroTimer=120;} } else if (bossIntroState === 2) { drawDialogueBox(getLangText('b2_2')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=3; bossIntroTimer=120;} } else if (bossIntroState === 3) { drawDialogueBox(getLangText('b2_3')); bossIntroTimer--; if(bossIntroTimer<=0){ bossIntroState=5; if(!musicMuted) boss2Music.play().catch(e=>console.log(e)); } } } return; }
              
-             boss.y += boss.speedY * speedMultiplier; let bossMaxY = Math.max(60, CANVAS_HEIGHT - boss.height - 50); if (boss.y > bossMaxY || boss.y < 50) boss.speedY *= -1; let fightImg = (isBoss2) ? BOSS2_IMG : (isBoss3 ? DRAGON_IMG : BOSS_IMG); if (!isBoss3 && fightImg.complete && fightImg.naturalWidth !== 0) ctx.drawImage(fightImg, boss.x, boss.y, boss.width, boss.height); else if (!isBoss3) { ctx.fillStyle = "red"; ctx.fillRect(boss.x, boss.y, boss.width, boss.height); }
+             boss.y += boss.speedY * speedMultiplier; let bossMaxY = Math.max(60, CANVAS_HEIGHT - boss.height - 50); if (boss.y > bossMaxY || boss.y < 50) boss.speedY *= -1; let fightImg = (isBoss2) ? BOSS2_IMG : (isBoss3 ? DRAGON_IMG : BOSS_IMG); if (!isBoss3 && fightImg.complete && fightImg.naturalWidth !== 0) { drawBossGlow(); ctx.drawImage(fightImg, boss.x, boss.y, boss.width, boss.height); } else if (!isBoss3) { ctx.fillStyle = "red"; ctx.fillRect(boss.x, boss.y, boss.width, boss.height); }
              if (isBoss3) { updateDragonBoss(); } else if (!isBoss2) { if (Math.random() < 0.06) spawnChocolate(); boss.stamina -= 0.1; if (boss.stamina <= 0) { unlockAchievement('monster'); triggerFlash("lime"); showCheatFeedback(getLangText("bossDefeated")); currentLives += 2; victoryTimer = 100; game_mode = 'running'; currentScore = 51; boss1Defeated = true; boss.x = CANVAS_WIDTH + 500; chocolates = []; pipe_spawn_timer = 0; bossIntroState = 0; boss.movingIn = true; boss.stamina = 100; boss1Music.pause(); boss1Music.currentTime = 0; if (!musicMuted) voidMusic.play().catch(e=>console.log(e)); } } else { if (Math.random() < 0.05) { let container = document.getElementById('game-container'); let r = Math.random(); if (r < 0.33) container.className = "upside-down"; else if (r < 0.66) container.className = "shake"; else container.className = ""; } if (errorSignCooldown > 0) errorSignCooldown--; if (errorSignCooldown <= 0 && Math.random() < 0.04 && errorSigns.length < 4) { spawnErrorSign(); errorSignCooldown = 25; } if (deleteBtnTimer > 0) { deleteBtnTimer -= (1000/FPS); if (deleteBtnTimer <= 0) document.getElementById('delete-boss-btn').style.display = 'none'; } else { deleteBtnSpawnTimer += (1000/FPS); if (deleteBtnSpawnTimer > 4000) { document.getElementById('delete-boss-btn').style.display = 'block'; deleteBtnTimer = 1200; deleteBtnSpawnTimer = 0; } } }
              
              for (let i = chocolates.length - 1; i >= 0; i--) { chocolates[i].Do_Frame_Things(); if (ImagesTouching(bird, chocolates[i]) && chocolates[i].visible) { if (isDashActive) { chocolates[i].visible = false; continue; } if (isShieldActive) { deactivateShield(); chocolates.splice(i, 1); } else if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} chocolates.splice(i, 1); trailRedTimer = 120; } else { if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} triggerPlayerDeath(); } } else if (chocolates[i].x < -50) chocolates.splice(i, 1); }
@@ -1759,7 +1766,7 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
              }
              [shields, stars, potions, slowPotions].forEach(arr => { for (let i = 0; i < arr.length; i++) { arr[i].velocity_x = pipe_speed; } }); }
 
-         window.openModeSelect = function() { closeAllModals(); document.getElementById('user-profile').style.display = 'block'; game_mode = 'waiting_for_website'; document.getElementById('landing-page').style.display = 'none'; document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none'); document.getElementById('mode-select-modal').style.display = 'flex'; document.getElementById('modeTrophyDisplay').innerText = onlineTrophies; document.getElementById('mode-main-menu').style.display = 'flex'; document.getElementById('pvp-sub-menu').style.display = 'none'; ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); if(backgroundImages[0] && backgroundImages[0].complete) { ctx.drawImage(backgroundImages[0], 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); } else { ctx.fillStyle = "#4ec0ca"; ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT); } }
+         window.openModeSelect = function() { closeAllModals(); document.getElementById('user-profile').style.display = 'block'; game_mode = 'waiting_for_website'; document.getElementById('landing-page').style.display = 'none'; document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none'); document.getElementById('mode-select-modal').style.display = 'flex'; document.getElementById('modeTrophyDisplay').innerText = onlineTrophies; document.getElementById('mode-main-menu').style.display = 'flex'; document.getElementById('pvp-sub-menu').style.display = 'none'; ctx.fillStyle = "#041820"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); }
          window.closeModeSelect = function() { document.getElementById('mode-select-modal').style.display = 'none'; document.getElementById('user-profile').style.display = 'block'; document.getElementById('landing-page').style.display = 'flex'; }
          window.startEndlessMode = function() { closeAllModals(); mainMenuMusic.pause(); mainMenuMusic.currentTime = 0; game_mode = 'running'; isEndless = true; reset_game(); showCheatFeedback(getLangText("endlessMode")); document.getElementById('settings-btn').style.display = 'block'; if (!musicMuted) { bgMusic.currentTime = 0; bgMusic.play().catch(e => console.log(e)); } if(backgroundImages[0] && backgroundImages[0].complete) ctx.drawImage(backgroundImages[0], 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); transitionText = getAreaName(0); transitionType = "normal"; transitionDuration = 70; transitionTimer = 70; previousBGIndex = 0; }
 
@@ -2383,27 +2390,12 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
             // --- "Pre-void lag" ----------------------------------------------------------------
             // In THE NIGHT (the area right before the Void) the world starts to subtly
             // stutter: tiny frame hitches that are hard to notice, growing slightly as
-            // the Void gets closer. Story mode only, purely a frame-freeze effect.
-            let preVoidNextHitch = 0, preVoidHitchUntil = 0;
-            function preVoidLag(now) {
-                if (game_mode !== 'running' || isEndless || currentBGIndex !== 3) { preVoidNextHitch = 0; preVoidHitchUntil = 0; return false; }
-                if (now < preVoidHitchUntil) return true; // mid-hitch: hold the last frame
-                if (preVoidNextHitch === 0) { preVoidNextHitch = now + 1500 + Math.random() * 1500; return false; }
-                if (now >= preVoidNextHitch) {
-                    const dread = Math.min(1, Math.max(0, (currentScore - 30) / 9)); // 0 entering night → 1 near the Void
-                    preVoidHitchUntil = now + 30 + Math.random() * 50 + dread * 25;   // 30-105ms micro-freeze
-                    preVoidNextHitch = now + 2800 - dread * 1300 + Math.random() * 1400;
-                    return true;
-                }
-                return false;
-            }
             // -------------------------------------------------------------------------------------
             function frameTick(now) {
                 requestAnimationFrame(frameTick);
                 let elapsed = now - last; last = now;
                 if (elapsed > 250) elapsed = STEP; // tab was hidden — don't burst catch-up frames
                 if (elapsed <= 0) return;
-                if (preVoidLag(now)) return; // the Void is pulling at the world — freeze this frame
                 accum += elapsed;
                 let steps = 0;
                 while (accum >= STEP && steps < 3) { Do_a_Frame(); accum -= STEP; steps++; }
