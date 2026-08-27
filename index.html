@@ -76,6 +76,9 @@
         #pause-menu h1 { font-family: 'Press Start 2P', cursive; color: white; margin-bottom: 30px; }
         .pause-options { display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px; width: 250px; }
         .toggle-row { display: flex; justify-content: space-between; align-items: center; color: white; font-family: 'Press Start 2P', cursive; font-size: 12px; }
+        .info-badge { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; border: 1px solid #f1c40f; color: #f1c40f; font-family: Arial, sans-serif; font-size: 11px; font-style: italic; font-weight: bold; cursor: pointer; vertical-align: middle; user-select: none; }
+        .info-badge:hover { background: #f1c40f; color: #041820; }
+        .dnd-info { font-family: Arial, sans-serif; font-size: 11px; color: #ccc; background: rgba(241,196,15,0.1); border-left: 3px solid #f1c40f; padding: 8px; margin: -4px 0 8px 0; border-radius: 4px; line-height: 1.5; }
         .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
@@ -319,6 +322,14 @@
                      <span data-i18n="sfxVol">SFX VOL</span>
                      <input type="range" id="sfx-vol" class="vol-slider" min="0" max="1" step="0.1" value="0.5" onchange="updateSFXVolume(this.value)">
                  </div>
+                 <div class="toggle-row">
+                     <span><span data-i18n="dnd">DND</span> <span class="info-badge" onclick="toggleDNDInfo()" title="What is DND?">i</span></span>
+                     <label class="switch">
+                         <input type="checkbox" id="dnd-toggle" onchange="playClickSound(); toggleDND(this.checked)">
+                         <span class="slider"></span>
+                     </label>
+                 </div>
+                 <div id="dnd-info" class="dnd-info" data-i18n="dndInfo" style="display:none;">Do Not Disturb: mutes ALL game music and sound effects so your own music keeps playing uninterrupted.</div>
                  <div class="toggle-row">
                      <span data-i18n="language">LANGUAGE</span>
                      <select id="lang-select" class="res-select" onchange="changeLanguage(this.value)">
@@ -610,6 +621,7 @@
     sellItem: "SELL ITEM", areYouSure: "Are you sure?", yes: "YES", no: "NO",
     friend: "Friend", typeMessage: "Type a message...", acceptChallenge: "Do you accept the challenge?", accept: "ACCEPT", decline: "DECLINE",
     unlockLabText: "Unlock the power to build<br>your ultimate Custom Shetos.", labCost: "Cost: 1500 Dry Food", unlockLab: "UNLOCK LAB", pointsAvailable: "POINTS AVAILABLE:", baseAppearance: "BASE APPEARANCE", abilities: "ABILITIES (Max 10 Total) - Toggle Max 3", lives: "Lives (Hearts)", dashes: "Dashes", bombs: "Bombs", shrinks: "Shrinks", widenGap: "Widen Gap", magnetizeFood: "Magnetize Food", predict: "Predict (Auto-Pilot)", hrBreak: "HR Break (Invincibility)", deadEye: "Dead Eye (Targeting)", customTrailColors: "CUSTOM TRAIL COLORS", baseColor: "Base Color", shieldColor: "Shield Color", damageColor: "Damage Color", potionColor: "Potion Color", slowColor: "Slow-Mo Color", foodColor: "Food (Eat) Color", saveEquip: "SAVE & EQUIP CUSTOM",
+    dnd: "DND", dndInfo: "Do Not Disturb: mutes ALL game music and sound effects so your own music keeps playing uninterrupted.",
     profileBtn: "STATS", charactersTitle: "Characters", fromFriend: "from", challengeDeclined: "CHALLENGE DECLINED", giftSent: "GIFT SENT!",
     splash: "Splash!", achievements: "Achievements", characterInfo: "Character Info", noDescription: "No description available.", endlessLeaderboard: "Endless Leaderboard", allTime: "ALL TIME", weekly: "WEEKLY", rank: "Rank", player: "Player", score: "Score", loading: "Loading...", offlineMode: "Offline Mode", noScores: "No scores yet.", errorLoading: "Error loading scores.", friendsTitle: "Friends", enterUsername: "Enter Exact Username", add: "ADD", loadingFriends: "Loading Friends...", noFriends: "No friends added yet.", chat: "CHAT", donate: "DONATE", challenge: "CHALLENGE", redeemCode: "REDEEM CODE", secretCode: "Enter your secret code here. One-time use only!", enterCode: "Enter code...", submit: "SUBMIT",
     privacyLink: "Privacy Policy", bugsAdvice: "Bugs/Advice:", login: "Login", logout: "Logout", dash: "DASH", shrink: "SHRINK", widen: "WIDEN", bomb: "BOMB", predictBtn: "PREDICT", hrBreakBtn: "HR BREAK", deadEyeBtn: "DEAD EYE", delete: "DELETE", downloading: "Downloading Assets...",
@@ -1499,7 +1511,57 @@ window.triggerPvpTrashTalk = async function() {
          window.updateMusicVolume = function(val) { masterMusicVol = parseFloat(val); applyMusicVolumes(); }
          window.updateSFXVolume = function(val) { masterSFXVol = parseFloat(val); flapSound.volume = masterSFXVol * 0.5; alarmSound.volume = masterSFXVol; breathingSound.volume = masterSFXVol; shieldBreakSound.volume = masterSFXVol; damageSound.volume = masterSFXVol; explosionSound.volume = masterSFXVol; buttonSound.volume = masterSFXVol; buySound.volume = masterSFXVol; dashSound.volume = masterSFXVol; deathSound.volume = masterSFXVol; }
 
-         let voidBreathingCount = 0; const MAX_BREATHING = 2; let wrongwayPlayed = false; let wrongwayTimer = -1; let musicMuted = false; let sfxMuted = false;
+         let voidBreathingCount = 0; const MAX_BREATHING = 2; let wrongwayPlayed = false; let wrongwayTimer = -1; let musicMuted = false; let sfxMuted = false;
+
+         // ---------------- DND (DO NOT DISTURB) ----------------
+         // One switch that makes the game completely silent so the player's own
+         // music keeps playing. Patching play() on the prototype instead of every
+         // call site matters: several sounds (void breathing, wrong-way, alarm)
+         // never checked the mute flags and would still cut over the player's music.
+         let dndMode = false;
+         try { dndMode = localStorage.getItem('flappyDND') === 'true'; } catch(e) {}
+         const _everPlayed = new Set();
+         const _nativeMediaPlay = HTMLMediaElement.prototype.play;
+         HTMLMediaElement.prototype.play = function() {
+             _everPlayed.add(this);
+             if (dndMode) { try { this.pause(); } catch(e) {} return Promise.resolve(); }
+             return _nativeMediaPlay.apply(this, arguments);
+         };
+         function silenceAllAudio() { _everPlayed.forEach(a => { try { a.pause(); } catch(e) {} }); }
+
+         window.toggleDND = function(on) {
+             dndMode = (on === undefined) ? !dndMode : !!on;
+             try { localStorage.setItem('flappyDND', dndMode ? 'true' : 'false'); } catch(e) {}
+             if (dndMode) {
+                 silenceAllAudio();
+             } else if (!musicMuted) {
+                 // Bring back whatever track belongs to the screen we are on.
+                 if (game_mode === 'waiting_for_website') mainMenuMusic.play().catch(e => {});
+                 else if (game_mode === 'boss') { if (isBoss2) boss2Music.play().catch(e => {}); else boss1Music.play().catch(e => {}); }
+                 else if (game_mode === 'running' || game_mode === 'online_match' || game_mode === 'pvp_shetos') {
+                     if (currentBGIndex === 4) voidMusic.play().catch(e => {}); else bgMusic.play().catch(e => {});
+                 }
+             }
+             applyDNDUI();
+         }
+
+         function applyDNDUI() {
+             const box = document.getElementById('dnd-toggle');
+             if (box) box.checked = dndMode;
+             // The per-channel controls do nothing while everything is muted, so grey them out.
+             ['music-toggle', 'sfx-toggle', 'music-vol', 'sfx-vol'].forEach(id => {
+                 const el = document.getElementById(id);
+                 if (!el) return;
+                 el.disabled = dndMode;
+                 const row = el.closest('.toggle-row');
+                 if (row) row.style.opacity = dndMode ? '0.4' : '1';
+             });
+         }
+
+         window.toggleDNDInfo = function() {
+             const el = document.getElementById('dnd-info');
+             if (el) el.style.display = (el.style.display === 'none' || !el.style.display) ? 'block' : 'none';
+         }
          window.addEventListener('click', () => { if(mainMenuMusic.paused && !musicMuted && game_mode === 'waiting_for_website') { mainMenuMusic.play().catch(e => console.log("Music auto-started")); } }, {once: true});
 
          let boss = { x: 9999, y: 100, width: 150, height: 150, stamina: 100, speedY: 2, movingIn: true }; let chocolates = []; let victoryTimer = 0; let deathMessage = "Game Over"; let bossIntroState = 0; let bossIntroTimer = 0; let boss1Defeated = false; let isBoss2 = false; let isBoss3 = false; let dragonDefeated = false; let dragonHP = 100; let dragonPhase = 1; let dragonAtkState = 'idle'; let dragonAtkTimer = 0; let dragonCycle = 0; let dragonDashesDone = 0; let dragonDashVec = null; let dragonBodyCd = 0; let dragonDashSpeed = 13.5; let dragonMouthTimer = 0; let dragonDizzyDone = false; let dragonDizzyTimer = 0; let dragonDefeatTimer = 0; let dragonBob = 0; let dragonFire = []; let dragonTauntFx = []; const BOSS2_MAX_HITS = 5; let deleteBtnTimer = 0; let deleteBtnSpawnTimer = 0; let errorSigns = []; let errorSignCooldown = 0; 
@@ -2666,6 +2728,7 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
          myCanvas = document.getElementById('myCanvas');
          ctx = myCanvas.getContext('2d');
          applyScale();
+         applyDNDUI();
          updateMenuStats();
          
          // Main loop: fixed 40 steps/sec logic driven by requestAnimationFrame.
