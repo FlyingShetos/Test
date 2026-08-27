@@ -124,6 +124,19 @@
         .friend-item { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 10px; margin-bottom: 5px; border-radius: 5px; }
         .friend-status { font-size: 20px; color: #555; margin-right: 10px; } .status-online { color: lime; }
         .chat-btn { background: #2980b9; font-size: 10px; padding: 5px; margin-left: 5px; }
+        .friend-actions { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
+        .fp-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
+        .fp-stat { background: rgba(255,255,255,0.08); border: 1px solid #555; border-radius: 5px; padding: 6px 4px; text-align: center; font-size: 9px; color: #ccc; }
+        .fp-stat b { color: #f1c40f; font-size: 13px; }
+        .fp-title { font-family: 'Press Start 2P', cursive; font-size: 10px; color: #f1c40f; margin: 14px 0 8px 0; }
+        .fp-chars { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 8px; }
+        .fp-char { background: rgba(255,255,255,0.05); border: 1px solid #444; border-radius: 6px; padding: 6px; text-align: center; }
+        .fp-char img { width: 78px; height: 58px; object-fit: contain; display: block; margin: 0 auto; }
+        .fp-char-name { font-size: 8px; color: #ddd; margin-top: 4px; line-height: 1.3; }
+        .fp-achs { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
+        .fp-ach { background: rgba(255,255,255,0.05); border: 1px solid #444; border-radius: 6px; padding: 6px; font-size: 9px; color: #ddd; }
+        .fp-ach b { color: #f1c40f; }
+        .fp-locked { opacity: 0.35; filter: grayscale(100%); }
         #friendChatModal { flex-direction: column; background: #111; }
         #fc-header { display: flex; justify-content: space-between; background: #222; padding: 10px; color: white; font-weight: bold; }
         #fc-messages { flex-grow: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
@@ -488,6 +501,12 @@
              </div>
          </div>
 
+         <div id="friendProfileModal" class="modal" style="z-index: 150;">
+             <button class="close-btn" onclick="playClickSound(); closeModal('friendProfileModal')">X</button>
+             <h2 id="fp-name" style="font-size:14px;">Friend</h2>
+             <div id="fp-body" style="text-align:left; color:white;"></div>
+         </div>
+
          <div id="redeemModal" class="modal" style="height: 35%; top: 35%; max-width: 400px; left: 50%; transform: translateX(-50%); text-align: center;">
              <button class="close-btn" onclick="playClickSound(); closeModal('redeemModal')">X</button>
              <h2 style="color: lime; font-family: 'Press Start 2P'; font-size: 14px;" data-i18n="redeemCode">REDEEM CODE</h2>
@@ -591,6 +610,7 @@
     sellItem: "SELL ITEM", areYouSure: "Are you sure?", yes: "YES", no: "NO",
     friend: "Friend", typeMessage: "Type a message...", acceptChallenge: "Do you accept the challenge?", accept: "ACCEPT", decline: "DECLINE",
     unlockLabText: "Unlock the power to build<br>your ultimate Custom Shetos.", labCost: "Cost: 1500 Dry Food", unlockLab: "UNLOCK LAB", pointsAvailable: "POINTS AVAILABLE:", baseAppearance: "BASE APPEARANCE", abilities: "ABILITIES (Max 10 Total) - Toggle Max 3", lives: "Lives (Hearts)", dashes: "Dashes", bombs: "Bombs", shrinks: "Shrinks", widenGap: "Widen Gap", magnetizeFood: "Magnetize Food", predict: "Predict (Auto-Pilot)", hrBreak: "HR Break (Invincibility)", deadEye: "Dead Eye (Targeting)", customTrailColors: "CUSTOM TRAIL COLORS", baseColor: "Base Color", shieldColor: "Shield Color", damageColor: "Damage Color", potionColor: "Potion Color", slowColor: "Slow-Mo Color", foodColor: "Food (Eat) Color", saveEquip: "SAVE & EQUIP CUSTOM",
+    profileBtn: "STATS", charactersTitle: "Characters", fromFriend: "from", challengeDeclined: "CHALLENGE DECLINED", giftSent: "GIFT SENT!",
     splash: "Splash!", achievements: "Achievements", characterInfo: "Character Info", noDescription: "No description available.", endlessLeaderboard: "Endless Leaderboard", allTime: "ALL TIME", weekly: "WEEKLY", rank: "Rank", player: "Player", score: "Score", loading: "Loading...", offlineMode: "Offline Mode", noScores: "No scores yet.", errorLoading: "Error loading scores.", friendsTitle: "Friends", enterUsername: "Enter Exact Username", add: "ADD", loadingFriends: "Loading Friends...", noFriends: "No friends added yet.", chat: "CHAT", donate: "DONATE", challenge: "CHALLENGE", redeemCode: "REDEEM CODE", secretCode: "Enter your secret code here. One-time use only!", enterCode: "Enter code...", submit: "SUBMIT",
     privacyLink: "Privacy Policy", bugsAdvice: "Bugs/Advice:", login: "Login", logout: "Logout", dash: "DASH", shrink: "SHRINK", widen: "WIDEN", bomb: "BOMB", predictBtn: "PREDICT", hrBreakBtn: "HR BREAK", deadEyeBtn: "DEAD EYE", delete: "DELETE", downloading: "Downloading Assets...",
     scoreLabel: "Score: ", endlessLabel: "Endless: ", error: "ERROR", foodLabel: "Food: ", shield: "SHIELD", doubleDryfood: "DOUBLE DRYFOOD", slowMotion: "SLOW MOTION", livesLabel: "Lives: ", godMode: "GOD MODE", bombsLabel: "Bombs: ", dashesLabel: "Dashes: ", shrinksLabel: "Shrinks: ", widensLabel: "Widens: ", victory: "VICTORY!", go: "GO!", waitingShetos: "Waiting for Shetos...", waitingOpponent: "Waiting for Opponent...", tapMenu: "Tap to return to Menu", unknownArea: "UNKNOWN AREA", active: "ACTIVE", autoPilot: "AUTO-PILOT", searching: "Searching...",
@@ -786,6 +806,7 @@
          let enemyGhostRenderY = 250; let enemyGhostRenderX = 250; // smoothly interpolated ghost position for drawing
          let onlineSyncAccum = 0; let onlineDirty = false; let lastOnlineFlush = 0; // write coalescing + heartbeat state
          let roundStartTime = 0; let isRoundStarting = false; let onlineStartTimer = 0; let opponentLastSeen = 0; 
+         const ONLINE_TIMEOUT_MS = 15000; // how long an opponent may go silent before we call it a disconnect
          let isEndless = false; let myFriends = []; 
          let redeemedCodes = []; try { redeemedCodes = JSON.parse(localStorage.getItem('flappyRedeemed')) || []; } catch(e) {}
 
@@ -822,10 +843,13 @@
                          avatar.src = user.photoURL || 'player.png';
                          avatar.style.display = 'block';
                          showCheatFeedback(getLangText("syncingData"));
-                         syncUserData(user);
+                         syncUserData(user).then(() => claimPendingTransfers());
                          listenForInvites(); 
+                         startPresenceHeartbeat(); 
                      } else {
                          currentUser = null;
+                         stopPresenceHeartbeat();
+                         if (unsubscribeInvites) { unsubscribeInvites(); unsubscribeInvites = null; }
                          document.getElementById('login-btn').style.display = 'block';
                          document.getElementById('logout-btn').style.display = 'none';
                          document.getElementById('user-avatar').style.display = 'none';
@@ -860,6 +884,7 @@
                      if (cloudData.gamesPlayed && cloudData.gamesPlayed > totalGamesPlayed) totalGamesPlayed = cloudData.gamesPlayed;
                      if (cloudData.trophies && cloudData.trophies > onlineTrophies) onlineTrophies = cloudData.trophies;
                      if (cloudData.endlessHighScore && cloudData.endlessHighScore > endlessHighScore) { endlessHighScore = cloudData.endlessHighScore; localStorage.setItem('flappyEndlessHighScore', endlessHighScore); }
+                     if (cloudData.highScore && cloudData.highScore > highScore) { highScore = cloudData.highScore; localStorage.setItem('flappyHighScore', highScore); }
                      if (cloudData.friends) myFriends = cloudData.friends;
                      if (cloudData.redeemedCodes) { redeemedCodes = cloudData.redeemedCodes; localStorage.setItem('flappyRedeemed', JSON.stringify(redeemedCodes)); }
                      
@@ -898,7 +923,9 @@
                      stars: collectedStars, 
                      gamesPlayed: totalGamesPlayed, 
                      trophies: onlineTrophies, 
+                     highScore: highScore, 
                      endlessHighScore: endlessHighScore, 
+                     currentSkin: currentSkinKey, 
                      skins: availableSkins, 
                      trails: availableTrails, 
                      achievements: savedAchievements, 
@@ -906,9 +933,65 @@
                      labUnlocked: labUnlocked,
                      customStats: customStats,
                      customTrailColors: customTrailColors,
-                     redeemedCodes: redeemedCodes
+                     redeemedCodes: redeemedCodes,
+                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                  }, {merge: true});
              } catch(e) { console.error("Save Error:", e); }
+         }
+
+         // ---------------- PRESENCE ----------------
+         // saveUserData() only ran on progress changes, so lastUpdated went stale within
+         // minutes and every friend showed as offline. Now we stamp it on a timer.
+         const ONLINE_WINDOW_MS = 3 * 60 * 1000;
+         const PRESENCE_PING_MS = 45 * 1000;
+         let presenceTimer = null;
+         function touchPresence() {
+             if (!db || !currentUser) return;
+             db.collection('users').doc(currentUser.uid)
+               .set({ lastUpdated: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true })
+               .catch(e => console.warn("Presence ping failed:", e.code || e.message));
+         }
+         function startPresenceHeartbeat() {
+             stopPresenceHeartbeat();
+             touchPresence();
+             presenceTimer = setInterval(() => { touchPresence(); claimPendingTransfers(); }, PRESENCE_PING_MS);
+         }
+         function stopPresenceHeartbeat() { if (presenceTimer) { clearInterval(presenceTimer); presenceTimer = null; } }
+         function isUserOnline(d) {
+             if (!d || !d.lastUpdated || typeof d.lastUpdated.toDate !== 'function') return false;
+             return (Date.now() - d.lastUpdated.toDate().getTime()) < ONLINE_WINDOW_MS;
+         }
+
+         // ---------------- DRY FOOD GIFTS ----------------
+         // A gift is a doc in a shared mailbox that the SENDER owns. The receiver credits
+         // itself on its own user doc. Nobody ever writes to another player's document,
+         // which is what Firestore was rejecting before.
+         async function claimPendingTransfers() {
+             if (!db || !currentUser) return;
+             try {
+                 const q = await db.collection('transfers')
+                     .where('toUid', '==', currentUser.uid)
+                     .where('claimed', '==', false).limit(25).get();
+                 if (q.empty) return;
+                 let total = 0; let lastSender = "";
+                 for (const doc of q.docs) {
+                     const t = doc.data();
+                     const amount = Math.max(0, parseInt(t.amount) || 0);
+                     if (!amount) { doc.ref.update({ claimed: true }).catch(() => {}); continue; }
+                     // Claim FIRST: if the credit below never happens we lose a gift,
+                     // but a failed claim can never pay out twice.
+                     try { await doc.ref.update({ claimed: true, claimedAt: firebase.firestore.FieldValue.serverTimestamp() }); }
+                     catch (e) { continue; }
+                     total += amount; lastSender = t.fromName || lastSender;
+                 }
+                 if (total > 0) {
+                     collectedStars += total;
+                     localStorage.setItem('flappyStars', collectedStars);
+                     updateMenuStats();
+                     await saveUserData();
+                     showCheatFeedback("+" + total + " " + getLangText("food") + " " + getLangText("fromFriend") + " " + lastSender);
+                 }
+             } catch(e) { console.warn("Gift claim failed:", e.code || e.message); }
          }
 
          // --- ENDLESS LEADERBOARD FIX: submit score to Firestore ---
@@ -957,7 +1040,7 @@
          }
 
          window.closeAllModals = function() {
-             const modals = ['mode-select-modal', 'leaderboardModal', 'friendsModal', 'chatModal', 'labModal', 'achievementsModal', 'charInfoModal', 'friendChatModal', 'privacyModal', 'redeemModal', 'inviteModal', 'shop-modal', 'confirm-modal'];
+             const modals = ['mode-select-modal', 'leaderboardModal', 'friendsModal', 'chatModal', 'labModal', 'achievementsModal', 'charInfoModal', 'friendChatModal', 'privacyModal', 'redeemModal', 'inviteModal', 'shop-modal', 'confirm-modal', 'friendProfileModal'];
              modals.forEach(id => { let el = document.getElementById(id); if(el) el.style.display = 'none'; });
          }
 
@@ -965,21 +1048,45 @@
 
          let activeInviteDocId = null;
          let activeInviteMatchId = null;
+         let unsubscribeInvites = null;
+         let queuedInvite = null;
 
          function listenForInvites() {
              if(!db || !currentUser) return;
-             db.collection('users').doc(currentUser.uid).collection('invites').onSnapshot(snap => {
-                 snap.docChanges().forEach(change => {
-                     if(change.type === 'added') {
-                         let data = change.doc.data();
-                         activeInviteDocId = change.doc.id;
-                         activeInviteMatchId = data.matchId;
-                         document.getElementById('inviteText').innerText = `${data.hostName} ${getLangText("challengedYou")}`;
-                         document.getElementById('inviteModal').style.display = 'block';
-                         playClickSound();
-                     }
-                 });
-             });
+             if (unsubscribeInvites) { unsubscribeInvites(); unsubscribeInvites = null; }
+             unsubscribeInvites = db.collection('invites')
+                 .where('toUid', '==', currentUser.uid)
+                 .where('status', '==', 'pending')
+                 .onSnapshot(snap => {
+                     snap.docChanges().forEach(change => {
+                         if (change.type !== 'added') return;
+                         const data = change.doc.data();
+                         // Drop invites that went stale while we were away instead of
+                         // popping a challenge from an hour ago.
+                         if (data.timestamp && (Date.now() - data.timestamp.toMillis()) > 120000) {
+                             change.doc.ref.update({ status: 'expired' }).catch(() => {});
+                             return;
+                         }
+                         showInvite(change.doc.id, data);
+                     });
+                 }, err => console.warn("Invite listener error:", err.code || err.message));
+         }
+
+         function showInvite(docId, data) {
+             // Never yank someone out of a run: hold the invite until they are back on the menu.
+             if (game_mode !== 'waiting_for_website') { queuedInvite = { id: docId, data: data }; return; }
+             activeInviteDocId = docId;
+             activeInviteMatchId = data.matchId;
+             document.getElementById('inviteText').innerText = `${data.hostName} ${getLangText("challengedYou")}`;
+             document.getElementById('inviteModal').style.display = 'block';
+             playClickSound();
+         }
+
+         window.showQueuedInvite = function() {
+             if (!queuedInvite) return;
+             const q = queuedInvite; queuedInvite = null;
+             if (q.data.timestamp && (Date.now() - q.data.timestamp.toMillis()) > 120000) return;
+             showInvite(q.id, q.data);
          }
 
          window.acceptInvite = async function() {
@@ -987,16 +1094,24 @@
              document.getElementById('inviteModal').style.display = 'none';
              if(!activeInviteMatchId) return;
              try {
-                 await db.collection('matches').doc(activeInviteMatchId).update({ guestId: currentUser.uid, guestName: currentUser.displayName, status: 'starting' });
-                 await db.collection('users').doc(currentUser.uid).collection('invites').doc(activeInviteDocId).delete();
-                 activeMatchID = activeInviteMatchId; myOnlineRole = 'guest'; closeAllModals(); document.getElementById('landing-page').style.display = 'none'; listenToActiveMatch();
-             } catch(e) { console.error(e); }
+                 await db.collection('matches').doc(activeInviteMatchId).update({ guestId: currentUser.uid, guestName: currentUser.displayName || "Player", status: 'starting', guestSeen: Date.now() });
+                 if (activeInviteDocId) db.collection('invites').doc(activeInviteDocId).update({ status: 'accepted' }).catch(() => {});
+                 activeMatchID = activeInviteMatchId; myOnlineRole = 'guest'; closeAllModals();
+                 mainMenuMusic.pause(); mainMenuMusic.currentTime = 0;
+                 document.getElementById('landing-page').style.display = 'none'; listenToActiveMatch();
+             } catch(e) { console.error("Accept failed:", e); alert("Could not join the match (" + (e.code || e.message) + ")"); }
+             activeInviteDocId = null; activeInviteMatchId = null;
          }
 
          window.declineInvite = async function() {
              playClickSound();
              document.getElementById('inviteModal').style.display = 'none';
-             if(activeInviteDocId) { await db.collection('users').doc(currentUser.uid).collection('invites').doc(activeInviteDocId).delete(); }
+             // Tell the host too, otherwise they sit on the waiting screen forever.
+             try {
+                 if (activeInviteDocId) await db.collection('invites').doc(activeInviteDocId).update({ status: 'declined' });
+                 if (activeInviteMatchId) await db.collection('matches').doc(activeInviteMatchId).update({ status: 'declined' });
+             } catch(e) { console.warn("Decline failed:", e.code || e.message); }
+             activeInviteDocId = null; activeInviteMatchId = null;
          }
 
          window.challengeFriend = async function(friendID, friendName) {
@@ -1006,12 +1121,22 @@
              loadScr.innerHTML = `<div style="margin-bottom:20px;">${getLangText('waitingFor')} ${friendName.toUpperCase()}...</div><div class="loader-spinner" style="width:40px;height:40px;border:4px solid white;border-top:4px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;"></div><button onclick="cancelMatchSearch()" class="btn-yellow" style="padding:10px 20px;font-family:'Press Start 2P';cursor:pointer;">${getLangText('cancel')}</button><style>@keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}</style>`; 
              document.getElementById('game-container').appendChild(loadScr);
              
+             let createdMatchID = null;
              try {
-                 const newMatch = await db.collection('matches').add({ hostId: currentUser.uid, hostName: currentUser.displayName, status: 'waiting_for_friend', guestId: friendID, hostScore: 0, guestScore: 0, hostStatus: 'alive', guestStatus: 'alive', round: 1, hostWins: 0, guestWins: 0, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                 const newMatch = await db.collection('matches').add({ hostId: currentUser.uid, hostName: currentUser.displayName || "Player", status: 'waiting_for_friend', guestId: friendID, hostScore: 0, guestScore: 0, hostStatus: 'alive', guestStatus: 'alive', round: 1, hostWins: 0, guestWins: 0, hostSeen: Date.now(), timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                 createdMatchID = newMatch.id;
                  activeMatchID = newMatch.id; myOnlineRole = 'host';
-                 await db.collection('users').doc(friendID).collection('invites').add({ hostId: currentUser.uid, hostName: currentUser.displayName, matchId: newMatch.id, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                 // The old code wrote into users/{friend}/invites - another player's document,
+                 // which Firestore denies. Invites now live in their own collection.
+                 await db.collection('invites').add({ toUid: friendID, fromUid: currentUser.uid, hostName: currentUser.displayName || "Player", matchId: newMatch.id, status: 'pending', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
                  listenToActiveMatch();
-             } catch(e) { console.error(e); alert("Failed to send challenge!"); cancelMatchSearch(); }
+             } catch(e) {
+                 console.error("Challenge failed:", e);
+                 if (createdMatchID) db.collection('matches').doc(createdMatchID).delete().catch(() => {});
+                 activeMatchID = null; myOnlineRole = null;
+                 alert("Failed to send challenge (" + (e.code || e.message) + ")");
+                 cancelMatchSearch();
+             }
          }
 
          window.openRedeemModal = function() { playClickSound(); closeAllModals(); document.getElementById('redeemInput').value = ""; document.getElementById('redeemModal').style.display = 'block'; }
@@ -1074,15 +1199,19 @@
             updateMenuStats();
             
             try {
-                let friendRef = db.collection('users').doc(friendID);
-                await db.runTransaction(async (transaction) => {
-                    let fDoc = await transaction.get(friendRef);
-                    if (!fDoc.exists) throw "Friend not found!";
-                    let newStars = (fDoc.data().stars || 0) + amount;
-                    transaction.update(friendRef, { stars: newStars });
+                // Was: a transaction writing stars straight onto the friend's user doc.
+                // Firestore refuses that, so we post the gift to the shared mailbox and
+                // the friend credits themselves next time they play.
+                await db.collection('transfers').add({
+                    fromUid: currentUser.uid,
+                    fromName: currentUser.displayName || "Player",
+                    toUid: friendID,
+                    amount: amount,
+                    claimed: false,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 await saveUserData(); // Save our own new state directly to cloud
-                alert(`Successfully donated ${amount} dry food to ${friendName}!`);
+                alert(`Sent ${amount} dry food to ${friendName}! They collect it next time they play.`);
             } catch(e) {
                 console.error("Donation failed:", e);
                 // Rollback if failure
@@ -1090,15 +1219,112 @@
                 localStorage.setItem('flappyStars', collectedStars);
                 updateMenuStats();
                 saveUserData();
-                alert("Donation failed. Food returned to your account.");
+                alert("Donation failed (" + (e.code || e.message) + "). Food returned to your account.");
             }
          }
 
+         let friendsRefreshTimer = null;
          window.openFriends = async function() {
-             if (!currentUser) return alert("Login to use Friends!"); closeAllModals(); document.getElementById('friendsModal').style.display = 'block';
-             const list = document.getElementById('friendsList'); list.innerHTML = '<div style="text-align:center; color:#aaa;">' + getLangText('loadingFriends') + '</div>';
+             if (!currentUser) return alert("Login to use Friends!");
+             closeAllModals(); document.getElementById('friendsModal').style.display = 'block';
+             claimPendingTransfers();
+             renderFriendsList();
+             if (friendsRefreshTimer) clearInterval(friendsRefreshTimer);
+             // Presence goes stale on its own, so re-read the list while the panel is open.
+             friendsRefreshTimer = setInterval(() => {
+                 const modal = document.getElementById('friendsModal');
+                 if (!modal || modal.style.display !== 'block') { clearInterval(friendsRefreshTimer); friendsRefreshTimer = null; return; }
+                 renderFriendsList();
+             }, 30000);
+         }
+
+         async function renderFriendsList() {
+             const list = document.getElementById('friendsList');
+             if (!list || !db || !currentUser) return;
              if (myFriends.length === 0) { list.innerHTML = '<div style="text-align:center; color:#aaa; margin-top:20px;">' + getLangText('noFriends') + '</div>'; return; }
-             try { list.innerHTML = ''; for(let uid of myFriends) { const doc = await db.collection('users').doc(uid).get(); if(doc.exists) { const d = doc.data(); let isOnline = false; if(d.lastUpdated) { const diff = (Date.now() - d.lastUpdated.toDate().getTime()) / 1000 / 60; if(diff < 5) isOnline = true; } const row = document.createElement('div'); row.className = 'friend-item'; row.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><img src="${d.photo || 'player.png'}" style="width:30px; border-radius:50%;"><span class="friend-name">${d.displayName}</span></div><div class="friend-actions"><span class="friend-status ${isOnline ? 'status-online' : ''}">${isOnline ? '●' : '○'}</span><button class="chat-btn" onclick="openFriendChat('${uid}', '${d.displayName}')">${getLangText('chat')}</button><button class="chat-btn" style="background:#8e44ad;" onclick="donateToFriend('${uid}', '${d.displayName}')">${getLangText('donate')}</button><button class="chat-btn" style="background:#e67e22;" onclick="challengeFriend('${uid}', '${d.displayName}')">${getLangText('challenge')}</button></div>`; list.appendChild(row); } } } catch(e) { console.error(e); list.innerHTML = getLangText('errorLoading'); }
+             if (!list.dataset.loaded) list.innerHTML = '<div style="text-align:center; color:#aaa;">' + getLangText('loadingFriends') + '</div>';
+             try {
+                 let html = '';
+                 for (let uid of myFriends) {
+                     const doc = await db.collection('users').doc(uid).get();
+                     if (!doc.exists) continue;
+                     const d = doc.data();
+                     const online = isUserOnline(d);
+                     const safeName = String(d.displayName || "Player").replace(/'/g, "\\'");
+                     html += `<div class="friend-item">
+                         <div style="display:flex; align-items:center; gap:10px;">
+                             <img src="${d.photo || 'player.png'}" style="width:30px; border-radius:50%;">
+                             <span class="friend-name">${d.displayName || "Player"}</span>
+                         </div>
+                         <div class="friend-actions">
+                             <span class="friend-status ${online ? 'status-online' : ''}" title="${online ? getLangText('online') : getLangText('offlineMode')}">${online ? '\u25cf' : '\u25cb'}</span>
+                             <button class="chat-btn" style="background:#16a085;" onclick="openFriendProfile('${uid}', '${safeName}')">${getLangText('profileBtn')}</button>
+                             <button class="chat-btn" onclick="openFriendChat('${uid}', '${safeName}')">${getLangText('chat')}</button>
+                             <button class="chat-btn" style="background:#8e44ad;" onclick="donateToFriend('${uid}', '${safeName}')">${getLangText('donate')}</button>
+                             <button class="chat-btn" style="background:#e67e22;" onclick="challengeFriend('${uid}', '${safeName}')">${getLangText('challenge')}</button>
+                         </div>
+                     </div>`;
+                 }
+                 list.innerHTML = html || '<div style="text-align:center; color:#aaa; margin-top:20px;">' + getLangText('noFriends') + '</div>';
+                 list.dataset.loaded = "1";
+             } catch(e) { console.error(e); list.innerHTML = '<div style="text-align:center;color:#e74c3c;">' + getLangText('errorLoading') + ' (' + (e.code || e.message) + ')</div>'; }
+         }
+
+         // ---------------- FRIEND PROFILE ----------------
+         window.openFriendProfile = async function(uid, name) {
+             playClickSound(); closeAllModals();
+             document.getElementById('friendProfileModal').style.display = 'block';
+             document.getElementById('fp-name').innerText = name;
+             const body = document.getElementById('fp-body');
+             body.innerHTML = '<div style="text-align:center; color:#aaa;">' + getLangText('loading') + '</div>';
+             try {
+                 const doc = await db.collection('users').doc(uid).get();
+                 if (!doc.exists) { body.innerHTML = '<div style="text-align:center;color:#e74c3c;">' + getLangText('errorLoading') + '</div>'; return; }
+                 const d = doc.data();
+                 const owned = (d.skins || []).filter(k => SKINS[k] !== undefined);
+                 const unlockedAch = d.achievements || [];
+                 const online = isUserOnline(d);
+                 const skinKeys = Object.keys(SKINS).filter(k => k !== 'custom');
+
+                 const stat = (label, val) => `<div class="fp-stat"><span>${label}</span><br><b>${val}</b></div>`;
+                 let statsHTML = `<div class="fp-stats">
+                     ${stat(getLangText('high'), d.highScore !== undefined ? d.highScore : '-')}
+                     ${stat(getLangText('endlessLabel').replace(':',''), d.endlessHighScore || 0)}
+                     ${stat(getLangText('trophies'), d.trophies || 0)}
+                     ${stat(getLangText('games'), d.gamesPlayed || 0)}
+                 </div>`;
+
+                 let charHTML = skinKeys.map(k => {
+                     const s = SKINS[k];
+                     const has = owned.includes(k);
+                     const isOn = d.currentSkin === k;
+                     return `<div class="fp-char ${has ? '' : 'fp-locked'}" title="${s.name}">
+                         <img src="${s.big || ('big_' + s.src)}" onerror="this.onerror=null; this.classList.add('pixel-fallback'); this.src='${s.src}';">
+                         <div class="fp-char-name">${has ? s.name : '???'}${isOn ? ' \u2605' : ''}</div>
+                     </div>`;
+                 }).join('');
+
+                 let achHTML = ALL_ACHIEVEMENTS.map(a => {
+                     const got = unlockedAch.includes(a.id);
+                     return `<div class="fp-ach ${got ? '' : 'fp-locked'}"><span>${got ? '\u2714' : '\uD83D\uDD12'}</span> <b>${got ? a.title : '???'}</b><br><small>${got ? a.desc : ''}</small></div>`;
+                 }).join('');
+
+                 body.innerHTML = `
+                     <div style="text-align:center; margin-bottom:12px;">
+                         <img src="${d.photo || 'player.png'}" style="width:48px;border-radius:50%;vertical-align:middle;">
+                         <span class="friend-status ${online ? 'status-online' : ''}">${online ? '\u25cf' : '\u25cb'}</span>
+                         <span style="font-size:10px;color:#aaa;">${online ? getLangText('online') : getLangText('offlineMode')}</span>
+                     </div>
+                     ${statsHTML}
+                     <div class="fp-title">${getLangText('charactersTitle')} (${owned.length}/${skinKeys.length})</div>
+                     <div class="fp-chars">${charHTML}</div>
+                     <div class="fp-title">${getLangText('achievements')} (${unlockedAch.length}/${ALL_ACHIEVEMENTS.length})</div>
+                     <div class="fp-achs">${achHTML}</div>
+                     <button class="enter-btn btn-yellow btn-full-width" style="margin-top:14px;" onclick="playClickSound(); openFriends()">${getLangText('back')}</button>`;
+             } catch(e) {
+                 console.error("Profile load failed:", e);
+                 body.innerHTML = '<div style="text-align:center;color:#e74c3c;">' + getLangText('errorLoading') + ' (' + (e.code || e.message) + ')</div>';
+             }
          }
 
          window.addFriend = async function() {
@@ -1404,7 +1630,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          window.quitToMenu = function() { document.getElementById('user-profile').style.display = 'block'; bgMusic.pause(); bgMusic.currentTime = 0; voidMusic.pause(); voidMusic.currentTime = 0; connectorMusic.pause(); connectorMusic.currentTime = 0; boss1Music.pause(); boss1Music.currentTime = 0; boss2Music.pause(); boss2Music.currentTime = 0; breathingSound.pause(); breathingSound.currentTime = 0; const loader = document.getElementById('temp-online-loader'); if(loader) loader.remove(); if (activeMatchID) { db.collection('matches').doc(activeMatchID).update({ status: 'ended' }).catch(e=>console.log(e)); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; } isPaused = false; document.getElementById('pause-menu').style.display = 'none'; document.getElementById('online-ui').style.display = 'none'; document.getElementById('settings-btn').style.display = 'block'; 
              myCanvas.width = CANVAS_WIDTH; myCanvas.height = CANVAS_HEIGHT; let container = document.getElementById('game-container'); container.classList.remove('portrait-shake'); myCanvas.style.filter = "none";
              document.getElementById('landing-page').style.display = 'flex'; updateMenuStats(); game_mode = 'waiting_for_website'; reset_game(); document.getElementById('user-profile').style.display = 'block'; // boot lands on the main menu: login/logout visible document.getElementById('dash-btn').style.display = 'none'; document.getElementById('bomb-btn').style.display = 'none'; document.getElementById('shrink-btn').style.display = 'none'; document.getElementById('widen-btn').style.display = 'none'; document.getElementById('sherlock-btn').style.display = 'none'; document.getElementById('hrbreak-btn').style.display = 'none'; document.getElementById('arthur-btn').style.display = 'none';
-             currentBGIndex = 0; ctx.fillStyle = "#041820"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); if(!musicMuted) mainMenuMusic.play().catch(e => console.log(e)); window.updateSplashText(); applyScale(); }
+             currentBGIndex = 0; ctx.fillStyle = "#041820"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); if(!musicMuted) mainMenuMusic.play().catch(e => console.log(e)); window.updateSplashText(); applyScale(); setTimeout(() => { try { showQueuedInvite(); } catch(e) {} }, 400); }
 
          window.openShopFromMenu = function() { 
              playClickSound();
@@ -1842,7 +2068,7 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
              showCheatFeedback(getLangText("opponentDisconnected"));
              setTimeout(function() { triggerGameOver("VICTORY! +" + trophyChange + " 🏆"); document.getElementById('online-ui').style.display = 'none'; }, 1000);
          }
-         function listenToActiveMatch() { unsubscribeMatch = db.collection('matches').doc(activeMatchID).onSnapshot((snap) => { const data = snap.data(); if (!data) { if (game_mode === 'online_match') { handleOpponentLeft(); } else { const deadLoader = document.getElementById('temp-online-loader'); if (deadLoader) deadLoader.remove(); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; } return; } /* only REMOTE updates count as opponent presence (our own writes must not) */ if (!snap.metadata.hasPendingWrites) opponentLastSeen = Date.now(); if (myOnlineRole === 'host') { opponentName = data.guestName || "Opponent"; if (data.guestY !== undefined) enemyGhostY = data.guestY; if (data.guestScore !== undefined) enemyGhostScore = data.guestScore; online_score_enemy = data.guestScore || 0; enemyCurrentVisibleScore = online_score_enemy; enemyWins = data.guestWins || 0; myWins = data.hostWins || 0; enemyHasCrashed = data.guestStatus === 'crashed'; } else { opponentName = data.hostName || "Opponent"; if (data.hostY !== undefined) enemyGhostY = data.hostY; if (data.hostScore !== undefined) enemyGhostScore = data.hostScore; online_score_enemy = data.hostScore || 0; enemyCurrentVisibleScore = online_score_enemy; enemyWins = data.hostWins || 0; myWins = data.guestWins || 0; enemyHasCrashed = data.hostStatus === 'crashed'; } if (data.status === 'starting' && document.getElementById('temp-online-loader')) { document.getElementById('temp-online-loader').remove(); trophyProcessed = false; startGameLoopOnline(); } if ((data.hostWins || 0) >= 2 || (data.guestWins || 0) >= 2) { endMatchLogic(data); return; } if (data.status === 'ended') { if (game_mode === 'online_match') { handleOpponentLeft(); } else { if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; const staleLoader = document.getElementById('temp-online-loader'); if (staleLoader) staleLoader.remove(); } return; } if (data.round > online_round) { online_round = data.round; resetOnlineRound(); triggerFlash("white"); } if (game_mode === 'online_match') { try { checkRoundResult(); } catch (e) { console.log(e); } } }, (err) => console.error("Match listener error:", err)); }
+         function listenToActiveMatch() { unsubscribeMatch = db.collection('matches').doc(activeMatchID).onSnapshot((snap) => { const data = snap.data(); if (!data) { if (game_mode === 'online_match') { handleOpponentLeft(); } else { const deadLoader = document.getElementById('temp-online-loader'); if (deadLoader) deadLoader.remove(); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; } return; } /* only REMOTE updates count as opponent presence (our own writes must not) */ if (!snap.metadata.hasPendingWrites) opponentLastSeen = Date.now(); if (myOnlineRole === 'host') { opponentName = data.guestName || "Opponent"; if (data.guestY !== undefined) enemyGhostY = data.guestY; if (data.guestScore !== undefined) enemyGhostScore = data.guestScore; online_score_enemy = data.guestScore || 0; enemyCurrentVisibleScore = online_score_enemy; enemyWins = data.guestWins || 0; myWins = data.hostWins || 0; enemyHasCrashed = data.guestStatus === 'crashed'; } else { opponentName = data.hostName || "Opponent"; if (data.hostY !== undefined) enemyGhostY = data.hostY; if (data.hostScore !== undefined) enemyGhostScore = data.hostScore; online_score_enemy = data.hostScore || 0; enemyCurrentVisibleScore = online_score_enemy; enemyWins = data.hostWins || 0; myWins = data.guestWins || 0; enemyHasCrashed = data.hostStatus === 'crashed'; } if (data.status === 'declined') { const dl = document.getElementById('temp-online-loader'); if (dl) dl.remove(); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } db.collection('matches').doc(activeMatchID).delete().catch(() => {}); activeMatchID = null; myOnlineRole = null; showCheatFeedback(getLangText("challengeDeclined")); quitToMenu(); return; } if (data.status === 'starting' && document.getElementById('temp-online-loader')) { document.getElementById('temp-online-loader').remove(); trophyProcessed = false; startGameLoopOnline(); } if ((data.hostWins || 0) >= 2 || (data.guestWins || 0) >= 2) { endMatchLogic(data); return; } if (data.status === 'ended') { if (game_mode === 'online_match') { handleOpponentLeft(); } else { if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; const staleLoader = document.getElementById('temp-online-loader'); if (staleLoader) staleLoader.remove(); } return; } if (data.round > online_round) { online_round = data.round; resetOnlineRound(); triggerFlash("white"); } if (game_mode === 'online_match') { try { checkRoundResult(); } catch (e) { console.log(e); } } }, (err) => console.error("Match listener error:", err)); }
          
          window.startOnlineMode = async function() { if (!auth || !currentUser) return alert("You must login to play Online!"); if (!db) return alert("Database offline!"); closeAllModals(); mainMenuMusic.pause(); mainMenuMusic.currentTime = 0; document.getElementById('landing-page').style.display = 'none'; let loadScr = document.createElement('div'); loadScr.id = "temp-online-loader"; loadScr.style.position = "absolute"; loadScr.style.top=0; loadScr.style.left=0; loadScr.style.width="100%"; loadScr.style.height="100%"; loadScr.style.background="black"; loadScr.style.color="white"; loadScr.style.display="flex"; loadScr.style.flexDirection="column"; loadScr.style.justifyContent="center"; loadScr.style.alignItems="center"; loadScr.style.fontFamily="'Press Start 2P'"; loadScr.innerHTML = `<div style="margin-bottom:20px;">${getLangText('searchingOpponent')}</div><div class="loader-spinner" style="width:40px;height:40px;border:4px solid white;border-top:4px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;"></div><button onclick="cancelMatchSearch()" class="btn-yellow" style="padding:10px 20px;font-family:'Press Start 2P';cursor:pointer;">${getLangText('cancel')}</button><style>@keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}</style>`; document.getElementById('game-container').appendChild(loadScr);
              try {
@@ -1884,8 +2110,11 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
              if (!force && !onlineDirty) return;
              onlineDirty = false; lastOnlineFlush = Date.now();
              const upd = {};
-             if (myOnlineRole === 'host') { upd.hostY = Math.round(bird.y); upd.hostScore = currentScore; upd.hostStatus = myHasCrashed ? 'crashed' : 'alive'; }
-             else { upd.guestY = Math.round(bird.y); upd.guestScore = currentScore; upd.guestStatus = myHasCrashed ? 'crashed' : 'alive'; }
+             // hostSeen/guestSeen must change on EVERY write. A crashed player's y/score/status
+             // stop moving, and Firestore does not notify listeners for a no-op write, so the
+             // opponent saw them go silent and "disconnected" them mid-match.
+             if (myOnlineRole === 'host') { upd.hostY = Math.round(bird.y); upd.hostScore = currentScore; upd.hostStatus = myHasCrashed ? 'crashed' : 'alive'; upd.hostSeen = Date.now(); }
+             else { upd.guestY = Math.round(bird.y); upd.guestScore = currentScore; upd.guestStatus = myHasCrashed ? 'crashed' : 'alive'; upd.guestSeen = Date.now(); }
              db.collection('matches').doc(activeMatchID).update(upd).catch(e => { onlineDirty = true; });
          }
 
@@ -1906,7 +2135,7 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
                  triggerGameOver(msg); 
              } 
          }
-         function resetOnlineRound() { pipes = []; bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; bird.velocity_x = 0; currentScore = 0; lastPipeY = 250; pipe_speed = -2; speedMultiplier = 1; pipe_spawn_timer = 0; onlineStartTimer = 3; isRoundStarting = true; myHasCrashed = false; enemyHasCrashed = false; window.roundEnding = false; enemyGhostY = CANVAS_HEIGHT / 2; enemyGhostRenderY = bird.y; enemyGhostRenderX = bird.x; onlineDirty = true; if(game_mode === 'pvp_shetos') { shetosBotY = CANVAS_HEIGHT/2; shetosBotScore = 0; shetosBotAlive = true; shetosBotVelocityY = 0; } if(activeMatchID && game_mode === 'online_match') { flushOnlineSync(true); } updateOnlineUI(); flashTimer = 0; }
+         function resetOnlineRound() { opponentLastSeen = Date.now(); pipes = []; bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; bird.velocity_x = 0; currentScore = 0; lastPipeY = 250; pipe_speed = -2; speedMultiplier = 1; pipe_spawn_timer = 0; onlineStartTimer = 3; isRoundStarting = true; myHasCrashed = false; enemyHasCrashed = false; window.roundEnding = false; enemyGhostY = CANVAS_HEIGHT / 2; enemyGhostRenderY = bird.y; enemyGhostRenderX = bird.x; onlineDirty = true; if(game_mode === 'pvp_shetos') { shetosBotY = CANVAS_HEIGHT/2; shetosBotScore = 0; shetosBotAlive = true; shetosBotVelocityY = 0; } if(activeMatchID && game_mode === 'online_match') { flushOnlineSync(true); } updateOnlineUI(); flashTimer = 0; }
          function checkRoundResult() { if (game_mode === 'pvp_shetos') { if (currentScore > shetosBotScore && !shetosBotAlive) resolveRound('win'); else if (shetosBotScore > currentScore && myHasCrashed) resolveRound('loss'); else if (!shetosBotAlive && myHasCrashed && shetosBotScore === currentScore) resolveRound('draw'); return; } if (!myHasCrashed) { if (enemyHasCrashed && currentScore > online_score_enemy) { resolveRound('win'); } return; } if (enemyHasCrashed) { if (currentScore > online_score_enemy) resolveRound('win'); else if (currentScore < online_score_enemy) resolveRound('loss'); else resolveRound('draw'); } }
          function resolveRound(result) { if (game_mode === 'pvp_shetos') { let newMyWins = myWins; let newEnemyWins = enemyWins; if (result === 'win') newMyWins++; else if (result === 'loss') newEnemyWins++; myWins = newMyWins; enemyWins = newEnemyWins; online_round++; if (myWins >= 2 || enemyWins >= 2) { let iWon = (myWins >= 2); let trophyChange = iWon ? 10 : -5; onlineTrophies += trophyChange; localStorage.setItem('flappyTrophies', onlineTrophies); saveUserData(); setTimeout(() => { let msg = iWon ? `VICTORY! +${trophyChange} 🏆` : `DEFEAT... ${trophyChange} 🏆`; triggerGameOver(msg); document.getElementById('online-ui').style.display = 'none'; }, 1000); } else { resetOnlineRound(); triggerFlash("white"); } return; } if (myOnlineRole !== 'host') return; if (!activeMatchID) return; let newHostWins = myWins; let newGuestWins = enemyWins; if (currentScore > online_score_enemy) newHostWins = myWins + 1; else if (online_score_enemy > currentScore) newGuestWins = enemyWins + 1; myWins = newHostWins; enemyWins = newGuestWins; updateOnlineUI();
              if (myWins >= 2 || enemyWins >= 2) { endMatchLogic({ hostWins: myWins, guestWins: enemyWins }); return; }
@@ -2079,7 +2308,7 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
                          if (!myHasCrashed) { time_game_last_running = new Date(); bottom_bar_offset += pipe_speed * speedMultiplier; for (var i = 0; i < pipes.length; i++) { pipes[i].Do_Frame_Things(); } pipe_spawn_timer += (1000 / FPS) * speedMultiplier; if (pipe_spawn_timer > currentSpawnInterval) { let gap_size = isWidenActive ? 280 : 140; let safe_area = CANVAS_HEIGHT - gap_size - 50; if(safe_area < 50) safe_area = 50; let top_of_gap = Math.floor(Math.random() * (safe_area - 50)) + 50; add_pipe(CANVAS_WIDTH, top_of_gap, gap_size); pipe_spawn_timer = 0; } make_bird_slow_and_fall(); check_for_end_game(); check_for_score_increase(); [pipes, shields, stars, potions, slowPotions].forEach(arr => { for (let i = arr.length - 1; i >= 0; i--) { if (arr[i].x < -100) arr.splice(i, 1); else if (arr !== pipes) arr[i].Do_Frame_Things(); } }); updateShetosBot(); } else { if (shetosBotAlive) { for (var i = 0; i < pipes.length; i++) { pipes[i].Do_Frame_Things(); } [pipes].forEach(arr => { for (let i = arr.length - 1; i >= 0; i--) { if (arr[i].x < -100) arr.splice(i, 1); }}); updateShetosBot(); check_for_score_increase(); } ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); ctx.font = "20px 'Press Start 2P'"; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(getLangText("waitingShetos"), CANVAS_WIDTH/2, CANVAS_HEIGHT/2); if (!window.roundEnding) { if (!shetosBotAlive || shetosBotScore > currentScore) { window.roundEnding = true; setTimeout(() => checkRoundResult(), 500); } } } updateOnlineUI(); break;
 
                      case 'online_match':
-                         { let syncNow = Date.now(); onlineSyncAccum += (1000 / FPS); if (onlineSyncAccum >= 200) { onlineSyncAccum = 0; flushOnlineSync(onlineDirty || (syncNow - lastOnlineFlush) >= 1500); } if (activeMatchID && opponentLastSeen > 0 && (syncNow - opponentLastSeen) > 7000) { handleOpponentLeft(); } }
+                         { let syncNow = Date.now(); onlineSyncAccum += (1000 / FPS); if (onlineSyncAccum >= 200) { onlineSyncAccum = 0; flushOnlineSync(onlineDirty || (syncNow - lastOnlineFlush) >= 1500); } if (activeMatchID && opponentLastSeen > 0 && !isRoundStarting && !trophyProcessed && (syncNow - opponentLastSeen) > ONLINE_TIMEOUT_MS) { handleOpponentLeft(); } }
                          if (!myHasCrashed) { time_game_last_running = new Date(); bottom_bar_offset += pipe_speed * speedMultiplier; for (var i = 0; i < pipes.length; i++) { pipes[i].Do_Frame_Things(); } pipe_spawn_timer += (1000 / FPS) * speedMultiplier; if (pipe_spawn_timer > currentSpawnInterval) { let gap_size = isWidenActive ? 280 : 140; let safe_area = CANVAS_HEIGHT - gap_size - 50; if(safe_area < 50) safe_area = 50; let top_of_gap = Math.floor(Math.random() * (safe_area - 50)) + 50; add_pipe(CANVAS_WIDTH, top_of_gap, gap_size); pipe_spawn_timer = 0; } make_bird_slow_and_fall(); check_for_end_game(); check_for_score_increase(); [pipes, shields, stars, potions, slowPotions].forEach(arr => { for (let i = arr.length - 1; i >= 0; i--) { if (arr[i].x < -100) arr.splice(i, 1); else if (arr !== pipes) arr[i].Do_Frame_Things(); } }); onlineDirty = true; if(!enemyHasCrashed) { let ghostTargetX = bird.x + ((online_score_enemy - currentScore) * 60); if (ghostTargetX < 20) ghostTargetX = 20; if (ghostTargetX > CANVAS_WIDTH - 80) ghostTargetX = CANVAS_WIDTH - 80; enemyGhostRenderY += (enemyGhostY - enemyGhostRenderY) * 0.25; enemyGhostRenderX += (ghostTargetX - enemyGhostRenderX) * 0.15; ctx.save(); ctx.globalAlpha = 0.5; let ghostW = 50; let ghostH = 50; if(bird.MyImg && bird.MyImg.complete && bird.MyImg.naturalWidth !== 0) { ghostW = bird.MyImg.width; ghostH = bird.MyImg.height; } ctx.drawImage(bird.MyImg, enemyGhostRenderX, enemyGhostRenderY, ghostW, ghostH); ctx.fillStyle = "white"; ctx.font = "10px Arial"; ctx.textAlign="center"; ctx.fillText(opponentName, enemyGhostRenderX + (ghostW/2), enemyGhostRenderY - 5); ctx.restore(); } } else { ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); ctx.font = "20px 'Press Start 2P'"; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(getLangText("waitingOpponent"), CANVAS_WIDTH/2, CANVAS_HEIGHT/2); } updateOnlineUI(); break;
                          
                      case 'terminal_ending':
