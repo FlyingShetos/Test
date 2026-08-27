@@ -49,7 +49,6 @@
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
         
         .preview-img { width: 122px; height: 90px; object-fit: contain; margin-bottom: 10px; cursor: pointer; transition: transform 0.2s; flex-shrink: 0; } .preview-img:hover { transform: scale(1.2); }
-        .preview-img.pixel-fallback { image-rendering: pixelated; }
         
         #user-profile { position: absolute; top: 10px; right: 10px; z-index: 60; display: flex; align-items: center; gap: 10px; }
         .user-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; display: none; }
@@ -103,7 +102,8 @@
         .lab-points { text-align: center; color: white; font-family: 'Press Start 2P', cursive; font-size: 12px; margin-bottom: 20px; }
         .lab-section { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 5px; margin-bottom: 15px; }
         .skin-selector { display: flex; align-items: center; justify-content: center; gap: 20px; }
-        #lab-skin-preview { width: 60px; height: 60px; image-rendering: pixelated; }
+        #lab-skin-preview { width: 102px; height: 75px; object-fit: contain; }
+        .pixel-fallback { image-rendering: pixelated; }
         .lab-row { display: flex; justify-content: space-between; align-items: center; color: white; margin-bottom: 10px; font-size: 14px; }
         .lab-controls { display: flex; align-items: center; gap: 10px; }
         .lab-controls button { padding: 5px 10px; font-size: 16px; background: #555; }
@@ -385,7 +385,7 @@
                          <div style="color:gold; font-family:'Press Start 2P'; font-size:10px; margin-bottom:10px;" data-i18n="baseAppearance">BASE APPEARANCE</div>
                          <div class="skin-selector">
                              <button class="enter-btn btn-blue" style="width:40px; padding:5px;" onclick="changeLabSkin(-1)">❮</button>
-                             <img id="lab-skin-preview" src="player.png">
+                             <img id="lab-skin-preview" src="big_player.png">
                              <button class="enter-btn btn-blue" style="width:40px; padding:5px;" onclick="changeLabSkin(1)">❯</button>
                          </div>
                      </div>
@@ -1165,7 +1165,7 @@ window.triggerPvpTrashTalk = async function() {
              const allSkinKeys = Object.keys(SKINS).filter(k => k !== 'custom');
              let tempIndex = allSkinKeys.indexOf(customStats.visualSkin);
              if(tempIndex === -1) tempIndex = 0;
-             document.getElementById('lab-skin-preview').src = SKINS[allSkinKeys[tempIndex]].src;
+             applyBigSkinArt(document.getElementById('lab-skin-preview'), allSkinKeys[tempIndex]);
 
              document.getElementById('lab-col-base').value = customTrailColors.base;
              document.getElementById('lab-col-shield').value = customTrailColors.shield;
@@ -1207,7 +1207,7 @@ window.triggerPvpTrashTalk = async function() {
              if (currentIndex < 0) currentIndex = allSkinKeys.length - 1;
              if (currentIndex >= allSkinKeys.length) currentIndex = 0;
              customStats.visualSkin = allSkinKeys[currentIndex];
-             document.getElementById('lab-skin-preview').src = SKINS[customStats.visualSkin].src;
+             applyBigSkinArt(document.getElementById('lab-skin-preview'), customStats.visualSkin);
          }
 
          window.saveAndEquipCustom = function() { if(!sfxMuted){buySound.currentTime=0; buySound.play().catch(e=>{});}  localStorage.setItem('flappyCustomStats', JSON.stringify(customStats)); localStorage.setItem('flappyCustomTrail', JSON.stringify(customTrailColors)); saveUserData(); for (let k in SKINS) { SKINS[k].current = false; } for (let k in TRAILS) { TRAILS[k].current = false; } currentSkinKey = 'custom'; currentTrailKey = 'trail_custom'; localStorage.setItem('currentSkin', 'custom'); localStorage.setItem('currentTrail', 'trail_custom'); updateMenuCharacter(); let tempImg = new Image(); tempImg.onload = function() { bird.MyImg = tempImg; }; tempImg.src = SKINS[customStats.visualSkin] ? SKINS[customStats.visualSkin].src : 'player.png'; closeModal('labModal'); showCheatFeedback(getLangText("customEquipped")); updateAbilityButtons(); }
@@ -1444,7 +1444,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
 
                  let visualHTML = '';
                  if (shopCategory === 'skins') {
-                     visualHTML = `<img src="${item.src}" style="width: 50px; height: 50px; object-fit: contain; margin: 0 auto; display: block; image-rendering: pixelated;">`;
+                     visualHTML = `<img src="${item.big || ('big_' + item.src)}" onerror="this.onerror=null; this.classList.add('pixel-fallback'); this.src='${item.src}';" style="width: 102px; max-width: 100%; height: 75px; object-fit: contain; margin: 0 auto; display: block;">`;
                  } else {
                      let colorCode = item.color === 'rainbow' ? 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)' : (item.color === 'transparent' ? 'white' : item.color);
                      visualHTML = `<div style="width: 40px; height: 10px; border-radius: 5px; background: ${colorCode}; margin: 20px auto;"></div>`;
@@ -1794,18 +1794,21 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
          function updateMenuStats() { if(document.getElementById('menuHighScore')) { document.getElementById('menuHighScore').innerText = highScore; document.getElementById('menuStars').innerText = collectedStars; document.getElementById('menuTrophies').innerText = onlineTrophies; document.getElementById('menuGamesPlayed').innerText = totalGamesPlayed; } try { updateMenuCharacter(); } catch(e) {} }
          // Main menu shows the equipped character using its high-res "big_" art (325x240).
          // Falls back to the in-game sprite if the big file is missing.
+         window.applyBigSkinArt = function(el, key) {
+             if (!el) return;
+             let skin = SKINS[key] || SKINS['default'];
+             el.onerror = function() { el.onerror = null; el.classList.add('pixel-fallback'); el.src = skin.src; };
+             el.classList.remove('pixel-fallback');
+             el.src = skin.big || ('big_' + skin.src);
+         }
          window.updateMenuCharacter = function() {
              let el = document.getElementById('menu-char-preview');
              if (!el) return;
              let key = currentSkinKey;
              if (key === 'custom') key = (typeof customStats !== 'undefined' && SKINS[customStats.visualSkin]) ? customStats.visualSkin : 'default';
-             let skin = SKINS[key] || SKINS['default'];
-             let bigSrc = skin.big || ('big_' + skin.src);
              if (el.dataset.skinKey === key) return;
              el.dataset.skinKey = key;
-             el.onerror = function() { el.onerror = null; el.classList.add('pixel-fallback'); el.src = skin.src; };
-             el.classList.remove('pixel-fallback');
-             el.src = bigSrc;
+             applyBigSkinArt(el, key);
          }
          function showCheatFeedback(text) { let el = document.getElementById('cheat-feedback'); el.innerText = text; el.style.display = 'block'; setTimeout(() => { el.style.display = 'none'; }, 2000); }
          function unlockAchievement(id) { let ach = ALL_ACHIEVEMENTS.find(a => a.id === id); if (ach && !ach.unlocked) { ach.unlocked = true; savedAchievements.push(id); localStorage.setItem('flappyAchievements', JSON.stringify(savedAchievements)); if (ach.reward > 0) { collectedStars += ach.reward; localStorage.setItem('flappyStars', collectedStars); updateMenuStats(); showCheatFeedback(getLangText("achReward") + " +" + ach.reward + " " + getLangText("food") + "!"); } } }
