@@ -1842,6 +1842,66 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          window.triggerShrink = function() { if (!(currentSkinKey === 'luigi' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && shrinkCharges > 0)) || shrinkCharges <= 0 || isShrunk || (game_mode !== 'running' && game_mode !== 'online_match' && game_mode !== 'pvp_shetos' && game_mode !== 'boss') || isPaused) return; shrinkCharges--; isShrunk = true; shrinkTimer = SHRINK_DURATION; playClickSound(); triggerFlash("rgba(46, 204, 113, 0.3)"); }
          window.triggerWiden = function() { if (!(currentSkinKey === 'heisenbark' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && widenCharges > 0)) || widenCharges <= 0 || isWidenActive || (game_mode !== 'running' && game_mode !== 'online_match' && game_mode !== 'pvp_shetos' && game_mode !== 'boss') || isPaused) return; widenCharges--; isWidenActive = true; widenTimer = WIDEN_DURATION; playClickSound(); triggerFlash("rgba(155, 89, 182, 0.3)"); for(let i=0; i<pipes.length; i++) { if(pipes[i].x > bird.x - 50 && pipes[i].flipV) { pipes[i].y += 140; if(pipes[i].oscillate) pipes[i].baseY += 140; } } }
          
+         // Sherlock's boss autopilot.
+         // The old version steered to "bird.y +/- 100" - a target measured from the bird
+         // itself, so every frame it moved the goalpost and the bird rocketed off the top
+         // of the screen (or into the floor) at a pinned 15px/frame. It also only looked at
+         // projectiles, so it happily sat still while the dragon dashed straight through it.
+         // This one scores absolute screen positions and always stays inside the playfield.
+         let sherlockTargetY = null;
+         function sherlockBossAutopilot() {
+             if (!isSherlockActive || !bird.visible) { sherlockTargetY = null; return; }
+             if (bossIntroState < 3) { sherlockTargetY = null; return; }   // hands off during the intro cutscene
+             const bw = (bird.MyImg && bird.MyImg.width) || 40;
+             const bh = (bird.MyImg && bird.MyImg.height) || 37;
+             const TOP = 24, BOT = CANVAS_HEIGHT - 70 - bh;   // ceiling and the bottom bar
+             const threats = [];
+
+             const addSprites = (arr, pad) => {
+                 if (!arr) return;
+                 for (const s of arr) {
+                     if (!s || s.visible === false) continue;
+                     const sw = (s.MyImg && s.MyImg.width) || 30, sh = (s.MyImg && s.MyImg.height) || 30;
+                     if (s.x + sw < bird.x - 40 || s.x > bird.x + 300) continue;   // behind us / too far ahead
+                     threats.push({ y: s.y + sh / 2, r: sh / 2 + pad });
+                 }
+             };
+             addSprites(chocolates, 46);
+             addSprites(errorSigns, 54);
+             for (const fb of dragonFire) {                     // fireballs carry a radius, y is their centre
+                 if (!fb || fb.visible === false) continue;
+                 if (fb.x < bird.x - 40 || fb.x > bird.x + 300) continue;
+                 threats.push({ y: fb.y, r: (fb.r || 14) + 46 });
+             }
+             // The boss body is lethal on contact - this is what the dragon dash needed.
+             const bossLive = (game_mode === 'boss' && bossIntroState >= 3 && boss.x < CANVAS_WIDTH + 60);
+             const dragonSafe = (isBoss3 && dragonDizzyTimer > 0);   // dizzy = free hit window, not a threat
+             if (bossLive && !dragonSafe && boss.x < bird.x + 340 && boss.x + boss.width > bird.x - 90) {
+                 threats.push({ y: boss.y + boss.height / 2, r: boss.height * 0.5 + 52 });
+             }
+
+             let bestY = bird.y, bestScore = -Infinity;
+             for (let y = TOP; y <= BOT; y += 8) {
+                 const centre = y + bh / 2;
+                 let danger = 0;
+                 for (const t of threats) {
+                     const d = Math.abs(centre - t.y);
+                     if (d < t.r) danger += (t.r - d);
+                 }
+                 // safest lane wins; ties go to the one we have to travel least to reach
+                 const score = -(danger * 12) - Math.abs(y - bird.y) * 0.5;
+                 if (score > bestScore) { bestScore = score; bestY = y; }
+             }
+
+             sherlockTargetY = bestY;
+             let v = (bestY - bird.y) * 0.15;
+             const cap = max_fall_speed;                       // never faster than a normal fall
+             bird.velocity_y = Math.max(-cap, Math.min(cap, v));
+             // hard stop at the edges so autopilot can never fly out of the world
+             if (bird.y <= TOP && bird.velocity_y < 0) { bird.y = TOP; bird.velocity_y = 0; }
+             if (bird.y >= BOT && bird.velocity_y > 0) { bird.y = BOT; bird.velocity_y = 0; }
+         }
+
          window.triggerSherlock = function() { if (!(currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && customStats.sherlock)) || sherlockCooldown > 0 || isSherlockActive || isPaused || (game_mode !== 'running' && game_mode !== 'boss')) return; isSherlockActive = true; sherlockTimer = 240; playClickSound(); }
          window.triggerHRBreak = function() { if (!(currentSkinKey === 'employed' || (currentSkinKey === 'custom' && customStats.hrbreak)) || hrBreakCooldown > 0 || isHrBreakActive || isPaused || (game_mode !== 'running' && game_mode !== 'boss')) return; isHrBreakActive = true; hrBreakTimer = 6 * FPS; playClickSound(); triggerFlash("rgba(255, 255, 255, 0.4)"); }
          window.triggerArthur = function() { if (!(currentSkinKey === 'arthur' || (currentSkinKey === 'custom' && customStats.arthur)) || arthurCooldown > 0 || isArthurActive || isPaused || (game_mode !== 'running' && game_mode !== 'boss')) return; isArthurActive = true; arthurTimer = 5 * FPS; arthurShotUsed = false; myCanvas.style.filter = "sepia(100%) saturate(150%) brightness(80%)"; playClickSound(); }
@@ -2006,7 +2066,10 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              // ---- body contact: touching the dragon hurts at ALL times (dizzy excepted - that's the punish window) ----
              if (dragonBodyCd > 0) dragonBodyCd--;
              else if (dragonDizzyTimer <= 0 && dragonBodyHitsBird()) {
-                 if (isDashActive) { dragonHP -= 3; dragonBodyCd = 30; playDragonSfx('shield_breaking.mp3', 1.1); triggerFlash("lime"); } // counter!
+                 // HR break is full invincibility. ImagesTouching() honours it, but the dragon
+                 // uses its own ellipse test, so employed Shetos was still taking dash hits.
+                 if (isHrBreakActive) { dragonBodyCd = 20; }
+                 else if (isDashActive) { dragonHP -= 3; dragonBodyCd = 30; playDragonSfx('shield_breaking.mp3', 1.1); triggerFlash("lime"); } // counter!
                  else if (isShieldActive) { deactivateShield(); dragonBodyCd = 40; playDragonSfx('shield_breaking.mp3', 1); }
                  else if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; dragonBodyCd = 50; if (!sfxMuted) { damageSound.currentTime = 0; damageSound.play().catch(e => console.warn(e)); } trailRedTimer = 120; }
                  else { if (!sfxMuted) { damageSound.currentTime = 0; damageSound.play().catch(e => console.warn(e)); } triggerPlayerDeath(); return; }
@@ -2019,6 +2082,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
                  drawDragonFireball(fb);
                  if (fb.x < -240 || fb.y < -260 || fb.y > CANVAS_HEIGHT + 260) { dragonFire.splice(i, 1); continue; }
                  if (dragonFireHitsBird(fb)) {
+                     if (isHrBreakActive) { continue; }   // same hole as the body check: fire ignored HR break
                      if (isDashActive) { dragonFire.splice(i, 1); dragonHP -= 2.5; playDragonSfx('shield_breaking.mp3', 1.15); continue; } // deflect!
                      if (isShieldActive) { deactivateShield(); dragonFire.splice(i, 1); continue; }
                      if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; if (!sfxMuted) { damageSound.currentTime = 0; damageSound.play().catch(e => console.warn(e)); } dragonFire.splice(i, 1); trailRedTimer = 120; continue; }
@@ -2333,13 +2397,7 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
                      case 'prestart': game_mode = 'running'; break;
                      case 'boss': if (bossIntroState < 3 && !boss.movingIn) { bird.velocity_y = 0; } else { time_game_last_running = new Date(); bottom_bar_offset += pipe_speed * speedMultiplier; make_bird_slow_and_fall(); } 
                      
-                     if (isSherlockActive && bird.visible) {
-                         let targetY = CANVAS_HEIGHT / 2;
-                         let proj = [...chocolates, ...errorSigns, ...dragonFire].find(p => p.x > bird.x && p.x < bird.x + 200 && p.visible);
-                         if (proj) { targetY = proj.y < bird.y ? bird.y + 100 : bird.y - 100; }
-                         let diff = targetY - bird.y;
-                         bird.velocity_y = diff * 0.15;
-                     }
+                     sherlockBossAutopilot();
                      
                      updateBoss(); break;
                      case 'running':
@@ -2462,13 +2520,8 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
                      ctx.beginPath(); ctx.moveTo(bird.x + 20, bird.y + 20);
                      
                      if (game_mode === 'boss') {
-                         let proj = [...chocolates, ...errorSigns, ...dragonFire].find(p => p.x > bird.x && p.x < bird.x + 200 && p.visible);
-                         if (proj) {
-                             let targetY = proj.y < bird.y ? bird.y + 100 : bird.y - 100;
-                             ctx.lineTo(proj.x, targetY);
-                         } else {
-                             ctx.lineTo(boss.x, bird.y + 20);
-                         }
+                         if (sherlockTargetY !== null) ctx.lineTo(bird.x + 120, sherlockTargetY + 20);
+                         else ctx.lineTo(boss.x, bird.y + 20);
                      } else {
                          let nextPipe = null; let closestDist = 9999;
                          for(let p of pipes) { if(p.x + (p.MyImg.width || 50) > bird.x && !p.flipV && p.x < closestDist) { closestDist = p.x; nextPipe = p; } }
