@@ -562,7 +562,7 @@
          ];
 
          const DEATH_MESSAGES = [
-             "404 ERROR", "oops", "wow", "*Thumbs down*", "ELLIE_IMG",
+             "404 ERROR", "oops", "wow", "*Thumbs down*",
              "..- ... . -.-. --- -.. . .-..-.\n. .- ... - . .-. . --. --. .-..-.",
              "0 Braincells", "loser", "NO ITS NOT REPETETIVE AND\nDON'T SAY THAT AGAIN",
              "yep they should replace\nyou with AI", "Get a life",
@@ -722,7 +722,7 @@
          const ASSETS_TO_LOAD = [
              'boss.png', 'boss_2.png', 'player.png', 'chocolate.png', 'shield.png', 'player_shielded.png',
              'potion.png', 'slow_potion.png', 'dryfood.png', 'doordash_cheetos.png', 'luigi_shetos.png', 'heisen_bark.png', 
-             'red.png', 'wall.png', 'ellie.png',
+             'red.png', 'wall.png',
              'sherlock.png', 'employed.png', 'arthur.png', 
              'big_player.png', 'big_player_rich.png', 'big_employed.png', 'big_doordash_cheetos.png', 'big_arthur.png',
              'big_luigi_shetos.png', 'big_sherlock.png', 'big_heisen_bark.png', 'big_player_yellow.png', 'big_player_black.png',
@@ -1216,7 +1216,7 @@ window.triggerPvpTrashTalk = async function() {
          let CANVAS_HEIGHT = 480;
 
          var game_mode = 'waiting_for_website'; var myCanvas, ctx; var gameInterval = null; var FPS = 40; let isPaused = false; let voidUIErrorTimer = 0; 
-         const BOSS_IMG = new Image(); BOSS_IMG.src = 'boss.png'; const BOSS2_IMG = new Image(); BOSS2_IMG.src = 'boss_2.png'; const PLAYER_IMG = new Image(); PLAYER_IMG.src = 'player.png'; const CHOCO_IMG = new Image(); CHOCO_IMG.src = 'chocolate.png'; const SHIELD_IMG = new Image(); SHIELD_IMG.src = 'shield.png'; const SHIELDED_BIRD_IMG = new Image(); SHIELDED_BIRD_IMG.src = 'player_shielded.png'; const POTION_IMG = new Image(); POTION_IMG.src = 'potion.png'; const SLOW_POTION_IMG = new Image(); SLOW_POTION_IMG.src = 'slow_potion.png'; const STAR_IMG = new Image(); STAR_IMG.src = 'dryfood.png'; const DOORDASH_IMG = new Image(); DOORDASH_IMG.src = 'doordash_cheetos.png'; const ELLIE_IMG = new Image(); ELLIE_IMG.src = 'ellie.png'; var bottom_bar = new Image(); bottom_bar.src = 'red.png'; var pipe_piece = new Image(); pipe_piece.src = 'wall.png'; const DRAGON_IMG = new Image(); DRAGON_IMG.src = 'dragon.png'; const DRAGON_MAD_IMG = new Image(); DRAGON_MAD_IMG.src = 'dragon_mad.png'; const DRAGON_DIZZY_IMG = new Image(); DRAGON_DIZZY_IMG.src = 'dragon_dizzy.png'; const DRAGON_SHOOT_IMG = new Image(); DRAGON_SHOOT_IMG.src = 'dragon_shoot.png';
+         const BOSS_IMG = new Image(); BOSS_IMG.src = 'boss.png'; const BOSS2_IMG = new Image(); BOSS2_IMG.src = 'boss_2.png'; const PLAYER_IMG = new Image(); PLAYER_IMG.src = 'player.png'; const CHOCO_IMG = new Image(); CHOCO_IMG.src = 'chocolate.png'; const SHIELD_IMG = new Image(); SHIELD_IMG.src = 'shield.png'; const SHIELDED_BIRD_IMG = new Image(); SHIELDED_BIRD_IMG.src = 'player_shielded.png'; const POTION_IMG = new Image(); POTION_IMG.src = 'potion.png'; const SLOW_POTION_IMG = new Image(); SLOW_POTION_IMG.src = 'slow_potion.png'; const STAR_IMG = new Image(); STAR_IMG.src = 'dryfood.png'; const DOORDASH_IMG = new Image(); DOORDASH_IMG.src = 'doordash_cheetos.png'; var bottom_bar = new Image(); bottom_bar.src = 'red.png'; var pipe_piece = new Image(); pipe_piece.src = 'wall.png'; const DRAGON_IMG = new Image(); DRAGON_IMG.src = 'dragon.png'; const DRAGON_MAD_IMG = new Image(); DRAGON_MAD_IMG.src = 'dragon_mad.png'; const DRAGON_DIZZY_IMG = new Image(); DRAGON_DIZZY_IMG.src = 'dragon_dizzy.png'; const DRAGON_SHOOT_IMG = new Image(); DRAGON_SHOOT_IMG.src = 'dragon_shoot.png';
          const backgroundImages = []; for (let i = 1; i <= 5; i++) { let img = new Image(); img.src = `bg${i}.png`; backgroundImages.push(img); }
 
          let masterMusicVol = 0.3; let masterSFXVol = 0.5;
@@ -1931,7 +1931,7 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
              
              bird.x = CANVAS_WIDTH / 3; bird.y = CANVAS_HEIGHT / 2; bird.angle = 0; bird.velocity_y = 0; pipes = []; stars = []; shields = []; potions = []; slowPotions = []; errorSigns = []; trailHistory = [];  currentScore = 0; pipe_spawn_timer = 0; floatingTexts = []; myCanvas.style.filter = "none";
              
-             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; showEllieImage = false; bossIntroState = 0; bossIntroTimer = 0; isBoss2 = false; boss2Hits = 0; isBoss3 = false; dragonDefeated = false; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 0; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; boss.width = 150; boss.height = 150; boss.speedY = 2; boss1Music.playbackRate = 1; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; previousBGIndex = 0; transitionType = "normal"; transitionDuration = 0; transitionText = ""; transitionTimer = 0; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; 
+             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; bossIntroState = 0; bossIntroTimer = 0; isBoss2 = false; boss2Hits = 0; isBoss3 = false; dragonDefeated = false; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 0; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; boss.width = 150; boss.height = 150; boss.speedY = 2; boss1Music.playbackRate = 1; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; previousBGIndex = 0; transitionType = "normal"; transitionDuration = 0; transitionText = ""; transitionTimer = 0; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; 
 
              isSherlockActive = false; sherlockCooldown = 0; sherlockTimer = 0;
              isHrBreakActive = false; hrBreakCooldown = 0; hrBreakTimer = 0;
@@ -1960,7 +1960,7 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
          function Do_a_Frame() {
              try {
                  if (game_mode === 'waiting_for_website') { document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none'); return; }
-                 if (game_mode === 'over_black_screen') { ctx.fillStyle = "black"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); if (showEllieImage && ELLIE_IMG.complete && ELLIE_IMG.naturalWidth !== 0) { let imgW = ELLIE_IMG.naturalWidth; let imgH = ELLIE_IMG.naturalHeight; if (imgW > CANVAS_WIDTH * 0.8) { let scale = (CANVAS_WIDTH * 0.8) / imgW; imgW *= scale; imgH *= scale; } if (imgH > CANVAS_HEIGHT * 0.8) { let scale = (CANVAS_HEIGHT * 0.8) / imgH; imgW *= scale; imgH *= scale; } let imgX = (CANVAS_WIDTH - imgW) / 2; let imgY = (CANVAS_HEIGHT - imgH) / 2; ctx.drawImage(ELLIE_IMG, imgX, imgY, imgW, imgH); } else { ctx.font = '16px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(blackScreenText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2); } blackScreenTimer--; if(blackScreenTimer <= 0) { quitToMenu(); } return; }
+                 if (game_mode === 'over_black_screen') { ctx.fillStyle = "black"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); ctx.font = '16px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(blackScreenText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2); blackScreenTimer--; if(blackScreenTimer <= 0) { quitToMenu(); } return; }
                  
                  if (isPaused && game_mode !== 'online_match' && game_mode !== 'pvp_shetos') return; if (!ctx) return;
                  
@@ -2097,15 +2097,7 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
                          ctx.fillStyle = "black";
                          ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
                          
-                         if (showEllieImage && ELLIE_IMG.complete && ELLIE_IMG.naturalWidth !== 0) {
-                             let imgW = ELLIE_IMG.naturalWidth;
-                             let imgH = ELLIE_IMG.naturalHeight;
-                             if (imgW > CANVAS_WIDTH * 0.8) { let scale = (CANVAS_WIDTH * 0.8) / imgW; imgW *= scale; imgH *= scale; }
-                             if (imgH > CANVAS_HEIGHT * 0.8) { let scale = (CANVAS_HEIGHT * 0.8) / imgH; imgW *= scale; imgH *= scale; }
-                             let imgX = (CANVAS_WIDTH - imgW) / 2;
-                             let imgY = (CANVAS_HEIGHT - imgH) / 2;
-                             ctx.drawImage(ELLIE_IMG, imgX, imgY, imgW, imgH);
-                         } else if (deathMessage !== "") {
+                         if (deathMessage !== "") {
                              let fontSize = deathMessage.length > 40 ? 10 : (deathMessage.length > 20 ? 14 : 20);
                              ctx.font = fontSize + 'px "Press Start 2P"'; 
                              ctx.fillStyle = 'white'; 
@@ -2418,19 +2410,10 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
              game_mode = 'over';
              if (msg && (msg.includes("VICTORY") || msg.includes("DEFEAT"))) {
                  deathMessage = msg;
-                 showEllieImage = false;
              } else if (diedToBoss || (diedInVoid && Math.random() < 0.5)) {
-                 showEllieImage = false;
                  deathMessage = pickStoryPart();
              } else {
-                 let randMsg = DEATH_MESSAGES[Math.floor(Math.random() * DEATH_MESSAGES.length)];
-                 if (randMsg === "ELLIE_IMG") {
-                     showEllieImage = true;
-                     deathMessage = "";
-                 } else {
-                     showEllieImage = false;
-                     deathMessage = randMsg;
-                 }
+                 deathMessage = DEATH_MESSAGES[Math.floor(Math.random() * DEATH_MESSAGES.length)];
              }
              canQuitTimer = 60;
              if(!sfxMuted){deathSound.currentTime=0; deathSound.play().catch(e=>{});}
