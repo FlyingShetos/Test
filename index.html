@@ -48,7 +48,8 @@
         .menu-buttons { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 320px; flex-shrink: 0; }
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
         
-        .preview-img { width: 60px; height: 60px; margin-bottom: 10px; cursor: pointer; transition: transform 0.2s; flex-shrink: 0; } .preview-img:hover { transform: scale(1.2); }
+        .preview-img { width: 81px; height: 60px; object-fit: contain; margin-bottom: 10px; cursor: pointer; transition: transform 0.2s; flex-shrink: 0; } .preview-img:hover { transform: scale(1.2); }
+        .preview-img.pixel-fallback { image-rendering: pixelated; }
         
         #user-profile { position: absolute; top: 10px; right: 10px; z-index: 60; display: flex; align-items: center; gap: 10px; }
         .user-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; display: none; }
@@ -156,7 +157,7 @@
         @media (max-height: 600px) {
             #landing-page { justify-content: flex-start; padding-top: 40px; padding-bottom: 40px; }
             #landing-page h1 { font-size: 26px; margin-bottom: 4px; }
-            .preview-img { width: 48px; height: 48px; margin-bottom: 8px; }
+            .preview-img { width: 65px; height: 48px; margin-bottom: 8px; }
             .menu-stats { gap: 6px; margin-bottom: 8px; }
             .stat-box { padding: 6px 4px; font-size: 10px; min-width: 60px; }
             .stat-val { font-size: 13px; }
@@ -421,7 +422,7 @@
          <div id="landing-page"> 
              <div id="splash-text" data-i18n="splash">Splash!</div>
              <h1>Flying Shetos</h1> 
-             <img src="player.png" class="preview-img" alt="Cheetos"> 
+             <img id="menu-char-preview" src="big_player.png" class="preview-img" alt="Cheetos"> 
              
              <div class="menu-stats">
                  <div class="stat-box"><span id="lang-stat-high" data-i18n="high">High Score</span><br><span class="stat-val" id="menuHighScore">0</span></div>
@@ -723,6 +724,8 @@
              'potion.png', 'slow_potion.png', 'dryfood.png', 'doordash_cheetos.png', 'luigi_shetos.png', 'heisen_bark.png', 
              'red.png', 'wall.png', 'ellie.png',
              'sherlock.png', 'employed.png', 'arthur.png', 
+             'big_player.png', 'big_player_rich.png', 'big_employed.png', 'big_doordash_cheetos.png', 'big_arthur.png',
+             'big_luigi_shetos.png', 'big_sherlock.png', 'big_heisen_bark.png', 'big_player_yellow.png', 'big_player_black.png',
              'bg1.png', 'bg2.png', 'bg3.png', 'bg4.png', 'bg5.png',
              'main_menu.mp3', 'woof.mp3', 'bg_song.mp3', 'void.mp3', 'song_connector.mp3', 'alarm_clock.mp3',
              'breathing.mp3', 'shield_breaking.mp3', 'damage.mp3', 'explosion.mp3', 'button.mp3', 'buy.mp3',
@@ -1207,7 +1210,7 @@ window.triggerPvpTrashTalk = async function() {
              document.getElementById('lab-skin-preview').src = SKINS[customStats.visualSkin].src;
          }
 
-         window.saveAndEquipCustom = function() { if(!sfxMuted){buySound.currentTime=0; buySound.play().catch(e=>{});}  localStorage.setItem('flappyCustomStats', JSON.stringify(customStats)); localStorage.setItem('flappyCustomTrail', JSON.stringify(customTrailColors)); saveUserData(); for (let k in SKINS) { SKINS[k].current = false; } for (let k in TRAILS) { TRAILS[k].current = false; } currentSkinKey = 'custom'; currentTrailKey = 'trail_custom'; localStorage.setItem('currentSkin', 'custom'); localStorage.setItem('currentTrail', 'trail_custom'); let tempImg = new Image(); tempImg.onload = function() { bird.MyImg = tempImg; }; tempImg.src = SKINS[customStats.visualSkin] ? SKINS[customStats.visualSkin].src : 'player.png'; closeModal('labModal'); showCheatFeedback(getLangText("customEquipped")); updateAbilityButtons(); }
+         window.saveAndEquipCustom = function() { if(!sfxMuted){buySound.currentTime=0; buySound.play().catch(e=>{});}  localStorage.setItem('flappyCustomStats', JSON.stringify(customStats)); localStorage.setItem('flappyCustomTrail', JSON.stringify(customTrailColors)); saveUserData(); for (let k in SKINS) { SKINS[k].current = false; } for (let k in TRAILS) { TRAILS[k].current = false; } currentSkinKey = 'custom'; currentTrailKey = 'trail_custom'; localStorage.setItem('currentSkin', 'custom'); localStorage.setItem('currentTrail', 'trail_custom'); updateMenuCharacter(); let tempImg = new Image(); tempImg.onload = function() { bird.MyImg = tempImg; }; tempImg.src = SKINS[customStats.visualSkin] ? SKINS[customStats.visualSkin].src : 'player.png'; closeModal('labModal'); showCheatFeedback(getLangText("customEquipped")); updateAbilityButtons(); }
 
          let CANVAS_WIDTH = 640; 
          let CANVAS_HEIGHT = 480;
@@ -1294,7 +1297,7 @@ window.triggerPvpTrashTalk = async function() {
              'black':      { src: 'player_black.png', cost: 700, current: false, name: 'Legendary Shetos', desc: 'ALL POWERS COMBINED!\n3 Lives, Dash, 5 Bombs, Shrink, Widen, Magnet.' },
              'custom':     { src: 'player.png', cost: 0, current: false, name: 'Custom Shetos', desc: 'Your personal Lab creation.' }
          };
-for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].src; }
+for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].src; SKINS[k].big = 'big_' + SKINS[k].src; }
          const TRAILS = {
              'trail_none':        { color: 'none', cost: 0, current: true, name: 'No Trail' },
              'trail_blue':        { color: '#00ccff', cost: 30, current: false, name: 'Blue Trail' },
@@ -1497,7 +1500,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
 
          function purchaseOrEquipSkin(key) {
              if (key === 'custom' || key === 'trail_custom') return; 
-             if (SKINS[key] && shopCategory === 'skins') { const skin = SKINS[key]; if (availableSkins.includes(key)) { if (!skin.current) { playClickSound(); for (let k in SKINS) { SKINS[k].current = false; } skin.current = true; let tempImg = new Image(); tempImg.onload = function() { bird.MyImg = tempImg; }; tempImg.src = skin.src; currentSkinKey = key; localStorage.setItem('currentSkin', key); 
+             if (SKINS[key] && shopCategory === 'skins') { const skin = SKINS[key]; if (availableSkins.includes(key)) { if (!skin.current) { playClickSound(); for (let k in SKINS) { SKINS[k].current = false; } skin.current = true; let tempImg = new Image(); tempImg.onload = function() { bird.MyImg = tempImg; }; tempImg.src = skin.src; currentSkinKey = key; localStorage.setItem('currentSkin', key); updateMenuCharacter(); 
                  wallDestroyCharges = (currentSkinKey === 'yellow' || currentSkinKey === 'black') ? MAX_DESTROY_CHARGES : 0; dashCharges = (currentSkinKey === 'doordash' || currentSkinKey === 'black') ? 4 : 0; shrinkCharges = (currentSkinKey === 'luigi' || currentSkinKey === 'black') ? 4 : 0; widenCharges = (currentSkinKey === 'heisenbark' || currentSkinKey === 'black') ? 4 : 0; if (currentSkinKey === 'black' || currentSkinKey === 'tough' || currentSkinKey === 'sherlock') currentLives = (currentSkinKey === 'sherlock' ? 1 : INITIAL_LIVES); else currentLives = 0; updateAbilityButtons(); renderShopItems(); } } else if (collectedStars >= skin.cost) { collectedStars -= skin.cost; availableSkins.push(key); if(!sfxMuted){buySound.currentTime = 0; buySound.play().catch(e => console.warn(e));} if (key === 'employed' && availableSkins.includes(key)) { alert("Congrats, you finally got a J*b"); } localStorage.setItem('flappyStars', collectedStars); localStorage.setItem('flappySkins', JSON.stringify(availableSkins)); updateMenuStats(); saveUserData(); purchaseOrEquipSkin(key); } } 
              else if (TRAILS[key] && shopCategory === 'trails') { const trail = TRAILS[key]; if (availableTrails.includes(key)) { if (!trail.current) { playClickSound(); for (let k in TRAILS) { TRAILS[k].current = false; } trail.current = true; currentTrailKey = key; localStorage.setItem('currentTrail', key); renderShopItems(); } } else if (collectedStars >= trail.cost) { collectedStars -= trail.cost; availableTrails.push(key); if(!sfxMuted){buySound.currentTime = 0; buySound.play().catch(e => console.warn(e));} localStorage.setItem('flappyStars', collectedStars); localStorage.setItem('flappyTrails', JSON.stringify(availableTrails)); updateMenuStats(); saveUserData(); purchaseOrEquipSkin(key); } }
          }
@@ -1788,7 +1791,22 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
                  setTimeout(() => container.classList.remove('shake'), 700);
              }
          }
-         function updateMenuStats() { if(document.getElementById('menuHighScore')) { document.getElementById('menuHighScore').innerText = highScore; document.getElementById('menuStars').innerText = collectedStars; document.getElementById('menuTrophies').innerText = onlineTrophies; document.getElementById('menuGamesPlayed').innerText = totalGamesPlayed; } }
+         function updateMenuStats() { if(document.getElementById('menuHighScore')) { document.getElementById('menuHighScore').innerText = highScore; document.getElementById('menuStars').innerText = collectedStars; document.getElementById('menuTrophies').innerText = onlineTrophies; document.getElementById('menuGamesPlayed').innerText = totalGamesPlayed; } try { updateMenuCharacter(); } catch(e) {} }
+         // Main menu shows the equipped character using its high-res "big_" art (325x240).
+         // Falls back to the in-game sprite if the big file is missing.
+         window.updateMenuCharacter = function() {
+             let el = document.getElementById('menu-char-preview');
+             if (!el) return;
+             let key = currentSkinKey;
+             if (key === 'custom') key = (typeof customStats !== 'undefined' && SKINS[customStats.visualSkin]) ? customStats.visualSkin : 'default';
+             let skin = SKINS[key] || SKINS['default'];
+             let bigSrc = skin.big || ('big_' + skin.src);
+             if (el.dataset.skinKey === key) return;
+             el.dataset.skinKey = key;
+             el.onerror = function() { el.onerror = null; el.classList.add('pixel-fallback'); el.src = skin.src; };
+             el.classList.remove('pixel-fallback');
+             el.src = bigSrc;
+         }
          function showCheatFeedback(text) { let el = document.getElementById('cheat-feedback'); el.innerText = text; el.style.display = 'block'; setTimeout(() => { el.style.display = 'none'; }, 2000); }
          function unlockAchievement(id) { let ach = ALL_ACHIEVEMENTS.find(a => a.id === id); if (ach && !ach.unlocked) { ach.unlocked = true; savedAchievements.push(id); localStorage.setItem('flappyAchievements', JSON.stringify(savedAchievements)); if (ach.reward > 0) { collectedStars += ach.reward; localStorage.setItem('flappyStars', collectedStars); updateMenuStats(); showCheatFeedback(getLangText("achReward") + " +" + ach.reward + " " + getLangText("food") + "!"); } } }
          function updateDifficulty() {
