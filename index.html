@@ -687,7 +687,7 @@
              'main_menu.mp3', 'woof.mp3', 'bg_song.mp3', 'void.mp3', 'song_connector.mp3', 'alarm_clock.mp3',
              'breathing.mp3', 'shield_breaking.mp3', 'damage.mp3', 'explosion.mp3', 'button.mp3', 'buy.mp3',
              'dash.mp3', 'boss_1.mp3', 'boss_2.mp3', 'death.mp3',
-             'dragon.png', 'dragon_mad.png', 'dragon_dizzy.png',
+             'dragon.png', 'dragon_mad.png', 'dragon_dizzy.png', 'dragon_shoot.png',
              'desktop_error.mp3', 'red_alarm.mp3', 'red_bolt.mp3', 'blue_bolt.mp3', 'tick.mp3', 'byte_collect.mp3', 'gravity_flip.mp3'
          ];
          
@@ -1173,7 +1173,7 @@ window.triggerPvpTrashTalk = async function() {
          let CANVAS_HEIGHT = 480;
 
          var game_mode = 'waiting_for_website'; var myCanvas, ctx; var gameInterval = null; var FPS = 40; let isPaused = false; let voidUIErrorTimer = 0; 
-         const BOSS_IMG = new Image(); BOSS_IMG.src = 'boss.png'; const BOSS2_IMG = new Image(); BOSS2_IMG.src = 'boss_2.png'; const PLAYER_IMG = new Image(); PLAYER_IMG.src = 'player.png'; const CHOCO_IMG = new Image(); CHOCO_IMG.src = 'chocolate.png'; const SHIELD_IMG = new Image(); SHIELD_IMG.src = 'shield.png'; const SHIELDED_BIRD_IMG = new Image(); SHIELDED_BIRD_IMG.src = 'player_shielded.png'; const POTION_IMG = new Image(); POTION_IMG.src = 'potion.png'; const SLOW_POTION_IMG = new Image(); SLOW_POTION_IMG.src = 'slow_potion.png'; const STAR_IMG = new Image(); STAR_IMG.src = 'dryfood.png'; const DOORDASH_IMG = new Image(); DOORDASH_IMG.src = 'doordash_cheetos.png'; const ELLIE_IMG = new Image(); ELLIE_IMG.src = 'ellie.png'; var bottom_bar = new Image(); bottom_bar.src = 'red.png'; var pipe_piece = new Image(); pipe_piece.src = 'wall.png'; const DRAGON_IMG = new Image(); DRAGON_IMG.src = 'dragon.png'; const DRAGON_MAD_IMG = new Image(); DRAGON_MAD_IMG.src = 'dragon_mad.png'; const DRAGON_DIZZY_IMG = new Image(); DRAGON_DIZZY_IMG.src = 'dragon_dizzy.png';
+         const BOSS_IMG = new Image(); BOSS_IMG.src = 'boss.png'; const BOSS2_IMG = new Image(); BOSS2_IMG.src = 'boss_2.png'; const PLAYER_IMG = new Image(); PLAYER_IMG.src = 'player.png'; const CHOCO_IMG = new Image(); CHOCO_IMG.src = 'chocolate.png'; const SHIELD_IMG = new Image(); SHIELD_IMG.src = 'shield.png'; const SHIELDED_BIRD_IMG = new Image(); SHIELDED_BIRD_IMG.src = 'player_shielded.png'; const POTION_IMG = new Image(); POTION_IMG.src = 'potion.png'; const SLOW_POTION_IMG = new Image(); SLOW_POTION_IMG.src = 'slow_potion.png'; const STAR_IMG = new Image(); STAR_IMG.src = 'dryfood.png'; const DOORDASH_IMG = new Image(); DOORDASH_IMG.src = 'doordash_cheetos.png'; const ELLIE_IMG = new Image(); ELLIE_IMG.src = 'ellie.png'; var bottom_bar = new Image(); bottom_bar.src = 'red.png'; var pipe_piece = new Image(); pipe_piece.src = 'wall.png'; const DRAGON_IMG = new Image(); DRAGON_IMG.src = 'dragon.png'; const DRAGON_MAD_IMG = new Image(); DRAGON_MAD_IMG.src = 'dragon_mad.png'; const DRAGON_DIZZY_IMG = new Image(); DRAGON_DIZZY_IMG.src = 'dragon_dizzy.png'; const DRAGON_SHOOT_IMG = new Image(); DRAGON_SHOOT_IMG.src = 'dragon_shoot.png';
          const backgroundImages = []; for (let i = 1; i <= 5; i++) { let img = new Image(); img.src = `bg${i}.png`; backgroundImages.push(img); }
 
          let masterMusicVol = 0.3; let masterSFXVol = 0.5;
@@ -1233,7 +1233,7 @@ window.triggerPvpTrashTalk = async function() {
          let voidBreathingCount = 0; const MAX_BREATHING = 2; let wrongwayPlayed = false; let wrongwayTimer = -1; let musicMuted = false; let sfxMuted = false;
          window.addEventListener('click', () => { if(mainMenuMusic.paused && !musicMuted && game_mode === 'waiting_for_website') { mainMenuMusic.play().catch(e => console.log("Music auto-started")); } }, {once: true});
 
-         let boss = { x: 9999, y: 100, width: 150, height: 150, stamina: 100, speedY: 2, movingIn: true }; let chocolates = []; let victoryTimer = 0; let deathMessage = "Game Over"; let bossIntroState = 0; let bossIntroTimer = 0; let boss1Defeated = false; let isBoss2 = false; let isBoss3 = false; let dragonDefeated = false; let dragonHP = 100; let dragonPhase = 1; let dragonAtkState = 'idle'; let dragonAtkTimer = 0; let dragonCycle = 0; let dragonDashesDone = 0; let dragonDashVec = null; let dragonBodyCd = 0; let dragonDashSpeed = 13.5; let dragonDizzyDone = false; let dragonDizzyTimer = 0; let dragonDefeatTimer = 0; let dragonBob = 0; let dragonFire = []; let dragonTauntFx = []; const BOSS2_MAX_HITS = 5; let deleteBtnTimer = 0; let deleteBtnSpawnTimer = 0; let errorSigns = []; let errorSignCooldown = 0; 
+         let boss = { x: 9999, y: 100, width: 150, height: 150, stamina: 100, speedY: 2, movingIn: true }; let chocolates = []; let victoryTimer = 0; let deathMessage = "Game Over"; let bossIntroState = 0; let bossIntroTimer = 0; let boss1Defeated = false; let isBoss2 = false; let isBoss3 = false; let dragonDefeated = false; let dragonHP = 100; let dragonPhase = 1; let dragonAtkState = 'idle'; let dragonAtkTimer = 0; let dragonCycle = 0; let dragonDashesDone = 0; let dragonDashVec = null; let dragonBodyCd = 0; let dragonDashSpeed = 13.5; let dragonMouthTimer = 0; let dragonDizzyDone = false; let dragonDizzyTimer = 0; let dragonDefeatTimer = 0; let dragonBob = 0; let dragonFire = []; let dragonTauntFx = []; const BOSS2_MAX_HITS = 5; let deleteBtnTimer = 0; let deleteBtnSpawnTimer = 0; let errorSigns = []; let errorSignCooldown = 0; 
          function getAreaName(i) { return getLangText("area" + i); } const GLITCH_TEXTS = ["thats not the reality", "404", "not found", "wake up", "null", "error"]; let currentBGIndex = 0; let previousBGIndex = 0; let transitionText = ""; let transitionTimer = 0; let transitionType = "normal"; let transitionDuration = 0; const NORMAL_TRANSITION_DURATION = 32; const GLITCH_TRANSITION_DURATION = 80; let flashColor = null; let flashTimer = 0; let levelReached = 1; let cheatBuffer = ""; let floatingTexts = []; 
          var jump_amount = -7; var max_fall_speed = +8; var acceleration = 0.6; const SUPER_JUMP_AMOUNT = -3.8; const SUPER_ACCELERATION = 0.18; const SUPER_MAX_FALL_SPEED = +3.5; const VOID_ACCEL = 0.35; const VOID_MAX_FALL = 6.0; const MAGNET_RADIUS = 300; const INITIAL_LIVES = 3; let currentLives = 0; const MAX_DESTROY_CHARGES = 5; let wallDestroyCharges = 0; const WALLS_TO_DESTROY = 2; let dashCharges = 0; let isDashActive = false; const DASH_DURATION = 68; let dashTimer = 0; let shrinkCharges = 0; let isShrunk = false; let shrinkTimer = 0; const SHRINK_DURATION = 160; let widenCharges = 0; let isWidenActive = false; let widenTimer = 0; const WIDEN_DURATION = 240; let heisenBlinkTimer = 0; let pipe_speed = -2; let currentSpawnInterval = 2500; let speedMultiplier = 1; let trailRedTimer = 0; let trailGoldTimer = 0;
          var time_game_last_running; var bottom_bar_offset = 0; var pipes = []; var pipe_spawn_timer = 0; let currentScore = 0; let lastPipeY = 250; let totalGamesPlayed = 0; try { totalGamesPlayed = parseInt(localStorage.getItem('flappyGamesPlayed')) || 0; } catch(e) {}
@@ -1543,6 +1543,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          function dragonMouthPos() { return { x: boss.x + 14, y: boss.y + boss.height * 0.45 }; }
          function dragonTaunt(forceText) { dragonTauntFx.push({ text: forceText || DRAGON_TAUNTS[(dragonCycle - 1 + DRAGON_TAUNTS.length) % DRAGON_TAUNTS.length], x: boss.x + boss.width * 0.35, y: boss.y - 14, t: 85 }); }
          function spawnDragonFan() {
+             dragonMouthTimer = 22; // jaws snap open for the volley
              const m = dragonMouthPos(); const n = dragonPhase === 1 ? 3 + (Math.random() < 0.5 ? 1 : 0) : 5 + (Math.random() < 0.5 ? 2 : 0);
              const baseAng = Math.atan2((bird.y + 18) - m.y, bird.x - m.x); const spd = dragonPhase === 1 ? 4.4 : 4.9;
              for (let i = 0; i < n; i++) { const ang = baseAng + (i - (n - 1) / 2) * 0.17; dragonFire.push({ x: m.x, y: m.y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, r: 14, wob: Math.random() * Math.PI * 2, visible: true }); }
@@ -1592,7 +1593,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              updateDifficulty();
          }
          function updateDragonBoss() {
-             dragonBob++;
+             dragonBob++; if (dragonMouthTimer > 0) dragonMouthTimer--;
              const bobY = Math.sin(dragonBob * 0.06) * 10; const tilt = Math.sin(dragonBob * 0.11) * 0.05;
              const drawY = boss.y + bobY;
              // ---- defeat animation ----
@@ -1609,6 +1610,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              // ---- body ----
              let img = DRAGON_IMG;
              if (dragonPhase === 2 && dragonDizzyTimer <= 0) img = DRAGON_MAD_IMG;
+             if (dragonMouthTimer > 0 && dragonDizzyTimer <= 0 && DRAGON_SHOOT_IMG.complete && DRAGON_SHOOT_IMG.naturalWidth !== 0) img = DRAGON_SHOOT_IMG; // jaws open while breathing fire
              if (dragonDizzyTimer > 0) img = DRAGON_DIZZY_IMG;
              if (dragonPhase === 2) { ctx.save(); ctx.globalAlpha = 0.10 + Math.sin(dragonBob * 0.2) * 0.05; ctx.fillStyle = "#FF3000"; ctx.beginPath(); ctx.arc(boss.x + boss.width / 2, drawY + boss.height / 2, boss.width * 0.72, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
              const teleShake = dragonAtkState === 'dashTele' ? Math.sin(dragonBob * 2.3) * 4 : 0;
@@ -1640,7 +1642,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
                      else { dragonAtkState = 'fanTele'; dragonAtkTimer = 24; playDragonSfx('tick.mp3', 1.4); }
                  }
              } else if (dragonAtkState === 'fanTele') {
-                 dragonAtkTimer--;
+                 dragonAtkTimer--; dragonMouthTimer = 2; // stay open while charging
                  const m = dragonMouthPos(); const glow = 10 + (24 - Math.min(24, dragonAtkTimer)) * 0.9 + Math.sin(dragonBob * 0.7) * 3; // charging mouth glow
                  ctx.save(); ctx.globalAlpha = 0.85; const gg = ctx.createRadialGradient(m.x, m.y + bobY, 2, m.x, m.y + bobY, glow);
                  gg.addColorStop(0, '#FFF6B0'); gg.addColorStop(0.5, '#FF9500'); gg.addColorStop(1, 'rgba(255,60,0,0)');
