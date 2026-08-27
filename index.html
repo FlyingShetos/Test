@@ -48,7 +48,7 @@
         .menu-buttons { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 320px; flex-shrink: 0; }
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
         
-        .preview-img { width: 60px; height: 60px; margin-bottom: 10px; cursor: pointer; transition: transform 0.2s; flex-shrink: 0; } .preview-img:hover { transform: scale(1.2); }
+        .preview-img { width: 122px; height: 90px; object-fit: contain; margin-bottom: 10px; cursor: pointer; transition: transform 0.2s; flex-shrink: 0; } .preview-img:hover { transform: scale(1.2); }
         
         #user-profile { position: absolute; top: 10px; right: 10px; z-index: 60; display: flex; align-items: center; gap: 10px; }
         .user-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; display: none; }
@@ -102,7 +102,8 @@
         .lab-points { text-align: center; color: white; font-family: 'Press Start 2P', cursive; font-size: 12px; margin-bottom: 20px; }
         .lab-section { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 5px; margin-bottom: 15px; }
         .skin-selector { display: flex; align-items: center; justify-content: center; gap: 20px; }
-        #lab-skin-preview { width: 60px; height: 60px; image-rendering: pixelated; }
+        #lab-skin-preview { width: 102px; height: 75px; object-fit: contain; }
+        .pixel-fallback { image-rendering: pixelated; }
         .lab-row { display: flex; justify-content: space-between; align-items: center; color: white; margin-bottom: 10px; font-size: 14px; }
         .lab-controls { display: flex; align-items: center; gap: 10px; }
         .lab-controls button { padding: 5px 10px; font-size: 16px; background: #555; }
@@ -156,7 +157,7 @@
         @media (max-height: 600px) {
             #landing-page { justify-content: flex-start; padding-top: 40px; padding-bottom: 40px; }
             #landing-page h1 { font-size: 26px; margin-bottom: 4px; }
-            .preview-img { width: 48px; height: 48px; margin-bottom: 8px; }
+            .preview-img { width: 88px; height: 65px; margin-bottom: 8px; }
             .menu-stats { gap: 6px; margin-bottom: 8px; }
             .stat-box { padding: 6px 4px; font-size: 10px; min-width: 60px; }
             .stat-val { font-size: 13px; }
@@ -384,7 +385,7 @@
                          <div style="color:gold; font-family:'Press Start 2P'; font-size:10px; margin-bottom:10px;" data-i18n="baseAppearance">BASE APPEARANCE</div>
                          <div class="skin-selector">
                              <button class="enter-btn btn-blue" style="width:40px; padding:5px;" onclick="changeLabSkin(-1)">❮</button>
-                             <img id="lab-skin-preview" src="player.png">
+                             <img id="lab-skin-preview" src="big_player.png">
                              <button class="enter-btn btn-blue" style="width:40px; padding:5px;" onclick="changeLabSkin(1)">❯</button>
                          </div>
                      </div>
@@ -421,7 +422,7 @@
          <div id="landing-page"> 
              <div id="splash-text" data-i18n="splash">Splash!</div>
              <h1>Flying Shetos</h1> 
-             <img src="player.png" class="preview-img" alt="Cheetos"> 
+             <img id="menu-char-preview" src="big_player.png" class="preview-img" alt="Cheetos"> 
              
              <div class="menu-stats">
                  <div class="stat-box"><span id="lang-stat-high" data-i18n="high">High Score</span><br><span class="stat-val" id="menuHighScore">0</span></div>
@@ -527,10 +528,41 @@
 <script>
          let currentLang = 'en';
 
-         const SPLASH_TEXTS = ["Sue Me", "67", "Also try Flappy bird", "Bread", "who reads privacy policies?", ":>", ";)", "DELETE", "ALT F4 boosts FPS", "Daveyyyhowyadoin'", "It's average!", "Code: Infinite for unlimited dry food ;)", "Stong Independent Shetos", "Chocolate milk comes from Gangster Cows.", "If dry food is your power, then what are you without it?", "Money can buy happiness.", "Tu Hablas Espaniol?", "Game of the minute", "Slim Shady"];
+         const SPLASH_TEXTS = [
+             "Sue Me", "67", "Also try Flappy bird", "Bread", "who reads privacy policies?", ":>", ";)", "DELETE",
+             "ALT F4 boosts FPS", "Daveyyyhowyadoin'", "It's average!", "Code: Infinite for unlimited dry food ;)",
+             "Stong Independent Shetos", "Chocolate milk comes from Gangster Cows.",
+             "If dry food is your power, then what are you without it?", "Money can buy happiness.",
+             "Tu Hablas Espaniol?", "Game of the minute", "The New and Improved", "dark humor",
+             "yes missspellles are totally intentional", "mdnrtfvugotnaghzlxa",
+             "the game is more than just flapping", "to finish the game you gotta die multiple times", "SPOILER!!",
+             "what brand is your microwave", "companies catchphrases are so cringe", "I'm shetos'n it",
+             "these texts are really just my random thoughts", "outdated jokes",
+             "yes I'm copying the green man's game splash texts", "getting inspired is not copying",
+             "If you describe something as indescribable, haven't you already described it?",
+             "if time traveling is possible, why have we never met a time traveler?", "What is nothingness?",
+             "Why do they call it “quick sand” if you sink slowly in it?",
+             "When you buy a bigger bed, you get more bed room but less bedroom",
+             "I don't want you to think that this is like every flappy bird game clones"
+         ];
+
+         // "Larine" story, told in morse. Shown on boss deaths (always) and void deaths (50%).
+         const STORY_MORSE = [
+             ".--. .- .-. - / .----\n... .... . / .-- --- -. - / ... - --- .--.\n/ .-.. --- --- -.- .. -. --. / .- - / -- . / . ...- . -.\n/ .-- .. - .... / ... .. -..- / ..-. . . - / --- ..-.\n/ -.. .. .-. - / --- ...- . .-. / .... . .-.\n/ . -.-- . ...",
+             ".--. .- .-. - / ..---\n.. / -... ..- .-. -. . -.. / .... . .-.\n/ -.-. --- - - --- -. / -.. .-. . ... ... . ...\n/ -... . .... .. -. -.. / - .... . / -... .- .-. -.\n/ - --- -. .. --. .... - / - .... . / ... -- --- -.- .\n/ ... -- . .-.. .-.. . -.. / .-.. .. -.- . / .... . .-.\n/ .-.. .- ...- . -. -.. . .-. / .--. . .-. ..-. ..- -- .",
+             ".--. .- .-. - / ...--\n- .... . / -. . .. --. .... -... --- .-.\n/ ... - --- .--. .--. . -.. / .... .. ...\n/ - .-. ..- -.-. -.- / -... -.-- / - .... .\n/ ..-. . -. -.-. . / .. / ... -- .. .-.. . -..\n/ .- -. -.. / .-.. .. . -.. / --. --- -.. / -- -.--\n/ - . . - .... / ..-. . .-.. - / .-.. .. -.- .\n/ .. -.-. .",
+             ".--. .- .-. - / ....-\n.. / ... -.-. .-. ..- -... -... . -.. / - .... .\n/ .--. .. -. .\n/ ..-. .-.. --- --- .-. -... --- .- .-. -.. ...\n/ ..- -. - .. .-.. / -- -.--\n/ -.- -. ..- -.-. -.- .-.. . ... / -... .-.. . -..\n/ - .... . / .-- --- --- -.. / .. ...\n/ ... - .- .. -. . -.. / ..-. --- .-. . ...- . .-.",
+             ".--. .- .-. - / .....\n.. / ... . - / - .... . / - .- -... .-.. .\n/ ..-. --- .-. / - .-- --- / --- ..- - / --- ..-.\n/ .... .- -... .. - / .. / ... .- - / - .... . .-. .\n/ .. -. / - .... . / -.. .- .-. -.- / ..- -. - .. .-..\n/ - .... . / ... --- ..- .--. / .-- . -. -\n/ -.-. --- .-.. -..",
+             ".--. .- .-. - / -....\n- .... . / -.-. .-. --- .-- ... / -.- . . .--.\n/ --. .- - .... . .-. .. -. --. / --- ...- . .-.\n/ - .... . / -.-. --- .-. -. / .-. --- .-- ...\n/ - .... . -.-- / -.- -. --- .-- / .-- .... .- - ...\n/ -... ..- .-. .. . -.. / -... . -. . .- - ....\n/ - .... . / ... - .- .-.. -.- ...",
+             ".--. .- .-. - / --...\n.. / -.. .. -.. -. - / -- . .- -. / - --- / -.. ---\n/ - .... .- - / - --- / -.-- --- ..-\n/ .-.. .- .-. .. -. . / -.-- --- ..- / .--- ..- ... -\n/ ... .- .. -.. / -.-- --- ..- / .-- . .-. .\n/ .-.. . .- ...- .. -. --. / -- . / .- -. -.. / - .... .\n/ .-- --- .-. .-.. -.. / .-- . -. - / .-. . -..",
+             ".--. .- .-. - / ---..\n.. / .--. .-.. .- -. - . -.. / .--. ..- .-. .--. .-.. .\n/ .-. --- ... . ... / --- ...- . .-. / - .... .\n/ .--. .- - -.-. .... / --- ..-. / ..-. .-. . ... ....\n/ -.. .. .-. - / ... .... . / .- .-.. .-- .- -.-- ...\n/ .-- .- -. - . -.. / .- / ..-. .-.. --- .-- . .-.\n/ --. .- .-. -.. . -.",
+             ".--. .- .-. - / ----.\n..-. .-.. .- ... .... .. -. --. / .-. . -..\n/ .-.. .. --. .... - ... / .--- ..- ... -\n/ .--. ..- .-.. .-.. . -.. / ..- .--. / - .... .\n/ .-.. --- -. --. / -.. .-. .. ...- . .-- .- -.--\n/ -- -.-- / .... .- -. -.. ... / .- .-. .\n/ ... .... .- -.- .. -. --. / - --- ---\n/ .... .- .-. -.. / - --- / -... --- .-.. - / - .... .\n/ -.. --- --- .-.",
+             ".--. .- .-. - / .---- -----\n.. / -.-. .- -. / .... . .- .-. / .... . .-.\n/ -.- -. --- -.-. -.- .. -. --. / -... . -. . .- - ....\n/ - .... .\n/ ..-. .-.. --- --- .-. -... --- .- .-. -.. ...\n/ ... .... . ... / .- ... -.- .. -. --. / -- .\n/ .-- .... -.-- / .. / -.. .. -.. / .. -",
+             ".--. .- .-. - / .---- .----\n-- .- -.-- -... . / .. ..-. / .. / .--- --- .. -. . -..\n/ .... . .-. / ... .... . / .-- --- ..- .-.. -.. -. -\n/ -... . / - .... .- - / -- .- -.."
+         ];
 
          const DEATH_MESSAGES = [
-             "404 ERROR", "oops", "wow", "*Thumbs down*", "ELLIE_IMG",
+             "404 ERROR", "oops", "wow", "*Thumbs down*",
              "..- ... . -.-. --- -.. . .-..-.\n. .- ... - . .-. . --. --. .-..-.",
              "0 Braincells", "loser", "NO ITS NOT REPETETIVE AND\nDON'T SAY THAT AGAIN",
              "yep they should replace\nyou with AI", "Get a life",
@@ -539,7 +571,16 @@
              "Insanity is doing the same thing\nover and over again and\nexpecting different results",
              "addiction is bad", "It's me", "I always die", "...", "cool",
              "yeah really close I guess", "yes there is an ending", "if function",
-             "..- ... . -.-. --- -.. . .-..-.\n-- --- .-. ... . .-..-."
+             "..- ... . -.-. --- -.. . .-..-.\n-- --- .-. ... . .-..-.",
+             "Wasted", "You are dead Ig", "Good Night",
+             "shetos fell from a high place", "Dead", "Too Bad",
+             "One more game, please", "pixelated game btw",
+             "Yes, AI generated",
+             "Who is typing these random\ndeath-screen texts",
+             "WEIRDO", "Anddd Cut",
+             "the music in this game is so repetitive",
+             "the worst she can say is not \"no\" btw",
+             "under the bed", "Try again later"
          ];
 
          const TRANSLATIONS = {
@@ -681,8 +722,10 @@
          const ASSETS_TO_LOAD = [
              'boss.png', 'boss_2.png', 'player.png', 'chocolate.png', 'shield.png', 'player_shielded.png',
              'potion.png', 'slow_potion.png', 'dryfood.png', 'doordash_cheetos.png', 'luigi_shetos.png', 'heisen_bark.png', 
-             'red.png', 'wall.png', 'ellie.png',
+             'red.png', 'wall.png',
              'sherlock.png', 'employed.png', 'arthur.png', 
+             'big_player.png', 'big_player_rich.png', 'big_employed.png', 'big_doordash_cheetos.png', 'big_arthur.png',
+             'big_luigi_shetos.png', 'big_sherlock.png', 'big_heisen_bark.png', 'big_player_yellow.png', 'big_player_black.png',
              'bg1.png', 'bg2.png', 'bg3.png', 'bg4.png', 'bg5.png',
              'main_menu.mp3', 'woof.mp3', 'bg_song.mp3', 'void.mp3', 'song_connector.mp3', 'alarm_clock.mp3',
              'breathing.mp3', 'shield_breaking.mp3', 'damage.mp3', 'explosion.mp3', 'button.mp3', 'buy.mp3',
@@ -974,17 +1017,17 @@
          window.openRedeemModal = function() { playClickSound(); closeAllModals(); document.getElementById('redeemInput').value = ""; document.getElementById('redeemModal').style.display = 'block'; }
 
          window.redeemCode = function() {
-             playClickSound(); let code = document.getElementById('redeemInput').value.trim();
-             if(code === "") return; if(redeemedCodes.includes(code)) return alert("Code already used!");
+             playClickSound(); let code = document.getElementById('redeemInput').value.trim().toLowerCase();
+             if(code === "") return; if(redeemedCodes.some(c => String(c).toLowerCase() === code)) return alert("Code already used!");
              let success = false;
              let isUnlimited = false;
-             if(code === "1-UGLY") { collectedStars += 20; success = true; }
+             if(code === "1-ugly") { collectedStars += 20; success = true; }
              else if(code === "2-67") { collectedStars += 67; success = true; }
-             else if(code === "3-Online") { onlineTrophies += 300; success = true; }
+             else if(code === "3-online") { onlineTrophies += 300; success = true; }
              else if(code === "4-thankyoudaddy") { collectedStars += 100; success = true; }
-             else if(code === "morse") { collectedStars += 50; success = true; }
-             else if(code === "easteregg") { collectedStars += 50; success = true; }
-             else if(code === "unlimited") { success = true; isUnlimited = true; }
+             else if(code === "morse") { collectedStars += 100; success = true; }
+             else if(code === "easteregg") { collectedStars += 100; success = true; }
+             else if(code === "unlimited") { collectedStars += 100; success = true; isUnlimited = true; }
              
              if(success) { 
                  redeemedCodes.push(code); 
@@ -1122,7 +1165,7 @@ window.triggerPvpTrashTalk = async function() {
              const allSkinKeys = Object.keys(SKINS).filter(k => k !== 'custom');
              let tempIndex = allSkinKeys.indexOf(customStats.visualSkin);
              if(tempIndex === -1) tempIndex = 0;
-             document.getElementById('lab-skin-preview').src = SKINS[allSkinKeys[tempIndex]].src;
+             applyBigSkinArt(document.getElementById('lab-skin-preview'), allSkinKeys[tempIndex]);
 
              document.getElementById('lab-col-base').value = customTrailColors.base;
              document.getElementById('lab-col-shield').value = customTrailColors.shield;
@@ -1164,16 +1207,16 @@ window.triggerPvpTrashTalk = async function() {
              if (currentIndex < 0) currentIndex = allSkinKeys.length - 1;
              if (currentIndex >= allSkinKeys.length) currentIndex = 0;
              customStats.visualSkin = allSkinKeys[currentIndex];
-             document.getElementById('lab-skin-preview').src = SKINS[customStats.visualSkin].src;
+             applyBigSkinArt(document.getElementById('lab-skin-preview'), customStats.visualSkin);
          }
 
-         window.saveAndEquipCustom = function() { if(!sfxMuted){buySound.currentTime=0; buySound.play().catch(e=>{});}  localStorage.setItem('flappyCustomStats', JSON.stringify(customStats)); localStorage.setItem('flappyCustomTrail', JSON.stringify(customTrailColors)); saveUserData(); for (let k in SKINS) { SKINS[k].current = false; } for (let k in TRAILS) { TRAILS[k].current = false; } currentSkinKey = 'custom'; currentTrailKey = 'trail_custom'; localStorage.setItem('currentSkin', 'custom'); localStorage.setItem('currentTrail', 'trail_custom'); let tempImg = new Image(); tempImg.onload = function() { bird.MyImg = tempImg; }; tempImg.src = SKINS[customStats.visualSkin] ? SKINS[customStats.visualSkin].src : 'player.png'; closeModal('labModal'); showCheatFeedback(getLangText("customEquipped")); updateAbilityButtons(); }
+         window.saveAndEquipCustom = function() { if(!sfxMuted){buySound.currentTime=0; buySound.play().catch(e=>{});}  localStorage.setItem('flappyCustomStats', JSON.stringify(customStats)); localStorage.setItem('flappyCustomTrail', JSON.stringify(customTrailColors)); saveUserData(); for (let k in SKINS) { SKINS[k].current = false; } for (let k in TRAILS) { TRAILS[k].current = false; } currentSkinKey = 'custom'; currentTrailKey = 'trail_custom'; localStorage.setItem('currentSkin', 'custom'); localStorage.setItem('currentTrail', 'trail_custom'); updateMenuCharacter(); let tempImg = new Image(); tempImg.onload = function() { bird.MyImg = tempImg; }; tempImg.src = SKINS[customStats.visualSkin] ? SKINS[customStats.visualSkin].src : 'player.png'; closeModal('labModal'); showCheatFeedback(getLangText("customEquipped")); updateAbilityButtons(); }
 
          let CANVAS_WIDTH = 640; 
          let CANVAS_HEIGHT = 480;
 
          var game_mode = 'waiting_for_website'; var myCanvas, ctx; var gameInterval = null; var FPS = 40; let isPaused = false; let voidUIErrorTimer = 0; 
-         const BOSS_IMG = new Image(); BOSS_IMG.src = 'boss.png'; const BOSS2_IMG = new Image(); BOSS2_IMG.src = 'boss_2.png'; const PLAYER_IMG = new Image(); PLAYER_IMG.src = 'player.png'; const CHOCO_IMG = new Image(); CHOCO_IMG.src = 'chocolate.png'; const SHIELD_IMG = new Image(); SHIELD_IMG.src = 'shield.png'; const SHIELDED_BIRD_IMG = new Image(); SHIELDED_BIRD_IMG.src = 'player_shielded.png'; const POTION_IMG = new Image(); POTION_IMG.src = 'potion.png'; const SLOW_POTION_IMG = new Image(); SLOW_POTION_IMG.src = 'slow_potion.png'; const STAR_IMG = new Image(); STAR_IMG.src = 'dryfood.png'; const DOORDASH_IMG = new Image(); DOORDASH_IMG.src = 'doordash_cheetos.png'; const ELLIE_IMG = new Image(); ELLIE_IMG.src = 'ellie.png'; var bottom_bar = new Image(); bottom_bar.src = 'red.png'; var pipe_piece = new Image(); pipe_piece.src = 'wall.png'; const DRAGON_IMG = new Image(); DRAGON_IMG.src = 'dragon.png'; const DRAGON_MAD_IMG = new Image(); DRAGON_MAD_IMG.src = 'dragon_mad.png'; const DRAGON_DIZZY_IMG = new Image(); DRAGON_DIZZY_IMG.src = 'dragon_dizzy.png'; const DRAGON_SHOOT_IMG = new Image(); DRAGON_SHOOT_IMG.src = 'dragon_shoot.png';
+         const BOSS_IMG = new Image(); BOSS_IMG.src = 'boss.png'; const BOSS2_IMG = new Image(); BOSS2_IMG.src = 'boss_2.png'; const PLAYER_IMG = new Image(); PLAYER_IMG.src = 'player.png'; const CHOCO_IMG = new Image(); CHOCO_IMG.src = 'chocolate.png'; const SHIELD_IMG = new Image(); SHIELD_IMG.src = 'shield.png'; const SHIELDED_BIRD_IMG = new Image(); SHIELDED_BIRD_IMG.src = 'player_shielded.png'; const POTION_IMG = new Image(); POTION_IMG.src = 'potion.png'; const SLOW_POTION_IMG = new Image(); SLOW_POTION_IMG.src = 'slow_potion.png'; const STAR_IMG = new Image(); STAR_IMG.src = 'dryfood.png'; const DOORDASH_IMG = new Image(); DOORDASH_IMG.src = 'doordash_cheetos.png'; var bottom_bar = new Image(); bottom_bar.src = 'red.png'; var pipe_piece = new Image(); pipe_piece.src = 'wall.png'; const DRAGON_IMG = new Image(); DRAGON_IMG.src = 'dragon.png'; const DRAGON_MAD_IMG = new Image(); DRAGON_MAD_IMG.src = 'dragon_mad.png'; const DRAGON_DIZZY_IMG = new Image(); DRAGON_DIZZY_IMG.src = 'dragon_dizzy.png'; const DRAGON_SHOOT_IMG = new Image(); DRAGON_SHOOT_IMG.src = 'dragon_shoot.png';
          const backgroundImages = []; for (let i = 1; i <= 5; i++) { let img = new Image(); img.src = `bg${i}.png`; backgroundImages.push(img); }
 
          let masterMusicVol = 0.3; let masterSFXVol = 0.5;
@@ -1254,7 +1297,7 @@ window.triggerPvpTrashTalk = async function() {
              'black':      { src: 'player_black.png', cost: 700, current: false, name: 'Legendary Shetos', desc: 'ALL POWERS COMBINED!\n3 Lives, Dash, 5 Bombs, Shrink, Widen, Magnet.' },
              'custom':     { src: 'player.png', cost: 0, current: false, name: 'Custom Shetos', desc: 'Your personal Lab creation.' }
          };
-for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].src; }
+for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].src; SKINS[k].big = 'big_' + SKINS[k].src; }
          const TRAILS = {
              'trail_none':        { color: 'none', cost: 0, current: true, name: 'No Trail' },
              'trail_blue':        { color: '#00ccff', cost: 30, current: false, name: 'Blue Trail' },
@@ -1401,7 +1444,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
 
                  let visualHTML = '';
                  if (shopCategory === 'skins') {
-                     visualHTML = `<img src="${item.src}" style="width: 50px; height: 50px; object-fit: contain; margin: 0 auto; display: block; image-rendering: pixelated;">`;
+                     visualHTML = `<img src="${item.big || ('big_' + item.src)}" onerror="this.onerror=null; this.classList.add('pixel-fallback'); this.src='${item.src}';" style="width: 102px; max-width: 100%; height: 75px; object-fit: contain; margin: 0 auto; display: block;">`;
                  } else {
                      let colorCode = item.color === 'rainbow' ? 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)' : (item.color === 'transparent' ? 'white' : item.color);
                      visualHTML = `<div style="width: 40px; height: 10px; border-radius: 5px; background: ${colorCode}; margin: 20px auto;"></div>`;
@@ -1457,7 +1500,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
 
          function purchaseOrEquipSkin(key) {
              if (key === 'custom' || key === 'trail_custom') return; 
-             if (SKINS[key] && shopCategory === 'skins') { const skin = SKINS[key]; if (availableSkins.includes(key)) { if (!skin.current) { playClickSound(); for (let k in SKINS) { SKINS[k].current = false; } skin.current = true; let tempImg = new Image(); tempImg.onload = function() { bird.MyImg = tempImg; }; tempImg.src = skin.src; currentSkinKey = key; localStorage.setItem('currentSkin', key); 
+             if (SKINS[key] && shopCategory === 'skins') { const skin = SKINS[key]; if (availableSkins.includes(key)) { if (!skin.current) { playClickSound(); for (let k in SKINS) { SKINS[k].current = false; } skin.current = true; let tempImg = new Image(); tempImg.onload = function() { bird.MyImg = tempImg; }; tempImg.src = skin.src; currentSkinKey = key; localStorage.setItem('currentSkin', key); updateMenuCharacter(); 
                  wallDestroyCharges = (currentSkinKey === 'yellow' || currentSkinKey === 'black') ? MAX_DESTROY_CHARGES : 0; dashCharges = (currentSkinKey === 'doordash' || currentSkinKey === 'black') ? 4 : 0; shrinkCharges = (currentSkinKey === 'luigi' || currentSkinKey === 'black') ? 4 : 0; widenCharges = (currentSkinKey === 'heisenbark' || currentSkinKey === 'black') ? 4 : 0; if (currentSkinKey === 'black' || currentSkinKey === 'tough' || currentSkinKey === 'sherlock') currentLives = (currentSkinKey === 'sherlock' ? 1 : INITIAL_LIVES); else currentLives = 0; updateAbilityButtons(); renderShopItems(); } } else if (collectedStars >= skin.cost) { collectedStars -= skin.cost; availableSkins.push(key); if(!sfxMuted){buySound.currentTime = 0; buySound.play().catch(e => console.warn(e));} if (key === 'employed' && availableSkins.includes(key)) { alert("Congrats, you finally got a J*b"); } localStorage.setItem('flappyStars', collectedStars); localStorage.setItem('flappySkins', JSON.stringify(availableSkins)); updateMenuStats(); saveUserData(); purchaseOrEquipSkin(key); } } 
              else if (TRAILS[key] && shopCategory === 'trails') { const trail = TRAILS[key]; if (availableTrails.includes(key)) { if (!trail.current) { playClickSound(); for (let k in TRAILS) { TRAILS[k].current = false; } trail.current = true; currentTrailKey = key; localStorage.setItem('currentTrail', key); renderShopItems(); } } else if (collectedStars >= trail.cost) { collectedStars -= trail.cost; availableTrails.push(key); if(!sfxMuted){buySound.currentTime = 0; buySound.play().catch(e => console.warn(e));} localStorage.setItem('flappyStars', collectedStars); localStorage.setItem('flappyTrails', JSON.stringify(availableTrails)); updateMenuStats(); saveUserData(); purchaseOrEquipSkin(key); } }
          }
@@ -1748,7 +1791,25 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
                  setTimeout(() => container.classList.remove('shake'), 700);
              }
          }
-         function updateMenuStats() { if(document.getElementById('menuHighScore')) { document.getElementById('menuHighScore').innerText = highScore; document.getElementById('menuStars').innerText = collectedStars; document.getElementById('menuTrophies').innerText = onlineTrophies; document.getElementById('menuGamesPlayed').innerText = totalGamesPlayed; } }
+         function updateMenuStats() { if(document.getElementById('menuHighScore')) { document.getElementById('menuHighScore').innerText = highScore; document.getElementById('menuStars').innerText = collectedStars; document.getElementById('menuTrophies').innerText = onlineTrophies; document.getElementById('menuGamesPlayed').innerText = totalGamesPlayed; } try { updateMenuCharacter(); } catch(e) {} }
+         // Main menu shows the equipped character using its high-res "big_" art (325x240).
+         // Falls back to the in-game sprite if the big file is missing.
+         window.applyBigSkinArt = function(el, key) {
+             if (!el) return;
+             let skin = SKINS[key] || SKINS['default'];
+             el.onerror = function() { el.onerror = null; el.classList.add('pixel-fallback'); el.src = skin.src; };
+             el.classList.remove('pixel-fallback');
+             el.src = skin.big || ('big_' + skin.src);
+         }
+         window.updateMenuCharacter = function() {
+             let el = document.getElementById('menu-char-preview');
+             if (!el) return;
+             let key = currentSkinKey;
+             if (key === 'custom') key = (typeof customStats !== 'undefined' && SKINS[customStats.visualSkin]) ? customStats.visualSkin : 'default';
+             if (el.dataset.skinKey === key) return;
+             el.dataset.skinKey = key;
+             applyBigSkinArt(el, key);
+         }
          function showCheatFeedback(text) { let el = document.getElementById('cheat-feedback'); el.innerText = text; el.style.display = 'block'; setTimeout(() => { el.style.display = 'none'; }, 2000); }
          function unlockAchievement(id) { let ach = ALL_ACHIEVEMENTS.find(a => a.id === id); if (ach && !ach.unlocked) { ach.unlocked = true; savedAchievements.push(id); localStorage.setItem('flappyAchievements', JSON.stringify(savedAchievements)); if (ach.reward > 0) { collectedStars += ach.reward; localStorage.setItem('flappyStars', collectedStars); updateMenuStats(); showCheatFeedback(getLangText("achReward") + " +" + ach.reward + " " + getLangText("food") + "!"); } } }
          function updateDifficulty() {
@@ -1870,7 +1931,7 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
              
              bird.x = CANVAS_WIDTH / 3; bird.y = CANVAS_HEIGHT / 2; bird.angle = 0; bird.velocity_y = 0; pipes = []; stars = []; shields = []; potions = []; slowPotions = []; errorSigns = []; trailHistory = [];  currentScore = 0; pipe_spawn_timer = 0; floatingTexts = []; myCanvas.style.filter = "none";
              
-             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; showEllieImage = false; bossIntroState = 0; bossIntroTimer = 0; isBoss2 = false; boss2Hits = 0; isBoss3 = false; dragonDefeated = false; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 0; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; boss.width = 150; boss.height = 150; boss.speedY = 2; boss1Music.playbackRate = 1; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; previousBGIndex = 0; transitionType = "normal"; transitionDuration = 0; transitionText = ""; transitionTimer = 0; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; 
+             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; bossIntroState = 0; bossIntroTimer = 0; isBoss2 = false; boss2Hits = 0; isBoss3 = false; dragonDefeated = false; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 0; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; boss.width = 150; boss.height = 150; boss.speedY = 2; boss1Music.playbackRate = 1; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; previousBGIndex = 0; transitionType = "normal"; transitionDuration = 0; transitionText = ""; transitionTimer = 0; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; 
 
              isSherlockActive = false; sherlockCooldown = 0; sherlockTimer = 0;
              isHrBreakActive = false; hrBreakCooldown = 0; hrBreakTimer = 0;
@@ -1899,7 +1960,7 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
          function Do_a_Frame() {
              try {
                  if (game_mode === 'waiting_for_website') { document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none'); return; }
-                 if (game_mode === 'over_black_screen') { ctx.fillStyle = "black"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); if (showEllieImage && ELLIE_IMG.complete && ELLIE_IMG.naturalWidth !== 0) { let imgW = ELLIE_IMG.naturalWidth; let imgH = ELLIE_IMG.naturalHeight; if (imgW > CANVAS_WIDTH * 0.8) { let scale = (CANVAS_WIDTH * 0.8) / imgW; imgW *= scale; imgH *= scale; } if (imgH > CANVAS_HEIGHT * 0.8) { let scale = (CANVAS_HEIGHT * 0.8) / imgH; imgW *= scale; imgH *= scale; } let imgX = (CANVAS_WIDTH - imgW) / 2; let imgY = (CANVAS_HEIGHT - imgH) / 2; ctx.drawImage(ELLIE_IMG, imgX, imgY, imgW, imgH); } else { ctx.font = '16px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(blackScreenText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2); } blackScreenTimer--; if(blackScreenTimer <= 0) { quitToMenu(); } return; }
+                 if (game_mode === 'over_black_screen') { ctx.fillStyle = "black"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); ctx.font = '16px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(blackScreenText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2); blackScreenTimer--; if(blackScreenTimer <= 0) { quitToMenu(); } return; }
                  
                  if (isPaused && game_mode !== 'online_match' && game_mode !== 'pvp_shetos') return; if (!ctx) return;
                  
@@ -2036,15 +2097,7 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
                          ctx.fillStyle = "black";
                          ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
                          
-                         if (showEllieImage && ELLIE_IMG.complete && ELLIE_IMG.naturalWidth !== 0) {
-                             let imgW = ELLIE_IMG.naturalWidth;
-                             let imgH = ELLIE_IMG.naturalHeight;
-                             if (imgW > CANVAS_WIDTH * 0.8) { let scale = (CANVAS_WIDTH * 0.8) / imgW; imgW *= scale; imgH *= scale; }
-                             if (imgH > CANVAS_HEIGHT * 0.8) { let scale = (CANVAS_HEIGHT * 0.8) / imgH; imgW *= scale; imgH *= scale; }
-                             let imgX = (CANVAS_WIDTH - imgW) / 2;
-                             let imgY = (CANVAS_HEIGHT - imgH) / 2;
-                             ctx.drawImage(ELLIE_IMG, imgX, imgY, imgW, imgH);
-                         } else if (deathMessage !== "") {
+                         if (deathMessage !== "") {
                              let fontSize = deathMessage.length > 40 ? 10 : (deathMessage.length > 20 ? 14 : 20);
                              ctx.font = fontSize + 'px "Press Start 2P"'; 
                              ctx.fillStyle = 'white'; 
@@ -2341,20 +2394,26 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
              }
          }
 
+         let lastStoryPart = -1;
+         function pickStoryPart() {
+             if (STORY_MORSE.length === 0) return "";
+             let i = Math.floor(Math.random() * STORY_MORSE.length);
+             if (STORY_MORSE.length > 1 && i === lastStoryPart) i = (i + 1 + Math.floor(Math.random() * (STORY_MORSE.length - 1))) % STORY_MORSE.length;
+             lastStoryPart = i;
+             return STORY_MORSE[i];
+         }
+
          function triggerGameOver(msg) {
+             // Boss 1 / Boss 2 deaths always reveal a story part, the void reveals one half the time.
+             let diedToBoss = (game_mode === 'boss' && !isBoss3);
+             let diedInVoid = (game_mode === 'running' && currentBGIndex === 4);
              game_mode = 'over';
              if (msg && (msg.includes("VICTORY") || msg.includes("DEFEAT"))) {
                  deathMessage = msg;
-                 showEllieImage = false;
+             } else if (diedToBoss || (diedInVoid && Math.random() < 0.5)) {
+                 deathMessage = pickStoryPart();
              } else {
-                 let randMsg = DEATH_MESSAGES[Math.floor(Math.random() * DEATH_MESSAGES.length)];
-                 if (randMsg === "ELLIE_IMG") {
-                     showEllieImage = true;
-                     deathMessage = "";
-                 } else {
-                     showEllieImage = false;
-                     deathMessage = randMsg;
-                 }
+                 deathMessage = DEATH_MESSAGES[Math.floor(Math.random() * DEATH_MESSAGES.length)];
              }
              canQuitTimer = 60;
              if(!sfxMuted){deathSound.currentTime=0; deathSound.play().catch(e=>{});}
