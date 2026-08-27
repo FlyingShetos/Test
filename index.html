@@ -38,8 +38,12 @@
         #landing-page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #041820; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; padding: 50px 16px 56px 16px; box-sizing: border-box; gap: 6px; -webkit-overflow-scrolling: touch; }
         #landing-page h1 { font-family: 'Pacifico', cursive; font-size: clamp(28px, 6vw, 50px); color: #f1c40f; margin: 0 0 6px 0; text-shadow: 2px 2px #e67e22; text-align: center; line-height: 1.2; }
         
-        #splash-text { position: absolute; top: 18%; right: 12%; color: #ffff00; font-family: 'Press Start 2P', cursive; font-size: clamp(7px, 1.5vw, 10px); transform: rotate(-15deg); text-shadow: 2px 2px #000; animation: pulse-splash 0.5s alternate infinite; pointer-events: none; z-index: 60; max-width: 180px; text-align: center; }
-        @keyframes pulse-splash { 0% { transform: rotate(-15deg) scale(1); } 100% { transform: rotate(-15deg) scale(1.1); } }
+        .title-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; max-width: 100%; flex-shrink: 0; }
+        /* The splash used to be positioned against the whole landing page (top 18% / right 12%),
+           so on phones it drifted into the top-right corner, nowhere near the title. It now hangs
+           off the title block itself, so it follows the logo at every screen size. */
+        #splash-text { position: absolute; left: calc(100% - 20px); top: 50%; margin-top: -10px; transform-origin: left center; transform: rotate(-15deg); color: #ffff00; font-family: 'Press Start 2P', cursive; font-size: clamp(6px, 1.4vw, 10px); text-shadow: 2px 2px #000; animation: pulse-splash 0.5s alternate infinite; pointer-events: none; z-index: 60; width: max-content; max-width: min(120px, 26vw); text-align: left; line-height: 1.35; }
+        @keyframes pulse-splash { 0% { transform: rotate(-15deg) scale(1); } 100% { transform: rotate(-15deg) scale(1.08); } }
 
         .menu-stats { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; justify-content: center; max-width: 100%; }
         .stat-box { background: rgba(255, 255, 255, 0.1); padding: 8px 6px; border-radius: 5px; text-align: center; border: 1px solid #fff; font-size: 11px; min-width: 68px; flex: 1 1 68px; max-width: 90px; }
@@ -180,7 +184,7 @@
             .menu-buttons { gap: 6px; max-width: 280px; }
             .enter-btn, button { padding: 8px; font-size: 10px; }
             #btn-play { font-size: 13px !important; padding: 10px !important; }
-            #splash-text { top: 14%; right: 8%; font-size: 7px; max-width: 130px; }
+            #splash-text { font-size: 6px; max-width: min(96px, 24vw); left: calc(100% - 16px); margin-top: -8px; }
         }
         @media (min-height: 700px) {
             #landing-page { justify-content: center; }
@@ -309,7 +313,7 @@
                  </div>
                  <div class="toggle-row">
                      <span data-i18n="musicVol">MUSIC VOL</span>
-                     <input type="range" id="music-vol" class="vol-slider" min="0" max="1" step="0.1" value="0.3" onchange="updateMusicVolume(this.value)">
+                     <input type="range" id="music-vol" class="vol-slider" min="0" max="1" step="0.1" value="0.3" oninput="updateMusicVolume(this.value)" onchange="updateMusicVolume(this.value)">
                  </div>
                  <div class="toggle-row">
                      <span data-i18n="sfx">SFX</span>
@@ -320,7 +324,7 @@
                  </div>
                  <div class="toggle-row">
                      <span data-i18n="sfxVol">SFX VOL</span>
-                     <input type="range" id="sfx-vol" class="vol-slider" min="0" max="1" step="0.1" value="0.5" onchange="updateSFXVolume(this.value)">
+                     <input type="range" id="sfx-vol" class="vol-slider" min="0" max="1" step="0.1" value="0.5" oninput="updateSFXVolume(this.value)" onchange="updateSFXVolume(this.value)">
                  </div>
                  <div class="toggle-row">
                      <span><span data-i18n="dnd">DND</span> <span class="info-badge" onclick="toggleDNDInfo()" title="What is DND?">i</span></span>
@@ -444,8 +448,10 @@
          </div>
 
          <div id="landing-page"> 
-             <div id="splash-text" data-i18n="splash">Splash!</div>
-             <h1>Flying Shetos</h1> 
+             <div class="title-wrap">
+                 <h1>Flying Shetos</h1>
+                 <div id="splash-text">Splash!</div>
+             </div>
              <img id="menu-char-preview" src="big_player.png" class="preview-img" alt="Cheetos"> 
              
              <div class="menu-stats">
@@ -556,7 +562,7 @@
          <canvas id="myCanvas" width="640" height="480"></canvas> 
      </div>
 <script>
-         let currentLang = 'en';
+         let currentLang = 'en';   // real value restored in applySavedSettings() once TRANSLATIONS exists
 
          const SPLASH_TEXTS = [
              "Sue Me", "67", "Also try Flappy bird", "Bread", "who reads privacy policies?", ":>", ";)", "DELETE",
@@ -685,8 +691,25 @@
         }
 
         window.changeLanguage = function(lang) {
+            if (!TRANSLATIONS[lang]) return;
             currentLang = lang;
-            if(!TRANSLATIONS[lang]) return;
+            saveSetting(SETTINGS_KEYS.lang, lang);
+            applyLanguage();
+        };
+
+        // Restores every remembered setting and pushes it into the controls, so the
+        // settings screen always shows what is actually in effect.
+        window.applySavedSettings = function() {
+            const savedLang = loadSetting(SETTINGS_KEYS.lang, 'en');
+            if (TRANSLATIONS[savedLang]) currentLang = savedLang;
+            const langSel = document.getElementById('lang-select');
+            if (langSel) langSel.value = currentLang;
+            const mv = document.getElementById('music-vol'); if (mv) mv.value = masterMusicVol;
+            const sv = document.getElementById('sfx-vol'); if (sv) sv.value = masterSFXVol;
+            const mt = document.getElementById('music-toggle'); if (mt) mt.checked = !musicMuted;
+            const st = document.getElementById('sfx-toggle'); if (st) st.checked = !sfxMuted;
+            if (typeof applyMusicVolumes === 'function') applyMusicVolumes();
+            if (typeof window.updateSFXVolume === 'function') window.updateSFXVolume(masterSFXVol);
             applyLanguage();
         };
 
@@ -1458,6 +1481,16 @@ window.triggerPvpTrashTalk = async function() {
          const backgroundImages = []; for (let i = 1; i <= 5; i++) { let img = new Image(); img.src = `bg${i}.png`; backgroundImages.push(img); }
 
          let masterMusicVol = 0.3; let masterSFXVol = 0.5;
+         // ---------------- PERSISTED SETTINGS ----------------
+         // Language, volumes and the mute switches used to reset to defaults on every
+         // visit. They are now read back here (before any Audio object is built, so the
+         // saved volume is the one they are created with) and re-saved on every change.
+         const SETTINGS_KEYS = { lang: 'flappyLang', musicVol: 'flappyMusicVol', sfxVol: 'flappySfxVol', musicOn: 'flappyMusicOn', sfxOn: 'flappySfxOn' };
+         function loadSetting(key, fallback) { try { const v = localStorage.getItem(key); return (v === null) ? fallback : v; } catch (e) { return fallback; } }
+         function saveSetting(key, value) { try { localStorage.setItem(key, value); } catch (e) { } }
+         function loadVolSetting(key, fallback) { const v = parseFloat(loadSetting(key, NaN)); return isNaN(v) ? fallback : Math.min(1, Math.max(0, v)); }
+         masterMusicVol = loadVolSetting(SETTINGS_KEYS.musicVol, 0.3);
+         masterSFXVol = loadVolSetting(SETTINGS_KEYS.sfxVol, 0.5);
          const mainMenuMusic = new Audio('main_menu.mp3'); mainMenuMusic.loop = true; mainMenuMusic.volume = masterMusicVol; const flapSound = new Audio('woof.mp3'); flapSound.volume = masterSFXVol * 0.5; const bgMusic = new Audio('bg_song.mp3'); bgMusic.loop = true; bgMusic.volume = masterMusicVol * 1.5; const voidMusic = new Audio('void.mp3'); voidMusic.loop = true; voidMusic.volume = masterMusicVol * 3.0; const connectorMusic = new Audio('song_connector.mp3'); connectorMusic.loop = false; connectorMusic.volume = masterMusicVol * 2.5; const boss1Music = new Audio('boss_1.mp3'); boss1Music.loop = true; boss1Music.volume = masterMusicVol * 1.5; const boss2Music = new Audio('boss_2.mp3'); boss2Music.loop = true; boss2Music.volume = masterMusicVol * 1.5;
          connectorMusic.onended = function() { if (!musicMuted && (game_mode === 'running' || game_mode === 'pvp_shetos')) { voidMusic.currentTime = 0; voidMusic.play().catch(e => console.log(e)); } };
          // --- Void / boss music boost bus -------------------------------------------------
@@ -1508,10 +1541,10 @@ window.triggerPvpTrashTalk = async function() {
 
          const alarmSound = new Audio('alarm_clock.mp3'); alarmSound.volume = masterSFXVol; const breathingSound = new Audio('breathing.mp3'); breathingSound.volume = masterSFXVol; const wrongwaySound = new Audio('Rwrongway.wav'); wrongwaySound.volume = masterSFXVol; const shieldBreakSound = new Audio('shield_breaking.mp3'); shieldBreakSound.volume = masterSFXVol; const damageSound = new Audio('damage.mp3'); damageSound.volume = masterSFXVol; const explosionSound = new Audio('explosion.mp3'); explosionSound.volume = masterSFXVol; const buttonSound = new Audio('button.mp3'); buttonSound.volume = masterSFXVol; const buySound = new Audio('buy.mp3'); buySound.volume = masterSFXVol; const dashSound = new Audio('dash.mp3'); dashSound.volume = masterSFXVol; const deathSound = new Audio('death.mp3'); deathSound.volume = masterSFXVol;
 
-         window.updateMusicVolume = function(val) { masterMusicVol = parseFloat(val); applyMusicVolumes(); }
-         window.updateSFXVolume = function(val) { masterSFXVol = parseFloat(val); flapSound.volume = masterSFXVol * 0.5; alarmSound.volume = masterSFXVol; breathingSound.volume = masterSFXVol; shieldBreakSound.volume = masterSFXVol; damageSound.volume = masterSFXVol; explosionSound.volume = masterSFXVol; buttonSound.volume = masterSFXVol; buySound.volume = masterSFXVol; dashSound.volume = masterSFXVol; deathSound.volume = masterSFXVol; }
+         window.updateMusicVolume = function(val) { masterMusicVol = parseFloat(val); saveSetting(SETTINGS_KEYS.musicVol, masterMusicVol); applyMusicVolumes(); }
+         window.updateSFXVolume = function(val) { masterSFXVol = parseFloat(val); saveSetting(SETTINGS_KEYS.sfxVol, masterSFXVol); flapSound.volume = masterSFXVol * 0.5; alarmSound.volume = masterSFXVol; breathingSound.volume = masterSFXVol; shieldBreakSound.volume = masterSFXVol; damageSound.volume = masterSFXVol; explosionSound.volume = masterSFXVol; buttonSound.volume = masterSFXVol; buySound.volume = masterSFXVol; dashSound.volume = masterSFXVol; deathSound.volume = masterSFXVol; }
 
-         let voidBreathingCount = 0; const MAX_BREATHING = 2; let wrongwayPlayed = false; let wrongwayTimer = -1; let musicMuted = false; let sfxMuted = false;
+         let voidBreathingCount = 0; const MAX_BREATHING = 2; let wrongwayPlayed = false; let wrongwayTimer = -1; let musicMuted = (loadSetting(SETTINGS_KEYS.musicOn, '1') === '0'); let sfxMuted = (loadSetting(SETTINGS_KEYS.sfxOn, '1') === '0');
 
          // ---------------- DND (DO NOT DISTURB) ----------------
          // One switch that makes the game completely silent so the player's own
@@ -2267,8 +2300,8 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
              if (myWins >= 2 || enemyWins >= 2) { endMatchLogic({ hostWins: myWins, guestWins: enemyWins }); return; }
              online_round++; db.collection('matches').doc(activeMatchID).update({ round: online_round, hostWins: myWins, guestWins: enemyWins, hostStatus: 'alive', guestStatus: 'alive', hostScore: 0, guestScore: 0 }); resetOnlineRound(); triggerFlash("white"); }
          function endMatchLogic(data) { if (trophyProcessed) return; trophyProcessed = true; let amIHost = (myOnlineRole === 'host'); let hostWon = ((data.hostWins || 0) >= 2); let iWon = (amIHost && hostWon) || (!amIHost && !hostWon); let trophyChange = iWon ? 25 : -15; if (!iWon && onlineTrophies < 15) trophyChange = -onlineTrophies; onlineTrophies += trophyChange; localStorage.setItem('flappyTrophies', onlineTrophies); saveUserData(); const finishedMatchID = activeMatchID; if (amIHost && finishedMatchID) { db.collection('matches').doc(finishedMatchID).update({ status: 'ended', hostWins: data.hostWins || 0, guestWins: data.guestWins || 0 }).catch(e => console.log(e)); setTimeout(() => { db.collection('matches').doc(finishedMatchID).delete().catch(e => console.log(e)); }, 10000); } if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } setTimeout(() => { let msg = iWon ? `VICTORY! +${trophyChange} 🏆` : `DEFEAT... ${trophyChange} 🏆`; triggerGameOver(msg); document.getElementById('online-ui').style.display = 'none'; activeMatchID = null; }, 1000); }
-         window.toggleMusicSwitch = function(isChecked) { musicMuted = !isChecked; if (musicMuted) { mainMenuMusic.pause(); bgMusic.pause(); voidMusic.pause(); boss1Music.pause(); boss2Music.pause(); connectorMusic.pause(); } else { if (!isPaused && (game_mode === 'running' || game_mode === 'boss' || game_mode === 'online_match' || game_mode === 'pvp_shetos')) { if (game_mode === 'boss') { if (!isBoss2) boss1Music.play(); else boss2Music.play(); } else if (currentBGIndex === 4) voidMusic.play(); else bgMusic.play(); } else if (game_mode === 'waiting_for_website') { mainMenuMusic.play(); } } }
-         window.toggleSFXSwitch = function(isChecked) { sfxMuted = !isChecked; }
+         window.toggleMusicSwitch = function(isChecked) { musicMuted = !isChecked; saveSetting(SETTINGS_KEYS.musicOn, isChecked ? '1' : '0'); if (musicMuted) { mainMenuMusic.pause(); bgMusic.pause(); voidMusic.pause(); boss1Music.pause(); boss2Music.pause(); connectorMusic.pause(); } else { if (!isPaused && (game_mode === 'running' || game_mode === 'boss' || game_mode === 'online_match' || game_mode === 'pvp_shetos')) { if (game_mode === 'boss') { if (!isBoss2) boss1Music.play(); else boss2Music.play(); } else if (currentBGIndex === 4) voidMusic.play(); else bgMusic.play(); } else if (game_mode === 'waiting_for_website') { mainMenuMusic.play(); } } }
+         window.toggleSFXSwitch = function(isChecked) { sfxMuted = !isChecked; saveSetting(SETTINGS_KEYS.sfxOn, isChecked ? '1' : '0'); }
          
 window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0; buttonSound.play().catch(e => console.warn(e)); } }
 
@@ -2781,6 +2814,8 @@ window.playClickSound = function() { if(!sfxMuted) { buttonSound.currentTime = 0
          myCanvas = document.getElementById('myCanvas');
          ctx = myCanvas.getContext('2d');
          applyScale();
+         applySavedSettings();
+         updateSplashText();   // the splash is no longer a translated string, so seed one at boot
          applyDNDUI();
          updateMenuStats();
          
