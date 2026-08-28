@@ -1,0 +1,104 @@
+rules_version = '2';
+
+// Flying Shetos - Firestore security rules
+//
+// Paste these into Firebase console -> Firestore Database -> Rules -> Publish.
+//
+// WHY THIS FILE EXISTS
+// Challenges and dry-food gifts used to fail because the game tried to write
+// into the OTHER player's document (users/{friend}/invites and users/{friend}.stars).
+// No sane ruleset can allow that: it would let anybody hand themselves unlimited
+// dry food. The client now posts invites and gifts into their own shared
+// collections instead, and these rules make that work safely.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isMe(uid)  { return signedIn() && request.auth.uid == uid; }
+
+    // ---- Player profiles -------------------------------------------------
+    // Any signed-in player may READ a profile (friends list, friend stats),
+    // but only the owner may ever write their own.
+    match /users/{userId} {
+      allow read:   if signedIn();
+      allow create: if isMe(userId);
+      allow update: if isMe(userId);
+      allow delete: if false;
+
+      // Legacy invites subcollection - unused by the current client.
+      match /{document=**} {
+        allow read, write: if isMe(userId);
+      }
+    }
+
+    // ---- Challenge invites ----------------------------------------------
+    // Sender creates it, receiver answers it.
+    match /invites/{inviteId} {
+      allow read:   if signedIn() && (resource.data.toUid == request.auth.uid
+                                   || resource.data.fromUid == request.auth.uid);
+      allow create: if signedIn()
+                    && request.resource.data.fromUid == request.auth.uid
+                    && request.resource.data.status == 'pending';
+      allow update, delete: if signedIn()
+                    && (resource.data.toUid == request.auth.uid
+                     || resource.data.fromUid == request.auth.uid);
+    }
+
+    // ---- Dry food gifts --------------------------------------------------
+    // The sender creates a gift addressed to a friend. Only the receiver can
+    // claim it, and a claim may ONLY flip claimed false -> true: the amount,
+    // sender and recipient can never be edited, so a gift cannot be replayed
+    // or inflated.
+    match /transfers/{transferId} {
+      allow read:   if signedIn() && (resource.data.toUid == request.auth.uid
+                                   || resource.data.fromUid == request.auth.uid);
+      allow create: if signedIn()
+                    && request.resource.data.fromUid == request.auth.uid
+                    && request.resource.data.toUid is string
+                    && request.resource.data.claimed == false
+                    && request.resource.data.amount is int
+                    && request.resource.data.amount > 0
+                    && request.resource.data.amount <= 1000000;
+      allow update: if signedIn()
+                    && resource.data.toUid == request.auth.uid
+                    && resource.data.claimed == false
+                    && request.resource.data.claimed == true
+                    && request.resource.data.amount == resource.data.amount
+                    && request.resource.data.toUid == resource.data.toUid
+                    && request.resource.data.fromUid == resource.data.fromUid;
+      allow delete: if false;
+    }
+
+    // ---- Head to head matches -------------------------------------------
+    // Both players share one document, so both need to write it during a match.
+    match /matches/{matchId} {
+      allow read:   if signedIn();
+      allow create: if signedIn() && request.resource.data.hostId == request.auth.uid;
+      allow update: if signedIn();
+      allow delete: if signedIn();
+    }
+
+    // ---- Friend chat -----------------------------------------------------
+    // Chat ids are "uidA_uidB", so only the two participants can read/write.
+    match /chats/{chatId}/messages/{messageId} {
+      allow read:   if signedIn() && chatId.split('_').hasAny([request.auth.uid]);
+      allow create: if signedIn()
+                    && chatId.split('_').hasAny([request.auth.uid])
+                    && request.resource.data.senderId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // ---- Leaderboards ----------------------------------------------------
+    // Public to read; a signed-in player may only submit rows tagged with
+    // their own uid.
+    match /scores_v5_5/{docId} {
+      allow read:  if true;
+      allow write: if signedIn() && request.resource.data.uid == request.auth.uid;
+    }
+    match /weekly_scores_v5_5/{docId} {
+      allow read:  if true;
+      allow write: if signedIn() && request.resource.data.uid == request.auth.uid;
+    }
+  }
+}
