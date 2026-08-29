@@ -1722,15 +1722,15 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          };
 
          let loadedSrc = SKINS['default'].src; if (currentSkinKey === 'custom') loadedSrc = SKINS[customStats.visualSkin] ? SKINS[customStats.visualSkin].src : 'player.png'; else if (SKINS[currentSkinKey]) loadedSrc = SKINS[currentSkinKey].src;          var bird = new MySprite(loadedSrc);
-         // Every player skin is drawn at the same on-screen height, BIRD_HEIGHT, no matter
-         // how big its PNG is (they range from 37 to 48 tall). The width follows the skin's
-         // own aspect ratio, so Luigi stays wide and Shetos stays square.
+         // Every gameplay sprite is pre-rendered from that skin's high-res 'big_' art,
+         // cropped tight and scaled down to BIRD_HEIGHT (55px), so all of them are the
+         // same height and the width just follows the character's own shape.
          // The art and the hitbox read these same two numbers: what you see is what kills
          // you, and the collision box can never be smaller than the dog on screen.
         const BIRD_HEIGHT = 55;
         function birdSpriteW() {
             const ok = (bird.MyImg && bird.MyImg.complete && bird.MyImg.naturalWidth !== 0);
-            const w = ok ? bird.MyImg.width : 40; const h = ok ? bird.MyImg.height : 37;
+            const w = ok ? bird.MyImg.width : 56; const h = ok ? bird.MyImg.height : 55;
             return w * (BIRD_HEIGHT / h);
         }
         function birdSpriteH() { return BIRD_HEIGHT; }
