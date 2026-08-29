@@ -76,7 +76,12 @@
         #delete-boss-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 30px; background: red; z-index: 40; display: none; padding: 20px; border: 5px solid white; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.1); } 100% { transform: translate(-50%, -50%) scale(1); } }
         
-        #pause-menu { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 150; flex-direction: column; align-items: center; justify-content: center; }
+        #pause-menu { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 150; flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto; box-sizing: border-box; padding: 16px 10px; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
+        /* Center the column when it fits, let it scroll from the top when it doesn't
+           (plain justify-content:center clips the top rows and made QUIT TO MENU
+           unreachable on short phone screens - it sat below the visible area). */
+        #pause-menu::before { content: ""; margin-top: auto; }
+        #pause-menu::after { content: ""; margin-bottom: auto; }
         #pause-menu h1 { font-family: 'Press Start 2P', cursive; color: white; margin-bottom: 30px; }
         .pause-options { display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px; width: 250px; }
         .toggle-row { display: flex; justify-content: space-between; align-items: center; color: white; font-family: 'Press Start 2P', cursive; font-size: 12px; }
@@ -185,6 +190,13 @@
             .enter-btn, button { padding: 8px; font-size: 10px; }
             #btn-play { font-size: 13px !important; padding: 10px !important; }
             #splash-text { font-size: 6px; max-width: min(96px, 24vw); left: calc(100% - 16px); margin-top: -8px; }
+            /* Short screens: tighten the pause/settings menu so RESUME and QUIT TO MENU
+               both fit; anything that still doesn't fit scrolls instead of vanishing. */
+            #pause-menu h1 { margin-bottom: 8px; font-size: 14px; }
+            .pause-options { gap: 8px; margin-bottom: 10px; }
+            .toggle-row { font-size: 10px; }
+            .dnd-info { font-size: 10px; padding: 6px; }
+            #pause-menu .enter-btn { margin-top: 6px; }
         }
         @media (min-height: 700px) {
             #landing-page { justify-content: center; }
@@ -325,6 +337,13 @@
                  <div class="toggle-row">
                      <span data-i18n="sfxVol">SFX VOL</span>
                      <input type="range" id="sfx-vol" class="vol-slider" min="0" max="1" step="0.1" value="0.5" oninput="updateSFXVolume(this.value)" onchange="updateSFXVolume(this.value)">
+                 </div>
+                 <div class="toggle-row">
+                     <span data-i18n="woof">WOOF (FLAP)</span>
+                     <label class="switch">
+                         <input type="checkbox" id="woof-toggle" checked onchange="playClickSound(); toggleWoofSwitch(this.checked)">
+                         <span class="slider"></span>
+                     </label>
                  </div>
                  <div class="toggle-row">
                      <span><span data-i18n="dnd">DND</span> <span class="info-badge" onclick="toggleDNDInfo()" title="What is DND?">i</span></span>
@@ -697,7 +716,7 @@
          const TRANSLATIONS = {
     en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", understand: "I UNDERSTAND", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS",
     comingSoon: "COMING SOON", comingSoonDesc: "Available in a future update.", storyDesc: "The classic adventure.<br>Secrets & Bosses.", endlessDesc: "Infinite run.<br>Speed increases forever.<br><b style='color:white;'>Leaderboard Enabled</b>", pvpDesc: "Score Battle!<br>Online.", trophiesLabel: "Trophies:", back: "BACK", selectOpponent: "Select Opponent", online: "ONLINE", onlineDesc: "Matchmake with<br>Real Humans.", round: "ROUND", you: "YOU", opponent: "OPPONENT", target: "Target: Don't Crash!",
-    music: "MUSIC", musicVol: "MUSIC VOL", sfx: "SFX", sfxVol: "SFX VOL", language: "LANGUAGE", resume: "RESUME", quitToMenu: "QUIT TO MENU",
+    music: "MUSIC", musicVol: "MUSIC VOL", sfx: "SFX", sfxVol: "SFX VOL", woof: "WOOF (FLAP)", language: "LANGUAGE", resume: "RESUME", quitToMenu: "QUIT TO MENU",
     shopTitle: "Shop", dryFood: "Dry Food:", theLab: "THE LAB", skins: "SKINS", trails: "TRAILS",
     sellItem: "SELL ITEM", areYouSure: "Are you sure?", yes: "YES", no: "NO",
     friend: "Friend", typeMessage: "Type a message...", acceptChallenge: "Do you accept the challenge?", accept: "ACCEPT", decline: "DECLINE",
@@ -713,7 +732,7 @@
     b1_1: "oh, here you are", b1_2: "I was waiting for you", b2_1: "you are getting out of control", b2_2: "you werent supposed to come HERE", b2_3: "Its too late to go back now....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "So, we will not talk about how a dog is flying?", b3_2: "Why am i even asking that's not even my thoughts, It's the game developer who's typing all this nonsense.", b3_3: "I guess he thought it would be funny to make me question why a dog is flying.", b3_4: "Let's start the fight i guess.", boss3Defeated: "DRAGON DEFEATED!", sys: "System Override...", bypass: "Bypassing...", admin: "Administrator Granted.", tbc: "To Be Continued...", cat: "THAT WAS A CAT", kid: "you got clipped by a kid lmao", err1: "Connection Error", fall: "Fell down!", wall: "Hit a wall!", eaten: "EATEN BY SHETOS!" },
     de: { play: "SPIELEN", shop: "GESCHÄFT", achieve: "ERFOLGE", friends: "FREUNDE", lead: "BESTEN", ai: "KI CHAT", redeem: "EINLÖSEN", high: "Höchstpunktzahl", food: "Trockenfutter", trophies: "Trophäen", games: "Spiele", welcome: "WILLKOMMEN BEI<br>FLYING SHETOS", understand: "ICH VERSTEHE", chooseMode: "Modus wählen", story: "GESCHICHTSMODUS", endless: "ENDLOSMODUS", pvp: "PVP-MODUS", settings: "EINSTELLUNGEN",
     comingSoon: "BALD VERFÜGBAR", comingSoonDesc: "In einem zukünftigen Update verfügbar.", storyDesc: "Das klassische Abenteuer.<br>Geheimnisse & Bosse.", endlessDesc: "Endloser Lauf.<br>Die Geschwindigkeit steigt für immer.<br><b style='color:white;'>Bestenliste aktiviert</b>", pvpDesc: "Punkte-Battle!<br>Online.", trophiesLabel: "Trophäen:", back: "ZURÜCK", selectOpponent: "Gegner wählen", online: "ONLINE", onlineDesc: "Spiele gegen<br>echte Menschen.", round: "RUNDE", you: "DU", opponent: "GEGNER", target: "Ziel: Nicht abstürzen!",
-    music: "MUSIK", musicVol: "MUSIK LAUTST.", sfx: "SFX", sfxVol: "SFX LAUTST.", language: "SPRACHE", resume: "FORTSETZEN", quitToMenu: "ZUM MENÜ",
+    music: "MUSIK", musicVol: "MUSIK LAUTST.", sfx: "SFX", sfxVol: "SFX LAUTST.", woof: "WUFF (FLATTERN)", language: "SPRACHE", resume: "FORTSETZEN", quitToMenu: "ZUM MENÜ",
     shopTitle: "Geschäft", dryFood: "Trockenfutter:", theLab: "DAS LABOR", skins: "SKINS", trails: "SPUREN",
     sellItem: "ARTIKEL VERKAUFEN", areYouSure: "Bist du sicher?", yes: "JA", no: "NEIN",
     friend: "Freund", typeMessage: "Nachricht eingeben...", acceptChallenge: "Nimmst du die Herausforderung an?", accept: "ANNEHMEN", decline: "ABLEHNEN",
@@ -727,7 +746,7 @@
     b1_1: "oh, da bist du ja", b1_2: "ich habe auf dich gewartet", b2_1: "du gerätst außer kontrolle", b2_2: "du solltest nicht HIERHER kommen", b2_3: "es ist zu spät um umzukehren....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "Also, wir reden nicht darueber, wie ein Hund fliegt?", b3_2: "Warum frage ich ueberhaupt? Das sind nicht mal meine Gedanken, der Spieleentwickler tippt hier den ganzen Unsinn.", b3_3: "Ich glaube, er dachte, es waere lustig, mich fragen zu lassen, warum ein Hund fliegt.", b3_4: "Dann fangen wir wohl besser an zu kaempfen.", boss3Defeated: "DRACHE BESIEGT!", sys: "Systemüberschreibung...", bypass: "Umgehung...", admin: "Administrator gewährt.", tbc: "Fortsetzung folgt...", cat: "DAS WAR EINE KATZE", kid: "du wurdest von einem kind erwischt lmao", err1: "Verbindungsfehler", fall: "Heruntergefallen!", wall: "Wand getroffen!", eaten: "VON SHETOS GEFRESSEN!" },
     ar: { play: "العب", shop: "المتجر", achieve: "إنجازات", friends: "أصدقاء", lead: "المتصدرين", ai: "محادثة ذكاء", redeem: "استرداد", high: "أعلى نتيجة", food: "طعام جاف", trophies: "الجوائز", games: "الألعاب", welcome: "مرحباً بكم في<br>فلاينج شيتوس", understand: "أنا أفهم", chooseMode: "اختر الوضع", story: "وضع القصة", endless: "وضع لا نهاية له", pvp: "وضع لاعب ضد لاعب", settings: "الإعدادات",
     comingSoon: "قريباً", comingSoonDesc: "متاح في تحديث مستقبلي.", storyDesc: "المغامرة الكلاسيكية.<br>أسرار وزعماء.", endlessDesc: "جري لا نهائي.<br>السرعة تزداد إلى الأبد.<br><b style='color:white;'>لوحة المتصدرين مفعّلة</b>", pvpDesc: "معركة النقاط!<br>أونلاين.", trophiesLabel: "الجوائز:", back: "رجوع", selectOpponent: "اختر الخصم", online: "أونلاين", onlineDesc: "طابق مع<br>بشر حقيقيين.", round: "الجولة", you: "أنت", opponent: "الخصم", target: "الهدف: لا تصطدم!",
-    music: "الموسيقى", musicVol: "حجم الموسيقى", sfx: "المؤثرات", sfxVol: "حجم المؤثرات", language: "اللغة", resume: "استئناف", quitToMenu: "العودة إلى القائمة",
+    music: "الموسيقى", musicVol: "حجم الموسيقى", sfx: "المؤثرات", sfxVol: "حجم المؤثرات", woof: "ووف (الرفرفة)", language: "اللغة", resume: "استئناف", quitToMenu: "العودة إلى القائمة",
     shopTitle: "المتجر", dryFood: "الطعام الجاف:", theLab: "المختبر", skins: "الأشكال", trails: "الأثر",
     sellItem: "بيع العنصر", areYouSure: "هل أنت متأكد؟", yes: "نعم", no: "لا",
     friend: "صديق", typeMessage: "اكتب رسالة...", acceptChallenge: "هل تقبل التحدي؟", accept: "قبول", decline: "رفض",
@@ -741,7 +760,7 @@
     b1_1: "أوه، ها أنت ذا", b1_2: "كنت في انتظارك", b2_1: "أنت تخرج عن السيطرة", b2_2: "لم يكن من المفترض أن تأتي إلى هنا", b2_3: "لقد فات الأوان للتراجع....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "طيب، مش هنتكلم إزاي كلب بيطير؟", b3_2: "ليه بسأل أصلًا؟ دي مش أفكاري، ده مطور اللعبة اللي بيكتب كل الهبل ده.", b3_3: "أكيد افتكر إنه مضحك يخليني أسأل ليه كلب بيطير.", b3_4: "خلينا نبدأ القتال يعني.", boss3Defeated: "تم هزيمة التنين!", sys: "تجاوز النظام...", bypass: "جاري التجاوز...", admin: "تم منح حق المسؤول.", tbc: "يتبع...", cat: "تلك كانت قطة", kid: "لقد صدمك طفل لول", err1: "خطأ في الاتصال", fall: "سقطت!", wall: "اصطدمت بجدار!", eaten: "أكلك شيتوس!" },
     it: { play: "GIOCA", shop: "NEGOZIO", achieve: "RISULTATI", friends: "AMICI", lead: "CLASSIFICA", ai: "CHAT AI", redeem: "RISCATTA", high: "Punteggio Max", food: "Cibo Secco", trophies: "Trofei", games: "Giochi", welcome: "BENVENUTO A<br>FLYING SHETOS", understand: "CAPISCO", chooseMode: "Scegli Modalità", story: "MODALITÀ STORIA", endless: "MODALITÀ INFINITA", pvp: "MODALITÀ PVP", settings: "IMPOSTAZIONI",
     comingSoon: "IN ARRIVO", comingSoonDesc: "Disponibile in un futuro aggiornamento.", storyDesc: "L'avventura classica.<br>Segreti & Boss.", endlessDesc: "Corsa infinita.<br>La velocità aumenta per sempre.<br><b style='color:white;'>Classifica attivata</b>", pvpDesc: "Battaglia di punteggi!<br>Online.", trophiesLabel: "Trofei:", back: "INDIETRO", selectOpponent: "Seleziona Avversario", online: "ONLINE", onlineDesc: "Abbinati con<br>persone reali.", round: "ROUND", you: "TU", opponent: "AVVERSARIO", target: "Obiettivo: Non schiantarti!",
-    music: "MUSICA", musicVol: "VOLUME MUSICA", sfx: "SFX", sfxVol: "VOLUME SFX", language: "LINGUA", resume: "RIPRENDI", quitToMenu: "ESCI AL MENU",
+    music: "MUSICA", musicVol: "VOLUME MUSICA", sfx: "SFX", sfxVol: "VOLUME SFX", woof: "WOOF (BATTITO)", language: "LINGUA", resume: "RIPRENDI", quitToMenu: "ESCI AL MENU",
     shopTitle: "Negozio", dryFood: "Cibo Secco:", theLab: "IL LABORATORIO", skins: "SKIN", trails: "SCIE",
     sellItem: "VENDI OGGETTO", areYouSure: "Sei sicuro?", yes: "SÌ", no: "NO",
     friend: "Amico", typeMessage: "Scrivi un messaggio...", acceptChallenge: "Accetti la sfida?", accept: "ACCETTA", decline: "RIFIUTA",
@@ -769,6 +788,7 @@
             if (!TRANSLATIONS[lang]) return;
             currentLang = lang;
             saveSetting(SETTINGS_KEYS.lang, lang);
+            pushSettingsToCloud();
             applyLanguage();
         };
 
@@ -783,6 +803,7 @@
             const sv = document.getElementById('sfx-vol'); if (sv) sv.value = masterSFXVol;
             const mt = document.getElementById('music-toggle'); if (mt) mt.checked = !musicMuted;
             const st = document.getElementById('sfx-toggle'); if (st) st.checked = !sfxMuted;
+            const wt = document.getElementById('woof-toggle'); if (wt) wt.checked = !woofMuted;
             if (typeof applyMusicVolumes === 'function') applyMusicVolumes();
             if (typeof window.updateSFXVolume === 'function') window.updateSFXVolume(masterSFXVol);
             applyLanguage();
@@ -1023,6 +1044,7 @@
                      if (cloudData.labUnlocked) { labUnlocked = true; localStorage.setItem('flappyLabUnlocked', 'true'); }
                      if (cloudData.customStats) { customStats = cloudData.customStats; localStorage.setItem('flappyCustomStats', JSON.stringify(customStats)); }
                      if (cloudData.customTrailColors) { customTrailColors = cloudData.customTrailColors; localStorage.setItem('flappyCustomTrail', JSON.stringify(customTrailColors)); }
+                     if (cloudData.settings) { applyCloudSettings(cloudData.settings); }
 
                      let cloudSkins = (cloudData.skins || []).filter(k => SKINS[k] !== undefined);
                      const mergedSkins = new Set([...availableSkins, ...cloudSkins]);
@@ -1066,9 +1088,54 @@
                      customStats: customStats,
                      customTrailColors: customTrailColors,
                      redeemedCodes: redeemedCodes,
+                     settings: collectSettings(),
                      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                  }, {merge: true});
              } catch(e) { console.error("Save Error:", e); }
+         }
+
+         // ---------------- SETTINGS IN THE CLOUD ----------------
+         // Settings live in localStorage for guests AND are mirrored to the player's
+         // Firestore doc while logged in - so every settings change survives forever
+         // (new device, cleared browser data, logout/login) as long as the account exists.
+         function collectSettings() {
+             return {
+                 lang: currentLang,
+                 musicVol: masterMusicVol,
+                 sfxVol: masterSFXVol,
+                 musicOn: musicMuted ? '0' : '1',
+                 sfxOn: sfxMuted ? '0' : '1',
+                 woofOn: woofMuted ? '0' : '1',
+                 dnd: dndMode ? 'true' : 'false'
+             };
+         }
+         let settingsPushTimer = null;
+         function pushSettingsToCloud() {
+             if (!db || !currentUser) return;   // guests keep device-local settings
+             if (settingsPushTimer) clearTimeout(settingsPushTimer);
+             settingsPushTimer = setTimeout(function() {
+                 settingsPushTimer = null;
+                 if (!db || !currentUser) return;
+                 db.collection('users').doc(currentUser.uid)
+                   .set({ settings: collectSettings(), lastUpdated: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true })
+                   .catch(e => console.warn("Settings sync failed:", e.code || e.message));
+             }, 500);
+         }
+         function applyCloudSettings(s) {
+             if (!s || typeof s !== 'object') return;
+             try {
+                 if (s.lang && TRANSLATIONS[s.lang]) { currentLang = s.lang; saveSetting(SETTINGS_KEYS.lang, s.lang); }
+                 if (s.musicVol !== undefined) { masterMusicVol = Math.min(1, Math.max(0, parseFloat(s.musicVol) || 0.3)); saveSetting(SETTINGS_KEYS.musicVol, masterMusicVol); }
+                 if (s.sfxVol !== undefined) { masterSFXVol = Math.min(1, Math.max(0, parseFloat(s.sfxVol) || 0.5)); saveSetting(SETTINGS_KEYS.sfxVol, masterSFXVol); }
+                 if (s.musicOn !== undefined) { musicMuted = String(s.musicOn) === '0'; saveSetting(SETTINGS_KEYS.musicOn, musicMuted ? '0' : '1'); }
+                 if (s.sfxOn !== undefined) { sfxMuted = String(s.sfxOn) === '0'; saveSetting(SETTINGS_KEYS.sfxOn, sfxMuted ? '0' : '1'); }
+                 if (s.woofOn !== undefined) { woofMuted = String(s.woofOn) === '0'; saveSetting(SETTINGS_KEYS.woofOn, woofMuted ? '0' : '1'); }
+                 if (s.dnd !== undefined) { dndMode = String(s.dnd) === 'true'; try { localStorage.setItem('flappyDND', dndMode ? 'true' : 'false'); } catch(e) {} }
+                 if (typeof applySavedSettings === 'function') applySavedSettings();
+                 if (typeof applyDNDUI === 'function') applyDNDUI();
+                 if (dndMode) silenceAllAudio();
+                 else if (musicMuted) { mainMenuMusic.pause(); bgMusic.pause(); voidMusic.pause(); boss1Music.pause(); boss2Music.pause(); connectorMusic.pause(); }
+             } catch (e) { console.error("Settings restore error:", e); }
          }
 
          // ---------------- PRESENCE ----------------
@@ -1582,7 +1649,7 @@ window.triggerPvpTrashTalk = async function() {
          // Language, volumes and the mute switches used to reset to defaults on every
          // visit. They are now read back here (before any Audio object is built, so the
          // saved volume is the one they are created with) and re-saved on every change.
-         const SETTINGS_KEYS = { lang: 'flappyLang', musicVol: 'flappyMusicVol', sfxVol: 'flappySfxVol', musicOn: 'flappyMusicOn', sfxOn: 'flappySfxOn' };
+         const SETTINGS_KEYS = { lang: 'flappyLang', musicVol: 'flappyMusicVol', sfxVol: 'flappySfxVol', musicOn: 'flappyMusicOn', sfxOn: 'flappySfxOn', woofOn: 'flappyWoofOn' };
          function loadSetting(key, fallback) { try { const v = localStorage.getItem(key); return (v === null) ? fallback : v; } catch (e) { return fallback; } }
          function saveSetting(key, value) { try { localStorage.setItem(key, value); } catch (e) { } }
          function loadVolSetting(key, fallback) { const v = parseFloat(loadSetting(key, NaN)); return isNaN(v) ? fallback : Math.min(1, Math.max(0, v)); }
@@ -1638,10 +1705,10 @@ window.triggerPvpTrashTalk = async function() {
 
          const alarmSound = new Audio('alarm_clock.mp3'); alarmSound.volume = masterSFXVol; const breathingSound = new Audio('breathing.mp3'); breathingSound.volume = masterSFXVol; const wrongwaySound = new Audio('Rwrongway.wav'); wrongwaySound.volume = masterSFXVol; const shieldBreakSound = new Audio('shield_breaking.mp3'); shieldBreakSound.volume = masterSFXVol; const damageSound = new Audio('damage.mp3'); damageSound.volume = masterSFXVol; const explosionSound = new Audio('explosion.mp3'); explosionSound.volume = masterSFXVol; const buttonSound = new Audio('button.mp3'); buttonSound.volume = masterSFXVol; const buySound = new Audio('buy.mp3'); buySound.volume = masterSFXVol; const dashSound = new Audio('dash.mp3'); dashSound.volume = masterSFXVol; const deathSound = new Audio('death.mp3'); deathSound.volume = masterSFXVol;
 
-         window.updateMusicVolume = function(val) { masterMusicVol = parseFloat(val); saveSetting(SETTINGS_KEYS.musicVol, masterMusicVol); applyMusicVolumes(); }
-         window.updateSFXVolume = function(val) { masterSFXVol = parseFloat(val); saveSetting(SETTINGS_KEYS.sfxVol, masterSFXVol); flapSound.volume = masterSFXVol * 0.5; alarmSound.volume = masterSFXVol; breathingSound.volume = masterSFXVol; shieldBreakSound.volume = masterSFXVol; damageSound.volume = masterSFXVol; explosionSound.volume = masterSFXVol; buttonSound.volume = masterSFXVol; buySound.volume = masterSFXVol; dashSound.volume = masterSFXVol; deathSound.volume = masterSFXVol; }
+         window.updateMusicVolume = function(val) { masterMusicVol = parseFloat(val); saveSetting(SETTINGS_KEYS.musicVol, masterMusicVol); applyMusicVolumes(); pushSettingsToCloud(); }
+         window.updateSFXVolume = function(val) { masterSFXVol = parseFloat(val); saveSetting(SETTINGS_KEYS.sfxVol, masterSFXVol); flapSound.volume = masterSFXVol * 0.5; alarmSound.volume = masterSFXVol; breathingSound.volume = masterSFXVol; shieldBreakSound.volume = masterSFXVol; damageSound.volume = masterSFXVol; explosionSound.volume = masterSFXVol; buttonSound.volume = masterSFXVol; buySound.volume = masterSFXVol; dashSound.volume = masterSFXVol; deathSound.volume = masterSFXVol; pushSettingsToCloud(); }
 
-         let voidBreathingCount = 0; const MAX_BREATHING = 2; let wrongwayPlayed = false; let wrongwayTimer = -1; let musicMuted = (loadSetting(SETTINGS_KEYS.musicOn, '1') === '0'); let sfxMuted = (loadSetting(SETTINGS_KEYS.sfxOn, '1') === '0');
+         let voidBreathingCount = 0; const MAX_BREATHING = 2; let wrongwayPlayed = false; let wrongwayTimer = -1; let musicMuted = (loadSetting(SETTINGS_KEYS.musicOn, '1') === '0'); let sfxMuted = (loadSetting(SETTINGS_KEYS.sfxOn, '1') === '0'); let woofMuted = (loadSetting(SETTINGS_KEYS.woofOn, '1') === '0');
 
          // ---------------- DND (DO NOT DISTURB) ----------------
          // One switch that makes the game completely silent so the player's own
@@ -1662,6 +1729,7 @@ window.triggerPvpTrashTalk = async function() {
          window.toggleDND = function(on) {
              dndMode = (on === undefined) ? !dndMode : !!on;
              try { localStorage.setItem('flappyDND', dndMode ? 'true' : 'false'); } catch(e) {}
+             pushSettingsToCloud();
              if (dndMode) {
                  silenceAllAudio();
              } else if (!musicMuted) {
@@ -1679,7 +1747,7 @@ window.triggerPvpTrashTalk = async function() {
              const box = document.getElementById('dnd-toggle');
              if (box) box.checked = dndMode;
              // The per-channel controls do nothing while everything is muted, so grey them out.
-             ['music-toggle', 'sfx-toggle', 'music-vol', 'sfx-vol'].forEach(id => {
+             ['music-toggle', 'sfx-toggle', 'woof-toggle', 'music-vol', 'sfx-vol'].forEach(id => {
                  const el = document.getElementById(id);
                  if (!el) return;
                  el.disabled = dndMode;
@@ -1785,13 +1853,14 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          };
 
          let loadedSrc = SKINS['default'].src; if (currentSkinKey === 'custom') loadedSrc = SKINS[customStats.visualSkin] ? SKINS[customStats.visualSkin].src : 'player.png'; else if (SKINS[currentSkinKey]) loadedSrc = SKINS[currentSkinKey].src;          var bird = new MySprite(loadedSrc);
-         // The characters were tiny next to the pipes and slipped through the gaps
-         // without even trying. Everything that measures the player - the drawing and
-         // every single collision test - goes through these, so one number changes all
-         // of them together and the hitbox can never drift away from the art.
+         // IMPORTANT: sprites are drawn with the 3-argument drawImage(), which always
+         // paints the image at its NATURAL size - drawWidth/BIRD_DRAW_SCALE below only
+         // feed offsets/trails/SFX. The hitbox therefore must also use the natural size:
+         // scaling it by 1.4 (as before) made the collision box ~1.4x bigger than the
+         // visible bird on every side - the "invisible hitbox" under/around the player.
          const BIRD_DRAW_SCALE = 1.4;
-         function birdHitW() { const w = (bird.MyImg && bird.MyImg.complete && bird.MyImg.naturalWidth !== 0) ? bird.MyImg.width : 40; return w * BIRD_DRAW_SCALE; }
-         function birdHitH() { const h = (bird.MyImg && bird.MyImg.complete && bird.MyImg.naturalWidth !== 0) ? bird.MyImg.height : 37; return h * BIRD_DRAW_SCALE; }
+         function birdHitW() { return (bird.MyImg && bird.MyImg.complete && bird.MyImg.naturalWidth !== 0) ? bird.MyImg.width : 40; }
+         function birdHitH() { return (bird.MyImg && bird.MyImg.complete && bird.MyImg.naturalWidth !== 0) ? bird.MyImg.height : 37; }
 
          // --- PIXEL-ACCURATE HITBOXES ---------------------------------------------------
          // Collisions used to test the FULL image rectangle, but most sprites carry a
@@ -1827,8 +1896,9 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              return box;
          }
          // Collision rectangle for one sprite: top-left corner plus the opaque
-         // bounding box, scaled (the player draws at BIRD_DRAW_SCALE). Sprites that
-         // carry a hitImg (the boss, whose art changes per fight) use that instead.
+         // bounding box (sprites draw at natural size, so no extra scaling here).
+         // Sprites that carry a hitImg (the boss, whose art changes per fight) use
+         // that image instead of MyImg.
          function spriteHitRect(thing) {
              if (thing.isText) return { x: thing.x, y: thing.y, w: 180, h: 40 };
              if (thing.isError) return { x: thing.x, y: thing.y, w: thing.errW, h: thing.errH };
@@ -1839,18 +1909,27 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              if (thing.width || thing.height) { w = thing.width || 40; h = thing.height || 40; }
              else if (img && img.complete && img.naturalWidth !== 0) { w = img.width; h = img.height; }
              else { w = 40; h = 40; }
-             const scale = (thing === bird) ? BIRD_DRAW_SCALE : 1;
              const box = spriteBBox(img);
              if (box) {
-                 return { x: thing.x + box.l * w * scale, y: thing.y + box.t * h * scale,
-                          w: (box.r - box.l) * w * scale, h: (box.b - box.t) * h * scale };
+                 return { x: thing.x + box.l * w, y: thing.y + box.t * h,
+                          w: (box.r - box.l) * w, h: (box.b - box.t) * h };
              }
-             return { x: thing.x, y: thing.y, w: w * scale, h: h * scale };
+             return { x: thing.x, y: thing.y, w: w, h: h };
          }
          function birdHitRect() {
-             const r = spriteHitRect(bird);
-             if (isShrunk) { r.x += r.w / 4; r.y += r.h / 4; r.w /= 2; r.h /= 2; }
-             return r;
+             const img = bird.hitImg || bird.MyImg;
+             let w, h;
+             if (img && img.complete && img.naturalWidth !== 0) { w = img.width; h = img.height; }
+             else { w = 40; h = 37; }
+             const box = spriteBBox(img);
+             // When SHRINK is active the art is drawn at half size around the image
+             // centre, i.e. the opaque box is simply halved - with NO extra shift.
+             const k = isShrunk ? 0.5 : 1;
+             if (box) {
+                 return { x: bird.x + box.l * w * k, y: bird.y + box.t * h * k,
+                          w: (box.r - box.l) * w * k, h: (box.b - box.t) * h * k };
+             }
+             return { x: bird.x, y: bird.y, w: w * k, h: h * k };
          }
 
          function make_bird_slow_and_fall() { 
@@ -1860,10 +1939,9 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
 
          function ImagesTouching(thing1, thing2) {
              if (thing1 === bird && isHrBreakActive) return false; if (!thing1.visible || !thing2.visible) return false;
-             let r1 = spriteHitRect(thing1);
-             let r2 = spriteHitRect(thing2);
+             let r1 = (thing1 === bird) ? birdHitRect() : spriteHitRect(thing1);
+             let r2 = (thing2 === bird) ? birdHitRect() : spriteHitRect(thing2);
              if (thing2.MyImg === pipe_piece) { if (thing2.flipV) { r2.h = CANVAS_HEIGHT * 3; } else { const bottomEdge = r2.y + r2.h; r2.y = -3000; r2.h = bottomEdge - r2.y; } }
-             if (thing1 === bird && isShrunk) { r1.x += r1.w / 4; r1.y += r1.h / 4; r1.w /= 2; r1.h /= 2; }
              if (r1.x >= r2.x + r2.w || r1.x + r1.w <= r2.x) return false; if (r1.y >= r2.y + r2.h || r1.y + r1.h <= r2.y) return false; return true;
          }
 
@@ -1991,7 +2069,10 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              else if (TRAILS[key] && shopCategory === 'trails') { const trail = TRAILS[key]; if (availableTrails.includes(key)) { if (!trail.current) { playClickSound(); for (let k in TRAILS) { TRAILS[k].current = false; } trail.current = true; currentTrailKey = key; localStorage.setItem('currentTrail', key); renderShopItems(); } } else if (collectedStars >= trail.cost) { collectedStars -= trail.cost; availableTrails.push(key); if(!sfxMuted){buySound.currentTime = 0; buySound.play().catch(e => console.warn(e));} localStorage.setItem('flappyStars', collectedStars); localStorage.setItem('flappyTrails', JSON.stringify(availableTrails)); updateMenuStats(); saveUserData(); purchaseOrEquipSkin(key); } }
          }
 
-         function playPowerUpSound() { if(!sfxMuted) {flapSound.currentTime = 0; flapSound.play().catch(e => console.warn(e));} }
+         function playPowerUpSound() { if(!sfxMuted && !woofMuted) {flapSound.currentTime = 0; flapSound.play().catch(e => console.warn(e));} }
+         // The woof is the game's flap sound: every tap/flap barks, and the WOOF (FLAP)
+         // switch in the settings menu turns this off (it also silences the powerup woof).
+         function playFlapSound() { if(!sfxMuted && !woofMuted) { flapSound.currentTime = 0; flapSound.play().catch(e => console.warn(e)); } }
          function activateDoubleStars() { isDoubleStarsActive = true; doubleStarTimer = POTION_DURATION_FRAMES; } function setGameSpeed(slow) { if (slow) speedMultiplier = 0.7; else speedMultiplier = 1; } function activateSlowMotion() { isSlowMotionActive = true; setGameSpeed(true); slowMoTimer = SLOW_POTION_DURATION_FRAMES; } function useWallDestruction() { if (!(currentSkinKey === 'yellow' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && wallDestroyCharges > 0)) || wallDestroyCharges <= 0) return false; let destroyedSets = 0; for (let i = 0; i < pipes.length; i += 2) { if (destroyedSets >= WALLS_TO_DESTROY) break; if (pipes[i].x > bird.x + bird.MyImg.width && pipes[i].visible) { pipes[i].visible = false; if (pipes[i+1]) pipes[i+1].visible = false; destroyedSets++; } } if (destroyedSets > 0) { wallDestroyCharges--; if(!sfxMuted){explosionSound.currentTime = 0; explosionSound.play().catch(e => console.warn(e));} return true; } return false; }
          function spawnChocolate() { let choc = new MySprite(); choc.MyImg = CHOCO_IMG; choc.x = boss.x; choc.y = boss.y + boss.height/2; choc.velocity_x = -6; choc.velocity_y = (bird.y - boss.y) / 40; chocolates.push(choc); } function spawnErrorSign() { let err = new MySprite(); err.isError = true; err.x = CANVAS_WIDTH; err.y = Math.random() * Math.max(80, CANVAS_HEIGHT - 100); err.velocity_x = -9; err.errW = 60 + Math.random() * 80; err.errH = 60 + Math.random() * 80; errorSigns.push(err); }
 
@@ -2533,8 +2614,9 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
              if (myWins >= 2 || enemyWins >= 2) { endMatchLogic({ hostWins: myWins, guestWins: enemyWins }); return; }
              online_round++; db.collection('matches').doc(activeMatchID).update({ round: online_round, hostWins: myWins, guestWins: enemyWins, hostStatus: 'alive', guestStatus: 'alive', hostScore: 0, guestScore: 0 }); resetOnlineRound(); triggerFlash("white"); }
          function endMatchLogic(data) { if (trophyProcessed) return; trophyProcessed = true; let amIHost = (myOnlineRole === 'host'); let hostWon = ((data.hostWins || 0) >= 2); let iWon = (amIHost && hostWon) || (!amIHost && !hostWon); let trophyChange = iWon ? 25 : -15; if (!iWon && onlineTrophies < 15) trophyChange = -onlineTrophies; onlineTrophies += trophyChange; localStorage.setItem('flappyTrophies', onlineTrophies); saveUserData(); const finishedMatchID = activeMatchID; if (amIHost && finishedMatchID) { db.collection('matches').doc(finishedMatchID).update({ status: 'ended', hostWins: data.hostWins || 0, guestWins: data.guestWins || 0 }).catch(e => console.log(e)); setTimeout(() => { db.collection('matches').doc(finishedMatchID).delete().catch(e => console.log(e)); }, 10000); } if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } setTimeout(() => { let msg = iWon ? `VICTORY! +${trophyChange} 🏆` : `DEFEAT... ${trophyChange} 🏆`; triggerGameOver(msg); document.getElementById('online-ui').style.display = 'none'; activeMatchID = null; }, 1000); }
-         window.toggleMusicSwitch = function(isChecked) { musicMuted = !isChecked; saveSetting(SETTINGS_KEYS.musicOn, isChecked ? '1' : '0'); if (musicMuted) { mainMenuMusic.pause(); bgMusic.pause(); voidMusic.pause(); boss1Music.pause(); boss2Music.pause(); connectorMusic.pause(); } else { if (!isPaused && (game_mode === 'running' || game_mode === 'boss' || game_mode === 'online_match' || game_mode === 'pvp_shetos')) { if (game_mode === 'boss') { if (!isBoss2) boss1Music.play(); else boss2Music.play(); } else if (currentBGIndex === 4) voidMusic.play(); else bgMusic.play(); } else if (game_mode === 'waiting_for_website') { mainMenuMusic.play(); } } }
-         window.toggleSFXSwitch = function(isChecked) { sfxMuted = !isChecked; saveSetting(SETTINGS_KEYS.sfxOn, isChecked ? '1' : '0'); }
+         window.toggleMusicSwitch = function(isChecked) { musicMuted = !isChecked; saveSetting(SETTINGS_KEYS.musicOn, isChecked ? '1' : '0'); if (musicMuted) { mainMenuMusic.pause(); bgMusic.pause(); voidMusic.pause(); boss1Music.pause(); boss2Music.pause(); connectorMusic.pause(); } else { if (!isPaused && (game_mode === 'running' || game_mode === 'boss' || game_mode === 'online_match' || game_mode === 'pvp_shetos')) { if (game_mode === 'boss') { if (!isBoss2) boss1Music.play(); else boss2Music.play(); } else if (currentBGIndex === 4) voidMusic.play(); else bgMusic.play(); } else if (game_mode === 'waiting_for_website') { mainMenuMusic.play(); } } pushSettingsToCloud(); }
+         window.toggleSFXSwitch = function(isChecked) { sfxMuted = !isChecked; saveSetting(SETTINGS_KEYS.sfxOn, isChecked ? '1' : '0'); pushSettingsToCloud(); }
+         window.toggleWoofSwitch = function(isChecked) { woofMuted = !isChecked; saveSetting(SETTINGS_KEYS.woofOn, isChecked ? '1' : '0'); const t = document.getElementById('woof-toggle'); if (t) t.checked = !!isChecked; pushSettingsToCloud(); }
          
 window.playClickSound = function() {
     // Every menu button runs this first, so one audio hiccup here used to kill the whole
@@ -2860,7 +2942,7 @@ window.playClickSound = function() {
              }
              
              switch (game_mode) {
-             case 'prestart': game_mode = 'running'; break;
+             case 'prestart': game_mode = 'running'; playFlapSound(); break;
              case 'running': case 'boss': case 'online_match': case 'pvp_shetos':
                  if (game_mode === 'online_match' && myHasCrashed) return; if (game_mode === 'pvp_shetos' && myHasCrashed) return;
                  // tap/space to skip to the next line of a boss monologue (the timer also runs out on its own)
@@ -2870,6 +2952,7 @@ window.playClickSound = function() {
                          MyEvent.preventDefault(); 
                      }
                      let current_jump = jump_amount; bird.velocity_y = current_jump; 
+                     playFlapSound();
                  }
                  if (MyEvent.type === 'keydown' && MyEvent.keyCode === 68) { useWallDestruction(); } 
                  if (MyEvent.type === 'keydown' && (MyEvent.key === 'Delete' || MyEvent.key === 'Backspace')) { hitBossTwo(); }
@@ -2880,6 +2963,7 @@ window.playClickSound = function() {
                      MyEvent.preventDefault();
                      let current_jump = jump_amount; 
                      bird.velocity_y = current_jump; 
+                     playFlapSound();
                  }
                  break;
              case 'over':
