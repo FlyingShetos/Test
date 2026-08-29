@@ -568,12 +568,74 @@
          // (they all call playClickSound() first) silently stopped working, because the
          // handler it needed had never been defined. Nothing can stop that throw any
          // more, but at least the loading screen can never trap the player behind it.
-         window.__flyingShetosErrors = 0;
-         function clearLoadingScreen() {
-             try { var el = document.getElementById('loading-screen'); if (el && el.style.display !== 'none') el.style.display = 'none'; } catch (e) {}
-         }
-         window.addEventListener('error', function () { window.__flyingShetosErrors++; clearLoadingScreen(); });
-         window.addEventListener('unhandledrejection', function () { window.__flyingShetosErrors++; clearLoadingScreen(); });
+        window.__flyingShetosErrors = 0;
+        function clearLoadingScreen() {
+            try { var el = document.getElementById('loading-screen'); if (el && el.style.display !== 'none') el.style.display = 'none'; } catch (e) {}
+        }
+        window.addEventListener('error', function () { window.__flyingShetosErrors++; clearLoadingScreen(); }, true);
+        window.addEventListener('unhandledrejection', function () { window.__flyingShetosErrors++; clearLoadingScreen(); });
+
+        // Every menu button calls playClickSound() first. If a boot error ever stops
+        // the full definition further down from being built, this early version keeps
+        // every click working (it lazily grabs the shared button sound if it exists,
+        // or builds its own). The real definition below simply replaces it.
+        window.playClickSound = function() {
+            try {
+                if (typeof sfxMuted !== 'undefined' && sfxMuted) return;
+                let snd = (typeof buttonSound !== 'undefined') ? buttonSound : null;
+                if (!snd) { try { snd = new Audio('button.mp3'); snd.volume = (typeof masterSFXVol !== 'undefined') ? masterSFXVol : 0.5; } catch (e) { snd = null; } }
+                if (snd) { snd.currentTime = 0; const p = snd.play(); if (p && p.catch) p.catch(function() {}); }
+            } catch (e) {}
+        };
+
+        // Fullscreen + landscape support. Defined FIRST so the startup warning's
+        // "I UNDERSTAND" button can never be left without its handler, no matter
+        // what happens later in the boot sequence.
+        function isTouchDevice() { return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0); }
+        window.requestLandscape = function() {
+            const lock = function() {
+                try { if (screen.orientation && screen.orientation.lock) { screen.orientation.lock('landscape').catch(function(){}); } } catch(e) {}
+            };
+            try {
+                const el = document.documentElement;
+                if (el.requestFullscreen && !document.fullscreenElement) {
+                    el.requestFullscreen().then(lock).catch(function(){});
+                } else { lock(); }
+            } catch (e) { try { lock(); } catch (e2) {} }
+        };
+        window.closeStartupWarning = function() {
+            try { const w = document.getElementById('startup-warning'); if (w) w.style.display = 'none'; } catch (e) {}
+            try { window.requestLandscape(); } catch (e) {}
+            try { if (typeof updateOrientation === 'function') updateOrientation(); } catch (e) {}
+        };
+
+        // Whatever happens during boot, the first tap/click/keypress anywhere
+        // dismisses the loading screen so the menu can never be stuck behind it.
+        function clearLoadingOnAnyInput() {
+            clearLoadingScreen();
+            window.removeEventListener('pointerdown', clearLoadingOnAnyInput, true);
+            window.removeEventListener('mousedown', clearLoadingOnAnyInput, true);
+            window.removeEventListener('touchstart', clearLoadingOnAnyInput, true);
+            window.removeEventListener('keydown', clearLoadingOnAnyInput, true);
+        }
+        window.addEventListener('pointerdown', clearLoadingOnAnyInput, true);
+        window.addEventListener('mousedown', clearLoadingOnAnyInput, true);
+        window.addEventListener('touchstart', clearLoadingOnAnyInput, true);
+        window.addEventListener('keydown', clearLoadingOnAnyInput, true);
+
+        // Last resort: if a mid-boot crash still left any menu handler undefined,
+        // replace it with a working stub instead of a silently dead button.
+        window.addEventListener('load', function() {
+            const menuHandlers = ['openModeSelect','openShopFromMenu','openAchievements','openFriends','openLeaderboard','openRedeemModal','openPrivacyPolicy','togglePause','signInWithGoogle','signOutUser','closeModal','closeAllModals','quitToMenu','closeStartupWarning','playClickSound'];
+            const missing = [];
+            for (let i = 0; i < menuHandlers.length; i++) {
+                if (typeof window[menuHandlers[i]] !== 'function') {
+                    window[menuHandlers[i]] = function() { try { alert("The game is still loading - please refresh the page once more."); } catch (e) {} };
+                    missing.push(menuHandlers[i]);
+                }
+            }
+            if (missing.length) console.warn("Boot recovery: stubbed missing handlers:", missing.join(', '));
+        });
 
          let currentLang = 'en';   // real value restored in applySavedSettings() once TRANSLATIONS exists
 
@@ -730,27 +792,21 @@
              document.getElementById('splash-text').innerText = SPLASH_TEXTS[Math.floor(Math.random() * SPLASH_TEXTS.length)];
          };
 
-         // --- FULLSCREEN + MOBILE LANDSCAPE SUPPORT ---
-         function isTouchDevice() { return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0); }
+        // --- FULLSCREEN + MOBILE LANDSCAPE SUPPORT ---
+        // (requestLandscape/isTouchDevice now live in the boot safety block at the top,
+        // so the startup warning always has its handlers even if boot breaks later.)
 
-         window.updateOrientation = function() {
-             const overlay = document.getElementById('rotate-overlay');
-             if (!overlay) return;
-             const isPortrait = window.innerHeight > window.innerWidth;
-             if (isTouchDevice() && isPortrait) { overlay.classList.add('show'); }
-             else { overlay.classList.remove('show'); }
-         };
-
-         // Best-effort: go fullscreen and lock to landscape (works in installed apps / supported browsers).
-         window.requestLandscape = function() {
-             const lock = function() {
-                 try { if (screen.orientation && screen.orientation.lock) { screen.orientation.lock('landscape').catch(function(){}); } } catch(e) {}
-             };
-             const el = document.documentElement;
-             if (el.requestFullscreen && !document.fullscreenElement) {
-                 el.requestFullscreen().then(lock).catch(function(){});
-             } else { lock(); }
-         };
+        window.updateOrientation = function() {
+            const overlay = document.getElementById('rotate-overlay');
+            if (!overlay) return;
+            // Never cover the startup warning ("I UNDERSTAND") with the rotate screen:
+            // on a portrait phone that used to make the entire page unclickable.
+            const warn = document.getElementById('startup-warning');
+            const warningUp = !!(warn && warn.style.display !== 'none');
+            const isPortrait = window.innerHeight > window.innerWidth;
+            if (!warningUp && isTouchDevice() && isPortrait) { overlay.classList.add('show'); }
+            else { overlay.classList.remove('show'); }
+        };
 
          window.applyScale = function() {
              // Fill the whole screen and keep the canvas crisp on high-DPI phones.
@@ -838,14 +894,12 @@
                  audio.src = src;
                  audio.load();
              }
-         });
+        });
 
-         window.closeStartupWarning = function() {
-             document.getElementById('startup-warning').style.display = 'none';
-             requestLandscape();
-         };
+        // closeStartupWarning is defined in the boot safety block at the top of this
+        // script (before anything that could throw), so "I UNDERSTAND" always works.
 
-         const firebaseConfig = {
+        const firebaseConfig = {
              apiKey: "AIzaSyACfcQJbIHDu_yeax7ALaTTMi7AQGMN0to",
              authDomain: "flyingshetos.firebaseapp.com",
              databaseURL: "https://flyingshetos-default-rtdb.europe-west1.firebasedatabase.app",
@@ -928,11 +982,21 @@
              } else { console.warn("Firebase offline"); }
          } catch(e) { console.error("Firebase Error (Running Offline):", e); }
 
-         window.signInWithGoogle = function() {
-             if(!auth) return alert("Offline Mode: Login unavailable.");
-             const provider = new firebase.auth.GoogleAuthProvider();
-             auth.signInWithPopup(provider).catch(e => alert(e.message));
-         }
+        window.signInWithGoogle = function() {
+            if(!auth) return alert("Offline Mode: Login unavailable.");
+            const provider = new firebase.auth.GoogleAuthProvider();
+            const wasFullscreen = !!document.fullscreenElement;
+            auth.signInWithPopup(provider).then(function() {
+                // The Google popup steals focus and drops the page out of fullscreen.
+                // Fullscreen can only be re-entered from a fresh user gesture, so we
+                // refresh the page after a successful login: the startup screen's
+                // "I UNDERSTAND" click then puts the game straight back to fullscreen.
+                // Players who never entered fullscreen are left alone (no reload).
+                if (wasFullscreen && !document.fullscreenElement) {
+                    setTimeout(function() { try { location.reload(); } catch (e) {} }, 1500);
+                }
+            }).catch(e => alert(e.message));
+        }
          window.signOutUser = async function() {
              logoutRequested = true;
              // The wipe below is local only, so push the progress up to the cloud first,
@@ -1112,7 +1176,7 @@
              modals.forEach(id => { let el = document.getElementById(id); if(el) el.style.display = 'none'; });
          }
 
-         window.closeModal = function(id) { document.getElementById(id).style.display = 'none'; }
+         window.closeModal = function(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
 
          let activeInviteDocId = null;
          let activeInviteMatchId = null;
@@ -1630,7 +1694,7 @@ window.triggerPvpTrashTalk = async function() {
          }
          window.addEventListener('click', () => { if(mainMenuMusic.paused && !musicMuted && game_mode === 'waiting_for_website') { mainMenuMusic.play().catch(e => console.log("Music auto-started")); } }, {once: true});
 
-         let boss = { x: 9999, y: 100, width: 150, height: 150, stamina: 100, speedY: 2, movingIn: true }; let chocolates = []; let victoryTimer = 0; let deathMessage = "Game Over"; let bossIntroState = 0; let bossIntroTimer = 0; let boss1Defeated = false; let isBoss2 = false; let isBoss3 = false; let dragonDefeated = false; let dragonHP = 100; let dragonPhase = 1; let dragonAtkState = 'idle'; let dragonAtkTimer = 0; let dragonCycle = 0; let dragonDashesDone = 0; let dragonDashVec = null; let dragonBodyCd = 0; let dragonDashSpeed = 13.5; let dragonMouthTimer = 0; let dragonDizzyDone = false; let dragonDizzyTimer = 0; let dragonDefeatTimer = 0; let dragonBob = 0; let dragonFire = []; let dragonTauntFx = []; const BOSS2_MAX_HITS = 5; let deleteBtnTimer = 0; let deleteBtnSpawnTimer = 0; let errorSigns = []; let errorSignCooldown = 0; 
+         let boss = { x: 9999, y: 100, width: 150, height: 150, stamina: 100, speedY: 2, movingIn: true, hitImg: BOSS_IMG }; let chocolates = []; let victoryTimer = 0; let deathMessage = "Game Over"; let bossIntroState = 0; let bossIntroTimer = 0; let boss1Defeated = false; let isBoss2 = false; let isBoss3 = false; let dragonDefeated = false; let dragonHP = 100; let dragonPhase = 1; let dragonAtkState = 'idle'; let dragonAtkTimer = 0; let dragonCycle = 0; let dragonDashesDone = 0; let dragonDashVec = null; let dragonBodyCd = 0; let dragonDashSpeed = 13.5; let dragonMouthTimer = 0; let dragonDizzyDone = false; let dragonDizzyTimer = 0; let dragonDefeatTimer = 0; let dragonBob = 0; let dragonFire = []; let dragonTauntFx = []; const BOSS2_MAX_HITS = 5; let deleteBtnTimer = 0; let deleteBtnSpawnTimer = 0; let errorSigns = []; let errorSignCooldown = 0; 
          function getAreaName(i) { return getLangText("area" + i); } const GLITCH_TEXTS = ["thats not the reality", "404", "not found", "wake up", "null", "error"]; let currentBGIndex = 0; let previousBGIndex = 0; let transitionText = ""; let transitionTimer = 0; let transitionType = "normal"; let transitionDuration = 0; const NORMAL_TRANSITION_DURATION = 32; const GLITCH_TRANSITION_DURATION = 80; let flashColor = null; let flashTimer = 0; let levelReached = 1; let cheatBuffer = ""; let floatingTexts = []; 
          var jump_amount = -7; var max_fall_speed = +8; var acceleration = 0.6; const SUPER_JUMP_AMOUNT = -3.8; const SUPER_ACCELERATION = 0.18; const SUPER_MAX_FALL_SPEED = +3.5; const VOID_ACCEL = 0.35; const VOID_MAX_FALL = 6.0; const MAGNET_RADIUS = 300; const INITIAL_LIVES = 3; let currentLives = 0; const MAX_DESTROY_CHARGES = 5; let wallDestroyCharges = 0; const WALLS_TO_DESTROY = 2; let dashCharges = 0; let isDashActive = false; const DASH_DURATION = 68; let dashTimer = 0; let shrinkCharges = 0; let isShrunk = false; let shrinkTimer = 0; const SHRINK_DURATION = 160; let widenCharges = 0; let isWidenActive = false; let widenTimer = 0; const WIDEN_DURATION = 240; let heisenBlinkTimer = 0; let pipe_speed = -2; let currentSpawnInterval = 2500; let speedMultiplier = 1; let trailRedTimer = 0; let trailGoldTimer = 0;
          var time_game_last_running; var bottom_bar_offset = 0; var pipes = []; var pipe_spawn_timer = 0; let currentScore = 0; let lastPipeY = 250; let totalGamesPlayed = 0; try { totalGamesPlayed = parseInt(localStorage.getItem('flappyGamesPlayed')) || 0; } catch(e) {}
@@ -1729,20 +1793,78 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          function birdHitW() { const w = (bird.MyImg && bird.MyImg.complete && bird.MyImg.naturalWidth !== 0) ? bird.MyImg.width : 40; return w * BIRD_DRAW_SCALE; }
          function birdHitH() { const h = (bird.MyImg && bird.MyImg.complete && bird.MyImg.naturalWidth !== 0) ? bird.MyImg.height : 37; return h * BIRD_DRAW_SCALE; }
 
+         // --- PIXEL-ACCURATE HITBOXES ---------------------------------------------------
+         // Collisions used to test the FULL image rectangle, but most sprites carry a
+         // big transparent border around the art (the player only fills ~48% of its
+         // image, the boss ~80%), so invisible air could hurt you. Each image is
+         // scanned ONCE for its opaque bounding box, cached, and every collision test
+         // runs against that "what you can actually see" rectangle instead.
+         const SPRITE_BBOX_CACHE = {};
+         function spriteBBox(img) {
+             if (!img || !img.complete || !img.naturalWidth) return null;
+             const key = img.src || '';
+             if (SPRITE_BBOX_CACHE[key] !== undefined) return SPRITE_BBOX_CACHE[key];
+             let box = null;
+             try {
+                 const w = img.naturalWidth, h = img.naturalHeight;
+                 const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+                 const cx = cv.getContext('2d', { willReadFrequently: true });
+                 cx.drawImage(img, 0, 0);
+                 const data = cx.getImageData(0, 0, w, h).data;
+                 let minX = w, minY = h, maxX = -1, maxY = -1;
+                 for (let y = 0; y < h; y++) {
+                     const row = y * w * 4;
+                     for (let x = 0; x < w; x++) {
+                         if (data[row + x * 4 + 3] > 12) {
+                             if (x < minX) minX = x; if (x > maxX) maxX = x;
+                             if (y < minY) minY = y; if (y > maxY) maxY = y;
+                         }
+                     }
+                 }
+                 if (maxX >= minX && maxY >= minY) box = { l: minX / w, t: minY / h, r: maxX / w, b: maxY / h };
+             } catch (e) { box = null; }
+             SPRITE_BBOX_CACHE[key] = box;
+             return box;
+         }
+         // Collision rectangle for one sprite: top-left corner plus the opaque
+         // bounding box, scaled (the player draws at BIRD_DRAW_SCALE). Sprites that
+         // carry a hitImg (the boss, whose art changes per fight) use that instead.
+         function spriteHitRect(thing) {
+             if (thing.isText) return { x: thing.x, y: thing.y, w: 180, h: 40 };
+             if (thing.isError) return { x: thing.x, y: thing.y, w: thing.errW, h: thing.errH };
+             const img = thing.hitImg || thing.MyImg;
+             // Plain objects (the boss) draw their image stretched to their own
+             // width/height; sprites draw it at natural size.
+             let w, h;
+             if (thing.width || thing.height) { w = thing.width || 40; h = thing.height || 40; }
+             else if (img && img.complete && img.naturalWidth !== 0) { w = img.width; h = img.height; }
+             else { w = 40; h = 40; }
+             const scale = (thing === bird) ? BIRD_DRAW_SCALE : 1;
+             const box = spriteBBox(img);
+             if (box) {
+                 return { x: thing.x + box.l * w * scale, y: thing.y + box.t * h * scale,
+                          w: (box.r - box.l) * w * scale, h: (box.b - box.t) * h * scale };
+             }
+             return { x: thing.x, y: thing.y, w: w * scale, h: h * scale };
+         }
+         function birdHitRect() {
+             const r = spriteHitRect(bird);
+             if (isShrunk) { r.x += r.w / 4; r.y += r.h / 4; r.w /= 2; r.h /= 2; }
+             return r;
+         }
+
          function make_bird_slow_and_fall() { 
              bird.x = CANVAS_WIDTH / 3; bird.velocity_x = 0;
              let current_accel = acceleration; let current_max = max_fall_speed; current_accel = Math.abs(current_accel); current_max = Math.abs(current_max); if (bird.velocity_y < current_max) { bird.velocity_y += current_accel; } if (bird.velocity_y > current_max) { bird.velocity_y = current_max; } bird.angle = 0; 
          }
 
          function ImagesTouching(thing1, thing2) {
-             if (thing1 === bird && isHrBreakActive) return false; if (!thing1.visible || !thing2.visible) return false; let w1, h1, w2, h2;
-             if (thing1.MyImg && thing1.MyImg.complete && thing1.MyImg.naturalWidth !== 0) { w1 = thing1.MyImg.width; h1 = thing1.MyImg.height; } else { w1 = 40; h1 = 40; }
-             if (thing2.isText) { w2 = 180; h2 = 40; } else if (thing2.isError) { w2 = thing2.errW; h2 = thing2.errH; } else if (thing2.MyImg && thing2.MyImg.complete && thing2.MyImg.naturalWidth !== 0) { w2 = thing2.MyImg.width; h2 = thing2.MyImg.height; } else { w2 = thing2.width || 40; h2 = thing2.height || 40; }
-             if (thing1 === bird) { w1 *= BIRD_DRAW_SCALE; h1 *= BIRD_DRAW_SCALE; }
-             if (thing2 === bird) { w2 *= BIRD_DRAW_SCALE; h2 *= BIRD_DRAW_SCALE; }
-             let t2x = thing2.x; let t2y = thing2.y; if (thing2.MyImg === pipe_piece) { if (thing2.flipV) { h2 = CANVAS_HEIGHT * 3; } else { let bottomEdge = t2y + h2; t2y = -3000; h2 = bottomEdge - t2y; } }
-             let t1x = thing1.x; let t1y = thing1.y; if (thing1 === bird && isShrunk) { t1x += w1 / 4; t1y += h1 / 4; w1 /= 2; h1 /= 2; }
-             if (t1x >= t2x + w2 || t1x + w1 <= t2x) return false; if (t1y >= t2y + h2 || t1y + h1 <= t2y) return false; return true;
+             if (thing1 === bird && isHrBreakActive) return false; if (!thing1.visible || !thing2.visible) return false;
+             let r1 = spriteHitRect(thing1);
+             let r2 = spriteHitRect(thing2);
+             if (thing2.MyImg === pipe_piece) { if (thing2.flipV) { r2.h = CANVAS_HEIGHT * 3; } else { const bottomEdge = r2.y + r2.h; r2.y = -3000; r2.h = bottomEdge - r2.y; } }
+             if (thing1 === bird && isShrunk) { r1.x += r1.w / 4; r1.y += r1.h / 4; r1.w /= 2; r1.h /= 2; }
+             if (r1.x >= r2.x + r2.w || r1.x + r1.w <= r2.x) return false; if (r1.y >= r2.y + r2.h || r1.y + r1.h <= r2.y) return false; return true;
          }
 
          window.openAchievements = function() { 
@@ -2085,16 +2207,16 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              playDragonSfx('dash.mp3', 0.9); if (Math.random() < 0.6) dragonTaunt();
          }
          function dragonBodyHitsBird() { // the enraged dragon RAMS the player in phase 2
-             const bw = birdHitW(), bh = birdHitH();
-             const cx = bird.x + bw / 2, cy = bird.y + bh / 2;
+             const r = birdHitRect();
+             const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
              const rx = boss.width * 0.35, ry = boss.height * 0.35;
              const dx = cx - (boss.x + boss.width / 2), dy = cy - (boss.y + boss.height / 2);
              return (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) < 1;
          }
          function dragonFireHitsBird(fb) {
-             const bw = birdHitW(), bh = birdHitH();
-             const cx = bird.x + bw / 2, cy = bird.y + bh / 2;
-             const rr = Math.min(bw, bh) * 0.42 + fb.r * 0.85;
+             const r = birdHitRect();
+             const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+             const rr = Math.min(r.w, r.h) * 0.42 + fb.r * 0.85;
              const dx = cx - fb.x, dy = cy - fb.y;
              return dx * dx + dy * dy < rr * rr;
          }
@@ -2122,8 +2244,8 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          function finishDragonFight() {
              unlockAchievement('dragonslayer'); triggerFlash("lime"); showCheatFeedback(getLangText("boss3Defeated"));
              currentLives += 2; victoryTimer = 100; game_mode = 'running'; currentScore = 26; dragonDefeated = true; isBoss3 = false; bossIntroState = 0;
-             boss.x = CANVAS_WIDTH + 500; boss.y = 120; boss.movingIn = true; boss.stamina = 100; boss.width = 150; boss.height = 150; boss.speedY = 2;
-             dragonFire = []; dragonTauntFx = []; boss1Music.pause(); boss1Music.currentTime = 0; boss1Music.playbackRate = 1;
+            boss.x = CANVAS_WIDTH + 500; boss.y = 120; boss.movingIn = true; boss.stamina = 100; boss.width = 150; boss.height = 150; boss.speedY = 2; boss.hitImg = BOSS_IMG;
+            dragonFire = []; dragonTauntFx = []; boss1Music.pause(); boss1Music.currentTime = 0; boss1Music.playbackRate = 1;
              if (!musicMuted) { bgMusic.currentTime = 0; bgMusic.play().catch(e => console.log(e)); }
              updateDifficulty();
          }
@@ -2440,7 +2562,7 @@ window.playClickSound = function() {
              
              bird.x = CANVAS_WIDTH / 3; bird.y = CANVAS_HEIGHT / 2; bird.angle = 0; bird.velocity_y = 0; pipes = []; stars = []; shields = []; potions = []; slowPotions = []; errorSigns = []; trailHistory = [];  currentScore = 0; pipe_spawn_timer = 0; floatingTexts = []; myCanvas.style.filter = "none";
              
-             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; bossIntroState = 0; bossIntroTimer = 0; isBoss2 = false; boss2Hits = 0; isBoss3 = false; dragonDefeated = false; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 0; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; boss.width = 150; boss.height = 150; boss.speedY = 2; boss1Music.playbackRate = 1; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; previousBGIndex = 0; transitionType = "normal"; transitionDuration = 0; transitionText = ""; transitionTimer = 0; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; restoreActionBar(); 
+             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; bossIntroState = 0; bossIntroTimer = 0; isBoss2 = false; boss2Hits = 0; isBoss3 = false; dragonDefeated = false; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 0; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; boss.width = 150; boss.height = 150; boss.speedY = 2; boss.hitImg = BOSS_IMG; boss1Music.playbackRate = 1; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; previousBGIndex = 0; transitionType = "normal"; transitionDuration = 0; transitionText = ""; transitionTimer = 0; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; restoreActionBar(); 
 
              isSherlockActive = false; sherlockCooldown = 0; sherlockTimer = 0;
              isHrBreakActive = false; hrBreakCooldown = 0; hrBreakTimer = 0;
@@ -2556,8 +2678,8 @@ window.playClickSound = function() {
                      updateBoss(); break;
                      case 'running':
                          time_game_last_running = new Date(); bottom_bar_offset += pipe_speed * speedMultiplier;
-                         if (!isEndless && currentScore >= 25 && !dragonDefeated) { game_mode = 'boss'; isBoss3 = true; pipes = []; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 140; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; bossIntroState = 0; boss.width = 250; boss.height = 132; boss.speedY = 1.2; boss.y = Math.max(50, CANVAS_HEIGHT / 2 - boss.height / 2 - 20); bgMusic.pause(); voidMusic.pause(); }
-                         else if (!isEndless && currentScore >= 50 && !boss1Defeated && currentScore < 100) { game_mode = 'boss'; pipes = []; bgMusic.pause(); voidMusic.pause(); boss.x = CANVAS_WIDTH + 500; boss.y = 120; boss.movingIn = true; boss.stamina = 100; boss.width = 150; boss.height = 150; boss.speedY = 2; bossIntroState = 0; } else if (!isEndless && currentScore >= 100) { game_mode = 'boss'; pipes = []; isBoss2 = true; boss2Hits = 0; bgMusic.pause(); voidMusic.pause(); } 
+                        if (!isEndless && currentScore >= 25 && !dragonDefeated) { game_mode = 'boss'; isBoss3 = true; pipes = []; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 140; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; bossIntroState = 0; boss.width = 250; boss.height = 132; boss.speedY = 1.2; boss.hitImg = DRAGON_IMG; boss.y = Math.max(50, CANVAS_HEIGHT / 2 - boss.height / 2 - 20); bgMusic.pause(); voidMusic.pause(); }
+                        else if (!isEndless && currentScore >= 50 && !boss1Defeated && currentScore < 100) { game_mode = 'boss'; pipes = []; bgMusic.pause(); voidMusic.pause(); boss.x = CANVAS_WIDTH + 500; boss.y = 120; boss.movingIn = true; boss.stamina = 100; boss.width = 150; boss.height = 150; boss.speedY = 2; boss.hitImg = BOSS_IMG; bossIntroState = 0; } else if (!isEndless && currentScore >= 100) { game_mode = 'boss'; pipes = []; isBoss2 = true; boss2Hits = 0; boss.hitImg = BOSS2_IMG; bgMusic.pause(); voidMusic.pause(); } 
                          for (var i = 0; i < pipes.length; i++) { pipes[i].velocity_x = pipe_speed; pipes[i].Do_Frame_Things(); } pipe_spawn_timer += (1000 / FPS) * speedMultiplier; let lastPipeX = pipes.length > 0 ? pipes[pipes.length - 1].x : -999;
                          if (pipe_spawn_timer > currentSpawnInterval && (CANVAS_WIDTH - lastPipeX > 220)) { let gap_size = isWidenActive ? 280 : 140; let safe_area = CANVAS_HEIGHT - gap_size - 50; if(safe_area < 50) safe_area = 50; let top_of_gap = Math.floor(Math.random() * (safe_area - 50)) + 50; add_pipe(CANVAS_WIDTH, top_of_gap, gap_size); pipe_spawn_timer = 0; } 
                          make_bird_slow_and_fall(); 
