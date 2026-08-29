@@ -172,6 +172,13 @@
         .rotate-title { font-family: 'Press Start 2P', cursive; font-size: 20px; color: #f1c40f; margin-top: 24px; line-height: 1.6; }
         .rotate-sub { font-family: Arial, sans-serif; font-size: 14px; color: #ccc; margin-top: 14px; }
         @keyframes rotate-phone { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(90deg); } }
+        #startup-warning-buttons { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center; }
+        @media (max-width: 860px), (max-height: 600px) {
+            /* 18px 'Press Start 2P' is very wide: below ~860px the two buttons would
+               wrap onto separate lines, so they shrink to stay side by side. */
+            #startup-warning-buttons { gap: 10px; }
+            #startup-warning-buttons button { font-size: 11px !important; padding: 12px 14px !important; }
+        }
 
         /* --- Responsive: mobile / short height fixes for landing page --- */
         @media (max-height: 600px) {
@@ -221,7 +228,10 @@
      <div id="startup-warning" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; box-sizing: border-box;">
          <h1 id="lang-welcome" data-i18n-html="welcome" style="color: #f1c40f; font-family: 'Press Start 2P', cursive; font-size: 20px; margin-bottom: 20px; line-height: 1.5;">WELCOME TO<br>FLYING SHETOS</h1>
          <p style="font-size: 10px; color: #ccc; margin-bottom: 20px; font-family: Arial;">By pressing 'I UNDERSTAND' you agree to our <a href="#" onclick="openPrivacyPolicy(); return false;" style="color: lime;" data-i18n="privacyLink">Privacy Policy</a>.</p>
-         <button id="lang-btn-understand" data-i18n="understand" class="enter-btn btn-yellow" style="font-size: 18px; padding: 15px 30px;" onclick="closeStartupWarning(); playClickSound();">I UNDERSTAND</button>
+         <div id="startup-warning-buttons">
+             <button id="lang-btn-understand" data-i18n="understand" class="enter-btn btn-yellow" style="font-size: 18px; padding: 15px 30px;" onclick="closeStartupWarning(); playClickSound();">I UNDERSTAND</button>
+             <button id="lang-btn-accept-cookies" data-i18n="acceptCookies" class="enter-btn btn-green" style="font-size: 18px; padding: 15px 30px;" onclick="acceptAllCookies(); playClickSound();">ACCEPT EVERY SINGLE COOKIE</button>
+         </div>
      </div>
 
      <div id="rotate-overlay">
@@ -633,7 +643,7 @@
          ];
 
          const TRANSLATIONS = {
-    en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", understand: "I UNDERSTAND", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS",
+    en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", understand: "I UNDERSTAND", acceptCookies: "ACCEPT EVERY SINGLE COOKIE", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS",
     comingSoon: "COMING SOON", comingSoonDesc: "Available in a future update.", storyDesc: "The classic adventure.<br>Secrets & Bosses.", endlessDesc: "Infinite run.<br>Speed increases forever.<br><b style='color:white;'>Leaderboard Enabled</b>", pvpDesc: "Score Battle!<br>Online.", trophiesLabel: "Trophies:", back: "BACK", selectOpponent: "Select Opponent", online: "ONLINE", onlineDesc: "Matchmake with<br>Real Humans.", round: "ROUND", you: "YOU", opponent: "OPPONENT", target: "Target: Don't Crash!",
     music: "MUSIC", musicVol: "MUSIC VOL", sfx: "SFX", sfxVol: "SFX VOL", language: "LANGUAGE", resume: "RESUME", quitToMenu: "QUIT TO MENU",
     shopTitle: "Shop", dryFood: "Dry Food:", theLab: "THE LAB", skins: "SKINS", trails: "TRAILS",
@@ -649,7 +659,7 @@
     syncingData: "SYNCING DATA...", dataSynced: "DATA SYNCED!", bossDefeated: "BOSS DEFEATED!", boss2Defeated: "BOSS 2 DEFEATED!", opponentDisconnected: "OPPONENT DISCONNECTED!", customEquipped: "CUSTOM EQUIPPED!", itemSold: "ITEM SOLD!", maxToggles: "MAX 3 TOGGLES ALLOWED", warpAhead: "WARP AHEAD! +10", warpBack: "WARP BACK! -10", endlessMode: "ENDLESS MODE!", codeRedeemed: "CODE REDEEMED!", unlimitedAir: "you got unlimited amount of air", searchingOpponent: "SEARCHING FOR OPPONENT...", waitingFor: "WAITING FOR", cancel: "CANCEL", challengedYou: "CHALLENGED YOU!",
     shopEquipped: "EQUIPPED", shopEquip: "EQUIP", shopBuy: "BUY", shopSell: "SELL", achReward: "Reward:", none: "None",
     b1_1: "oh, here you are", b1_2: "I was waiting for you", b2_1: "you are getting out of control", b2_2: "you werent supposed to come HERE", b2_3: "Its too late to go back now....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "So, we will not talk about how a dog is flying?", b3_2: "Why am i even asking that's not even my thoughts, It's the game developer who's typing all this nonsense.", b3_3: "I guess he thought it would be funny to make me question why a dog is flying.", b3_4: "Let's start the fight i guess.", boss3Defeated: "DRAGON DEFEATED!", sys: "System Override...", bypass: "Bypassing...", admin: "Administrator Granted.", tbc: "To Be Continued...", cat: "THAT WAS A CAT", kid: "you got clipped by a kid lmao", err1: "Connection Error", fall: "Fell down!", wall: "Hit a wall!", eaten: "EATEN BY SHETOS!" },
-    de: { play: "SPIELEN", shop: "GESCHÄFT", achieve: "ERFOLGE", friends: "FREUNDE", lead: "BESTEN", ai: "KI CHAT", redeem: "EINLÖSEN", high: "Höchstpunktzahl", food: "Trockenfutter", trophies: "Trophäen", games: "Spiele", welcome: "WILLKOMMEN BEI<br>FLYING SHETOS", understand: "ICH VERSTEHE", chooseMode: "Modus wählen", story: "GESCHICHTSMODUS", endless: "ENDLOSMODUS", pvp: "PVP-MODUS", settings: "EINSTELLUNGEN",
+    de: { play: "SPIELEN", shop: "GESCHÄFT", achieve: "ERFOLGE", friends: "FREUNDE", lead: "BESTEN", ai: "KI CHAT", redeem: "EINLÖSEN", high: "Höchstpunktzahl", food: "Trockenfutter", trophies: "Trophäen", games: "Spiele", welcome: "WILLKOMMEN BEI<br>FLYING SHETOS", understand: "ICH VERSTEHE", acceptCookies: "ALLE COOKIES AKZEPTIEREN", chooseMode: "Modus wählen", story: "GESCHICHTSMODUS", endless: "ENDLOSMODUS", pvp: "PVP-MODUS", settings: "EINSTELLUNGEN",
     comingSoon: "BALD VERFÜGBAR", comingSoonDesc: "In einem zukünftigen Update verfügbar.", storyDesc: "Das klassische Abenteuer.<br>Geheimnisse & Bosse.", endlessDesc: "Endloser Lauf.<br>Die Geschwindigkeit steigt für immer.<br><b style='color:white;'>Bestenliste aktiviert</b>", pvpDesc: "Punkte-Battle!<br>Online.", trophiesLabel: "Trophäen:", back: "ZURÜCK", selectOpponent: "Gegner wählen", online: "ONLINE", onlineDesc: "Spiele gegen<br>echte Menschen.", round: "RUNDE", you: "DU", opponent: "GEGNER", target: "Ziel: Nicht abstürzen!",
     music: "MUSIK", musicVol: "MUSIK LAUTST.", sfx: "SFX", sfxVol: "SFX LAUTST.", language: "SPRACHE", resume: "FORTSETZEN", quitToMenu: "ZUM MENÜ",
     shopTitle: "Geschäft", dryFood: "Trockenfutter:", theLab: "DAS LABOR", skins: "SKINS", trails: "SPUREN",
@@ -663,7 +673,7 @@
     syncingData: "DATEN WERDEN SYNCHRONISIERT...", dataSynced: "DATEN SYNCHRONISIERT!", bossDefeated: "BOSS BESIEGT!", boss2Defeated: "BOSS 2 BESIEGT!", opponentDisconnected: "GEGNER GETRENNT!", customEquipped: "CUSTOM AUSGERÜSTET!", itemSold: "ARTIKEL VERKAUFT!", maxToggles: "MAX 3 SCHALTER ERLAUBT", warpAhead: "VORWÄRTS GEWARPT! +10", warpBack: "ZURÜCK GEWARPT! -10", endlessMode: "ENDLOSMODUS!", codeRedeemed: "CODE EINGELÖST!", unlimitedAir: "du hast unbegrenzt Luft bekommen", searchingOpponent: "SUCHE GEGNER...", waitingFor: "WARTE AUF", cancel: "ABBRECHEN", challengedYou: "FORDERT DICH HERAUS!",
     shopEquipped: "AUSGERÜSTET", shopEquip: "AUSRÜSTEN", shopBuy: "KAUFEN", shopSell: "VERKAUFEN", achReward: "Belohnung:", none: "Keine",
     b1_1: "oh, da bist du ja", b1_2: "ich habe auf dich gewartet", b2_1: "du gerätst außer kontrolle", b2_2: "du solltest nicht HIERHER kommen", b2_3: "es ist zu spät um umzukehren....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "Also, wir reden nicht darueber, wie ein Hund fliegt?", b3_2: "Warum frage ich ueberhaupt? Das sind nicht mal meine Gedanken, der Spieleentwickler tippt hier den ganzen Unsinn.", b3_3: "Ich glaube, er dachte, es waere lustig, mich fragen zu lassen, warum ein Hund fliegt.", b3_4: "Dann fangen wir wohl besser an zu kaempfen.", boss3Defeated: "DRACHE BESIEGT!", sys: "Systemüberschreibung...", bypass: "Umgehung...", admin: "Administrator gewährt.", tbc: "Fortsetzung folgt...", cat: "DAS WAR EINE KATZE", kid: "du wurdest von einem kind erwischt lmao", err1: "Verbindungsfehler", fall: "Heruntergefallen!", wall: "Wand getroffen!", eaten: "VON SHETOS GEFRESSEN!" },
-    ar: { play: "العب", shop: "المتجر", achieve: "إنجازات", friends: "أصدقاء", lead: "المتصدرين", ai: "محادثة ذكاء", redeem: "استرداد", high: "أعلى نتيجة", food: "طعام جاف", trophies: "الجوائز", games: "الألعاب", welcome: "مرحباً بكم في<br>فلاينج شيتوس", understand: "أنا أفهم", chooseMode: "اختر الوضع", story: "وضع القصة", endless: "وضع لا نهاية له", pvp: "وضع لاعب ضد لاعب", settings: "الإعدادات",
+    ar: { play: "العب", shop: "المتجر", achieve: "إنجازات", friends: "أصدقاء", lead: "المتصدرين", ai: "محادثة ذكاء", redeem: "استرداد", high: "أعلى نتيجة", food: "طعام جاف", trophies: "الجوائز", games: "الألعاب", welcome: "مرحباً بكم في<br>فلاينج شيتوس", understand: "أنا أفهم", acceptCookies: "قبول كل الكوكيز", chooseMode: "اختر الوضع", story: "وضع القصة", endless: "وضع لا نهاية له", pvp: "وضع لاعب ضد لاعب", settings: "الإعدادات",
     comingSoon: "قريباً", comingSoonDesc: "متاح في تحديث مستقبلي.", storyDesc: "المغامرة الكلاسيكية.<br>أسرار وزعماء.", endlessDesc: "جري لا نهائي.<br>السرعة تزداد إلى الأبد.<br><b style='color:white;'>لوحة المتصدرين مفعّلة</b>", pvpDesc: "معركة النقاط!<br>أونلاين.", trophiesLabel: "الجوائز:", back: "رجوع", selectOpponent: "اختر الخصم", online: "أونلاين", onlineDesc: "طابق مع<br>بشر حقيقيين.", round: "الجولة", you: "أنت", opponent: "الخصم", target: "الهدف: لا تصطدم!",
     music: "الموسيقى", musicVol: "حجم الموسيقى", sfx: "المؤثرات", sfxVol: "حجم المؤثرات", language: "اللغة", resume: "استئناف", quitToMenu: "العودة إلى القائمة",
     shopTitle: "المتجر", dryFood: "الطعام الجاف:", theLab: "المختبر", skins: "الأشكال", trails: "الأثر",
@@ -677,7 +687,7 @@
     syncingData: "جارٍ مزامنة البيانات...", dataSynced: "تمت مزامنة البيانات!", bossDefeated: "تم هزيمة الزعيم!", boss2Defeated: "تم هزيمة الزعيم 2!", opponentDisconnected: "انقطع الخصم!", customEquipped: "تم تجهيز المخصص!", itemSold: "تم بيع العنصر!", maxToggles: "مسموح بـ 3 مفاتيح كحد أقصى", warpAhead: "قفزة للأمام! +10", warpBack: "قفزة للخلف! -10", endlessMode: "الوضع اللانهائي!", codeRedeemed: "تم استرداد الرمز!", unlimitedAir: "حصلت على كمية غير محدودة من الهواء", searchingOpponent: "جارٍ البحث عن خصم...", waitingFor: "في انتظار", cancel: "إلغاء", challengedYou: "تحداك!",
     shopEquipped: "مُجهَّز", shopEquip: "تجهيز", shopBuy: "شراء", shopSell: "بيع", achReward: "المكافأة:", none: "لا شيء",
     b1_1: "أوه، ها أنت ذا", b1_2: "كنت في انتظارك", b2_1: "أنت تخرج عن السيطرة", b2_2: "لم يكن من المفترض أن تأتي إلى هنا", b2_3: "لقد فات الأوان للتراجع....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "طيب، مش هنتكلم إزاي كلب بيطير؟", b3_2: "ليه بسأل أصلًا؟ دي مش أفكاري، ده مطور اللعبة اللي بيكتب كل الهبل ده.", b3_3: "أكيد افتكر إنه مضحك يخليني أسأل ليه كلب بيطير.", b3_4: "خلينا نبدأ القتال يعني.", boss3Defeated: "تم هزيمة التنين!", sys: "تجاوز النظام...", bypass: "جاري التجاوز...", admin: "تم منح حق المسؤول.", tbc: "يتبع...", cat: "تلك كانت قطة", kid: "لقد صدمك طفل لول", err1: "خطأ في الاتصال", fall: "سقطت!", wall: "اصطدمت بجدار!", eaten: "أكلك شيتوس!" },
-    it: { play: "GIOCA", shop: "NEGOZIO", achieve: "RISULTATI", friends: "AMICI", lead: "CLASSIFICA", ai: "CHAT AI", redeem: "RISCATTA", high: "Punteggio Max", food: "Cibo Secco", trophies: "Trofei", games: "Giochi", welcome: "BENVENUTO A<br>FLYING SHETOS", understand: "CAPISCO", chooseMode: "Scegli Modalità", story: "MODALITÀ STORIA", endless: "MODALITÀ INFINITA", pvp: "MODALITÀ PVP", settings: "IMPOSTAZIONI",
+    it: { play: "GIOCA", shop: "NEGOZIO", achieve: "RISULTATI", friends: "AMICI", lead: "CLASSIFICA", ai: "CHAT AI", redeem: "RISCATTA", high: "Punteggio Max", food: "Cibo Secco", trophies: "Trofei", games: "Giochi", welcome: "BENVENUTO A<br>FLYING SHETOS", understand: "CAPISCO", acceptCookies: "ACCETTA TUTTI I COOKIE", chooseMode: "Scegli Modalità", story: "MODALITÀ STORIA", endless: "MODALITÀ INFINITA", pvp: "MODALITÀ PVP", settings: "IMPOSTAZIONI",
     comingSoon: "IN ARRIVO", comingSoonDesc: "Disponibile in un futuro aggiornamento.", storyDesc: "L'avventura classica.<br>Segreti & Boss.", endlessDesc: "Corsa infinita.<br>La velocità aumenta per sempre.<br><b style='color:white;'>Classifica attivata</b>", pvpDesc: "Battaglia di punteggi!<br>Online.", trophiesLabel: "Trofei:", back: "INDIETRO", selectOpponent: "Seleziona Avversario", online: "ONLINE", onlineDesc: "Abbinati con<br>persone reali.", round: "ROUND", you: "TU", opponent: "AVVERSARIO", target: "Obiettivo: Non schiantarti!",
     music: "MUSICA", musicVol: "VOLUME MUSICA", sfx: "SFX", sfxVol: "VOLUME SFX", language: "LINGUA", resume: "RIPRENDI", quitToMenu: "ESCI AL MENU",
     shopTitle: "Negozio", dryFood: "Cibo Secco:", theLab: "IL LABORATORIO", skins: "SKIN", trails: "SCIE",
@@ -843,6 +853,13 @@
          window.closeStartupWarning = function() {
              document.getElementById('startup-warning').style.display = 'none';
              requestLandscape();
+         };
+
+         // The joke button still does something real: it stores the consent choice instead
+         // of just dismissing the screen. (Nothing is tracked - the game sets no cookies.)
+         window.acceptAllCookies = function() {
+             try { localStorage.setItem('shetosCookieConsent', 'all'); } catch (e) {}
+             closeStartupWarning();
          };
 
          const firebaseConfig = {
@@ -1577,7 +1594,7 @@ window.triggerPvpTrashTalk = async function() {
          window.updateMusicVolume = function(val) { masterMusicVol = parseFloat(val); saveSetting(SETTINGS_KEYS.musicVol, masterMusicVol); applyMusicVolumes(); }
          window.updateSFXVolume = function(val) { masterSFXVol = parseFloat(val); saveSetting(SETTINGS_KEYS.sfxVol, masterSFXVol); flapSound.volume = masterSFXVol * 0.5; alarmSound.volume = masterSFXVol; breathingSound.volume = masterSFXVol; shieldBreakSound.volume = masterSFXVol; damageSound.volume = masterSFXVol; explosionSound.volume = masterSFXVol; buttonSound.volume = masterSFXVol; buySound.volume = masterSFXVol; dashSound.volume = masterSFXVol; deathSound.volume = masterSFXVol; }
 
-         let voidBreathingCount = 0; const MAX_BREATHING = 2; let wrongwayPlayed = false; let wrongwayTimer = -1; let musicMuted = (loadSetting(SETTINGS_KEYS.musicOn, '1') === '0'); let sfxMuted = (loadSetting(SETTINGS_KEYS.sfxOn, '1') === '0');
+         let voidBreathingCount = 0; const MAX_BREATHING = 2; let wrongwayPlayed = false; let wrongwayTimer = -1; let musicMuted = (loadSetting(SETTINGS_KEYS.musicOn, '1') === '0'); let sfxMuted = (loadSetting(SETTINGS_KEYS.sfxOn, '1') === '0');
 
          // ---------------- DND (DO NOT DISTURB) ----------------
          // One switch that makes the game completely silent so the player's own
@@ -1721,13 +1738,18 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          };
 
          let loadedSrc = SKINS['default'].src; if (currentSkinKey === 'custom') loadedSrc = SKINS[customStats.visualSkin] ? SKINS[customStats.visualSkin].src : 'player.png'; else if (SKINS[currentSkinKey]) loadedSrc = SKINS[currentSkinKey].src;          var bird = new MySprite(loadedSrc);
-         // The characters were tiny next to the pipes and slipped through the gaps
-         // without even trying. Everything that measures the player - the drawing and
-         // every single collision test - goes through these, so one number changes all
-         // of them together and the hitbox can never drift away from the art.
+         // The characters were tiny next to the pipes, so the player art is drawn
+         // BIRD_DRAW_SCALE times bigger. The hitbox deliberately stays the sprite's
+         // real size (birdHitW/birdHitH): the character reads bigger on screen without
+         // the game getting harder. birdDrawW/birdDrawH is the on-screen size, used
+         // anywhere that has to match what you see (the online ghost, for example).
          const BIRD_DRAW_SCALE = 1.4;
-         function birdHitW() { const w = (bird.MyImg && bird.MyImg.complete && bird.MyImg.naturalWidth !== 0) ? bird.MyImg.width : 40; return w * BIRD_DRAW_SCALE; }
-         function birdHitH() { const h = (bird.MyImg && bird.MyImg.complete && bird.MyImg.naturalWidth !== 0) ? bird.MyImg.height : 37; return h * BIRD_DRAW_SCALE; }
+        function birdSpriteW() { return (bird.MyImg && bird.MyImg.complete && bird.MyImg.naturalWidth !== 0) ? bird.MyImg.width : 40; }
+        function birdSpriteH() { return (bird.MyImg && bird.MyImg.complete && bird.MyImg.naturalWidth !== 0) ? bird.MyImg.height : 37; }
+        function birdHitW() { return birdSpriteW(); }   // collision box: the sprite's real size
+        function birdHitH() { return birdSpriteH(); }
+        function birdDrawW() { return birdSpriteW() * BIRD_DRAW_SCALE; }   // on-screen size
+        function birdDrawH() { return birdSpriteH() * BIRD_DRAW_SCALE; }
 
          function make_bird_slow_and_fall() { 
              bird.x = CANVAS_WIDTH / 3; bird.velocity_x = 0;
@@ -1738,8 +1760,8 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              if (thing1 === bird && isHrBreakActive) return false; if (!thing1.visible || !thing2.visible) return false; let w1, h1, w2, h2;
              if (thing1.MyImg && thing1.MyImg.complete && thing1.MyImg.naturalWidth !== 0) { w1 = thing1.MyImg.width; h1 = thing1.MyImg.height; } else { w1 = 40; h1 = 40; }
              if (thing2.isText) { w2 = 180; h2 = 40; } else if (thing2.isError) { w2 = thing2.errW; h2 = thing2.errH; } else if (thing2.MyImg && thing2.MyImg.complete && thing2.MyImg.naturalWidth !== 0) { w2 = thing2.MyImg.width; h2 = thing2.MyImg.height; } else { w2 = thing2.width || 40; h2 = thing2.height || 40; }
-             if (thing1 === bird) { w1 *= BIRD_DRAW_SCALE; h1 *= BIRD_DRAW_SCALE; }
-             if (thing2 === bird) { w2 *= BIRD_DRAW_SCALE; h2 *= BIRD_DRAW_SCALE; }
+             // No bird scaling here on purpose: the hitbox is the sprite's real size,
+             // even though the art is drawn bigger.
              let t2x = thing2.x; let t2y = thing2.y; if (thing2.MyImg === pipe_piece) { if (thing2.flipV) { h2 = CANVAS_HEIGHT * 3; } else { let bottomEdge = t2y + h2; t2y = -3000; h2 = bottomEdge - t2y; } }
              let t1x = thing1.x; let t1y = thing1.y; if (thing1 === bird && isShrunk) { t1x += w1 / 4; t1y += h1 / 4; w1 /= 2; h1 /= 2; }
              if (t1x >= t2x + w2 || t1x + w1 <= t2x) return false; if (t1y >= t2y + h2 || t1y + h1 <= t2y) return false; return true;
@@ -2473,7 +2495,7 @@ window.playClickSound = function() {
                  
                  if (isPaused && game_mode !== 'online_match' && game_mode !== 'pvp_shetos') return; if (!ctx) return;
                  
-                 if ((game_mode === 'online_match' || game_mode === 'pvp_shetos') && isRoundStarting) { if (backgroundImages[currentBGIndex] && backgroundImages[currentBGIndex].complete) { ctx.drawImage(backgroundImages[currentBGIndex], 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); } else { ctx.fillStyle = "#222"; ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT); } bird.Do_Frame_Things(); for(let i=0; i<pipes.length; i++) { let p = pipes[i]; p.Do_Frame_Things(); } if (game_mode === 'pvp_shetos') { ctx.save(); ctx.globalAlpha = 0.7; ctx.drawImage(PLAYER_IMG, bird.x, shetosBotY, 40, 40); ctx.restore(); } else if (activeMatchID && !enemyHasCrashed) { enemyGhostRenderY += (enemyGhostY - enemyGhostRenderY) * 0.25; enemyGhostRenderX += (bird.x - enemyGhostRenderX) * 0.15; ctx.save(); ctx.globalAlpha = 0.4; let ghostW = bird.MyImg.width || 50; let ghostH = bird.MyImg.height || 50; ghostW = birdHitW(); ghostH = birdHitH(); ctx.drawImage(bird.MyImg, enemyGhostRenderX, enemyGhostRenderY, ghostW, ghostH); ctx.restore(); } ctx.font = 'bold 80px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.lineWidth = 4; ctx.strokeStyle="black"; let displayText = Math.ceil(onlineStartTimer); if(displayText <= 0) displayText = getLangText("go"); ctx.strokeText(displayText, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); ctx.fillText(displayText, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); onlineStartTimer -= (1/FPS); if (onlineStartTimer <= -0.5) { isRoundStarting = false; roundStartTime = Date.now(); } { onlineSyncAccum += (1000 / FPS); if (onlineSyncAccum >= 200) { onlineSyncAccum = 0; flushOnlineSync(onlineDirty || (Date.now() - lastOnlineFlush) >= 1500); } } return; }
+                 if ((game_mode === 'online_match' || game_mode === 'pvp_shetos') && isRoundStarting) { if (backgroundImages[currentBGIndex] && backgroundImages[currentBGIndex].complete) { ctx.drawImage(backgroundImages[currentBGIndex], 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); } else { ctx.fillStyle = "#222"; ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT); } bird.Do_Frame_Things(); for(let i=0; i<pipes.length; i++) { let p = pipes[i]; p.Do_Frame_Things(); } if (game_mode === 'pvp_shetos') { ctx.save(); ctx.globalAlpha = 0.7; ctx.drawImage(PLAYER_IMG, bird.x, shetosBotY, 40, 40); ctx.restore(); } else if (activeMatchID && !enemyHasCrashed) { enemyGhostRenderY += (enemyGhostY - enemyGhostRenderY) * 0.25; enemyGhostRenderX += (bird.x - enemyGhostRenderX) * 0.15; ctx.save(); ctx.globalAlpha = 0.4; let ghostW = bird.MyImg.width || 50; let ghostH = bird.MyImg.height || 50; ghostW = birdDrawW(); ghostH = birdDrawH(); ctx.drawImage(bird.MyImg, enemyGhostRenderX, enemyGhostRenderY, ghostW, ghostH); ctx.restore(); } ctx.font = 'bold 80px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.lineWidth = 4; ctx.strokeStyle="black"; let displayText = Math.ceil(onlineStartTimer); if(displayText <= 0) displayText = getLangText("go"); ctx.strokeText(displayText, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); ctx.fillText(displayText, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); onlineStartTimer -= (1/FPS); if (onlineStartTimer <= -0.5) { isRoundStarting = false; roundStartTime = Date.now(); } { onlineSyncAccum += (1000 / FPS); if (onlineSyncAccum >= 200) { onlineSyncAccum = 0; flushOnlineSync(onlineDirty || (Date.now() - lastOnlineFlush) >= 1500); } } return; }
                  
                  if (!isPaused) { 
                      if (isShieldActive) { shieldTimer--; if (shieldTimer <= 0) deactivateShield(); } 
@@ -2583,7 +2605,7 @@ window.playClickSound = function() {
 
                      case 'online_match':
                          { let syncNow = Date.now(); onlineSyncAccum += (1000 / FPS); if (onlineSyncAccum >= 200) { onlineSyncAccum = 0; flushOnlineSync(onlineDirty || (syncNow - lastOnlineFlush) >= 1500); } if (activeMatchID && opponentLastSeen > 0 && !isRoundStarting && !trophyProcessed && (syncNow - opponentLastSeen) > ONLINE_TIMEOUT_MS) { handleOpponentLeft(); } }
-                         if (!myHasCrashed) { time_game_last_running = new Date(); bottom_bar_offset += pipe_speed * speedMultiplier; for (var i = 0; i < pipes.length; i++) { pipes[i].Do_Frame_Things(); } pipe_spawn_timer += (1000 / FPS) * speedMultiplier; if (pipe_spawn_timer > currentSpawnInterval) { let gap_size = isWidenActive ? 280 : 140; let safe_area = CANVAS_HEIGHT - gap_size - 50; if(safe_area < 50) safe_area = 50; let top_of_gap = Math.floor(Math.random() * (safe_area - 50)) + 50; add_pipe(CANVAS_WIDTH, top_of_gap, gap_size); pipe_spawn_timer = 0; } make_bird_slow_and_fall(); check_for_end_game(); check_for_score_increase(); [pipes, shields, stars, potions, slowPotions].forEach(arr => { for (let i = arr.length - 1; i >= 0; i--) { if (arr[i].x < -100) arr.splice(i, 1); else if (arr !== pipes) arr[i].Do_Frame_Things(); } }); onlineDirty = true; if(!enemyHasCrashed) { let ghostTargetX = bird.x + ((online_score_enemy - currentScore) * 60); if (ghostTargetX < 20) ghostTargetX = 20; if (ghostTargetX > CANVAS_WIDTH - 80) ghostTargetX = CANVAS_WIDTH - 80; enemyGhostRenderY += (enemyGhostY - enemyGhostRenderY) * 0.25; enemyGhostRenderX += (ghostTargetX - enemyGhostRenderX) * 0.15; ctx.save(); ctx.globalAlpha = 0.5; let ghostW = 50; let ghostH = 50; ghostW = birdHitW(); ghostH = birdHitH(); ctx.drawImage(bird.MyImg, enemyGhostRenderX, enemyGhostRenderY, ghostW, ghostH); ctx.fillStyle = "white"; ctx.font = "10px Arial"; ctx.textAlign="center"; ctx.fillText(opponentName, enemyGhostRenderX + (ghostW/2), enemyGhostRenderY - 5); ctx.restore(); } } else { ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); ctx.font = "20px 'Press Start 2P'"; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(getLangText("waitingOpponent"), CANVAS_WIDTH/2, CANVAS_HEIGHT/2); } updateOnlineUI(); break;
+                         if (!myHasCrashed) { time_game_last_running = new Date(); bottom_bar_offset += pipe_speed * speedMultiplier; for (var i = 0; i < pipes.length; i++) { pipes[i].Do_Frame_Things(); } pipe_spawn_timer += (1000 / FPS) * speedMultiplier; if (pipe_spawn_timer > currentSpawnInterval) { let gap_size = isWidenActive ? 280 : 140; let safe_area = CANVAS_HEIGHT - gap_size - 50; if(safe_area < 50) safe_area = 50; let top_of_gap = Math.floor(Math.random() * (safe_area - 50)) + 50; add_pipe(CANVAS_WIDTH, top_of_gap, gap_size); pipe_spawn_timer = 0; } make_bird_slow_and_fall(); check_for_end_game(); check_for_score_increase(); [pipes, shields, stars, potions, slowPotions].forEach(arr => { for (let i = arr.length - 1; i >= 0; i--) { if (arr[i].x < -100) arr.splice(i, 1); else if (arr !== pipes) arr[i].Do_Frame_Things(); } }); onlineDirty = true; if(!enemyHasCrashed) { let ghostTargetX = bird.x + ((online_score_enemy - currentScore) * 60); if (ghostTargetX < 20) ghostTargetX = 20; if (ghostTargetX > CANVAS_WIDTH - 80) ghostTargetX = CANVAS_WIDTH - 80; enemyGhostRenderY += (enemyGhostY - enemyGhostRenderY) * 0.25; enemyGhostRenderX += (ghostTargetX - enemyGhostRenderX) * 0.15; ctx.save(); ctx.globalAlpha = 0.5; let ghostW = 50; let ghostH = 50; ghostW = birdDrawW(); ghostH = birdDrawH(); ctx.drawImage(bird.MyImg, enemyGhostRenderX, enemyGhostRenderY, ghostW, ghostH); ctx.fillStyle = "white"; ctx.font = "10px Arial"; ctx.textAlign="center"; ctx.fillText(opponentName, enemyGhostRenderX + (ghostW/2), enemyGhostRenderY - 5); ctx.restore(); } } else { ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); ctx.font = "20px 'Press Start 2P'"; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(getLangText("waitingOpponent"), CANVAS_WIDTH/2, CANVAS_HEIGHT/2); } updateOnlineUI(); break;
                          
                      case 'terminal_ending':
                          ctx.fillStyle = "black"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
