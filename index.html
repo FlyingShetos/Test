@@ -845,7 +845,6 @@
              requestLandscape();
          };
 
-
          const firebaseConfig = {
              apiKey: "AIzaSyACfcQJbIHDu_yeax7ALaTTMi7AQGMN0to",
              authDomain: "flyingshetos.firebaseapp.com",
@@ -1702,7 +1701,6 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              if (this.isError) { ctx.fillStyle = (Math.random() < 0.2) ? "#ff00ff" : "red"; ctx.fillRect(this.x, this.y, this.errW, this.errH); ctx.font = "bold 20px Arial"; ctx.fillStyle = "white"; if(this.errW > 60 && this.errH > 30) ctx.fillText("ERROR", this.x + 5, this.y + this.errH/2 + 5); if (!this.parentPipe) this.x += this.velocity_x * mult; this.y += this.velocity_y * mult; return; }
 
              let drawWidth = 50; let drawHeight = 50; let imgReady = (this.MyImg && this.MyImg.complete && this.MyImg.naturalWidth !== 0); if (imgReady) { drawWidth = this.MyImg.width; drawHeight = this.MyImg.height; }
-             if (this === bird && imgReady) { drawWidth = this.MyImg.width * (BIRD_HEIGHT / this.MyImg.height); drawHeight = BIRD_HEIGHT; }
              if (this === bird && currentTrailKey !== 'trail_none' && (game_mode === 'running' || game_mode === 'boss' || game_mode === 'online_match' || game_mode === 'pvp_shetos')) {
                  let trailDrawHeight = drawHeight; if(isShrunk) trailDrawHeight /= 2; trailHistory.push({ x: this.x + 5, y: this.y + trailDrawHeight / 2 }); if (trailHistory.length > 25) trailHistory.shift(); for(let i=0; i<trailHistory.length; i++) { trailHistory[i].x += pipe_speed * mult; }
                  if (trailHistory.length > 1) { ctx.beginPath(); ctx.lineWidth = isShrunk ? 12 : 25; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
@@ -1721,23 +1719,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              }
          };
 
-         let loadedSrc = SKINS['default'].src; if (currentSkinKey === 'custom') loadedSrc = SKINS[customStats.visualSkin] ? SKINS[customStats.visualSkin].src : 'player.png'; else if (SKINS[currentSkinKey]) loadedSrc = SKINS[currentSkinKey].src;          var bird = new MySprite(loadedSrc);
-         // Every gameplay sprite is pre-rendered from that skin's high-res 'big_' art,
-         // cropped tight and scaled down to BIRD_HEIGHT (55px), so all of them are the
-         // same height and the width just follows the character's own shape.
-         // The art and the hitbox read these same two numbers: what you see is what kills
-         // you, and the collision box can never be smaller than the dog on screen.
-        const BIRD_HEIGHT = 55;
-        function birdSpriteW() {
-            const ok = (bird.MyImg && bird.MyImg.complete && bird.MyImg.naturalWidth !== 0);
-            const w = ok ? bird.MyImg.width : 56; const h = ok ? bird.MyImg.height : 55;
-            return w * (BIRD_HEIGHT / h);
-        }
-        function birdSpriteH() { return BIRD_HEIGHT; }
-        function birdHitW() { return birdSpriteW(); }    // collision box
-        function birdHitH() { return birdSpriteH(); }
-        function birdDrawW() { return birdSpriteW(); }   // on-screen box
-        function birdDrawH() { return birdSpriteH(); }
+         let loadedSrc = SKINS['default'].src; if (currentSkinKey === 'custom') loadedSrc = SKINS[customStats.visualSkin] ? SKINS[customStats.visualSkin].src : 'player.png'; else if (SKINS[currentSkinKey]) loadedSrc = SKINS[currentSkinKey].src; var bird = new MySprite(loadedSrc);
 
          function make_bird_slow_and_fall() { 
              bird.x = CANVAS_WIDTH / 3; bird.velocity_x = 0;
@@ -1748,8 +1730,6 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              if (thing1 === bird && isHrBreakActive) return false; if (!thing1.visible || !thing2.visible) return false; let w1, h1, w2, h2;
              if (thing1.MyImg && thing1.MyImg.complete && thing1.MyImg.naturalWidth !== 0) { w1 = thing1.MyImg.width; h1 = thing1.MyImg.height; } else { w1 = 40; h1 = 40; }
              if (thing2.isText) { w2 = 180; h2 = 40; } else if (thing2.isError) { w2 = thing2.errW; h2 = thing2.errH; } else if (thing2.MyImg && thing2.MyImg.complete && thing2.MyImg.naturalWidth !== 0) { w2 = thing2.MyImg.width; h2 = thing2.MyImg.height; } else { w2 = thing2.width || 40; h2 = thing2.height || 40; }
-             if (thing1 === bird) { w1 = birdHitW(); h1 = birdHitH(); }
-             if (thing2 === bird) { w2 = birdHitW(); h2 = birdHitH(); }
              let t2x = thing2.x; let t2y = thing2.y; if (thing2.MyImg === pipe_piece) { if (thing2.flipV) { h2 = CANVAS_HEIGHT * 3; } else { let bottomEdge = t2y + h2; t2y = -3000; h2 = bottomEdge - t2y; } }
              let t1x = thing1.x; let t1y = thing1.y; if (thing1 === bird && isShrunk) { t1x += w1 / 4; t1y += h1 / 4; w1 /= 2; h1 /= 2; }
              if (t1x >= t2x + w2 || t1x + w1 <= t2x) return false; if (t1y >= t2y + h2 || t1y + h1 <= t2y) return false; return true;
@@ -1880,7 +1860,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          }
 
          function playPowerUpSound() { if(!sfxMuted) {flapSound.currentTime = 0; flapSound.play().catch(e => console.warn(e));} }
-         function activateDoubleStars() { isDoubleStarsActive = true; doubleStarTimer = POTION_DURATION_FRAMES; } function setGameSpeed(slow) { if (slow) speedMultiplier = 0.7; else speedMultiplier = 1; } function activateSlowMotion() { isSlowMotionActive = true; setGameSpeed(true); slowMoTimer = SLOW_POTION_DURATION_FRAMES; } function useWallDestruction() { if (!(currentSkinKey === 'yellow' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && wallDestroyCharges > 0)) || wallDestroyCharges <= 0) return false; let destroyedSets = 0; for (let i = 0; i < pipes.length; i += 2) { if (destroyedSets >= WALLS_TO_DESTROY) break; if (pipes[i].x > bird.x + birdHitW() && pipes[i].visible) { pipes[i].visible = false; if (pipes[i+1]) pipes[i+1].visible = false; destroyedSets++; } } if (destroyedSets > 0) { wallDestroyCharges--; if(!sfxMuted){explosionSound.currentTime = 0; explosionSound.play().catch(e => console.warn(e));} return true; } return false; }
+         function activateDoubleStars() { isDoubleStarsActive = true; doubleStarTimer = POTION_DURATION_FRAMES; } function setGameSpeed(slow) { if (slow) speedMultiplier = 0.7; else speedMultiplier = 1; } function activateSlowMotion() { isSlowMotionActive = true; setGameSpeed(true); slowMoTimer = SLOW_POTION_DURATION_FRAMES; } function useWallDestruction() { if (!(currentSkinKey === 'yellow' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && wallDestroyCharges > 0)) || wallDestroyCharges <= 0) return false; let destroyedSets = 0; for (let i = 0; i < pipes.length; i += 2) { if (destroyedSets >= WALLS_TO_DESTROY) break; if (pipes[i].x > bird.x + bird.MyImg.width && pipes[i].visible) { pipes[i].visible = false; if (pipes[i+1]) pipes[i+1].visible = false; destroyedSets++; } } if (destroyedSets > 0) { wallDestroyCharges--; if(!sfxMuted){explosionSound.currentTime = 0; explosionSound.play().catch(e => console.warn(e));} return true; } return false; }
          function spawnChocolate() { let choc = new MySprite(); choc.MyImg = CHOCO_IMG; choc.x = boss.x; choc.y = boss.y + boss.height/2; choc.velocity_x = -6; choc.velocity_y = (bird.y - boss.y) / 40; chocolates.push(choc); } function spawnErrorSign() { let err = new MySprite(); err.isError = true; err.x = CANVAS_WIDTH; err.y = Math.random() * Math.max(80, CANVAS_HEIGHT - 100); err.velocity_x = -9; err.errW = 60 + Math.random() * 80; err.errH = 60 + Math.random() * 80; errorSigns.push(err); }
 
          // The old box only ever drew two hardcoded lines, so any text longer than that
@@ -1980,8 +1960,8 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          function sherlockBossAutopilot() {
              if (!isSherlockActive || !bird.visible) { sherlockTargetY = null; return; }
              if (bossIntroState < 5) { sherlockTargetY = null; return; }   // hands off during the intro cutscene
-             const bw = birdHitW();
-             const bh = birdHitH();
+             const bw = (bird.MyImg && bird.MyImg.width) || 40;
+             const bh = (bird.MyImg && bird.MyImg.height) || 37;
              const TOP = 24, BOT = CANVAS_HEIGHT - 70 - bh;   // ceiling and the bottom bar
              const threats = [];
 
@@ -2095,14 +2075,14 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              playDragonSfx('dash.mp3', 0.9); if (Math.random() < 0.6) dragonTaunt();
          }
          function dragonBodyHitsBird() { // the enraged dragon RAMS the player in phase 2
-             const bw = birdHitW(), bh = birdHitH();
+             const bw = (bird.MyImg && bird.MyImg.width) || 40, bh = (bird.MyImg && bird.MyImg.height) || 37;
              const cx = bird.x + bw / 2, cy = bird.y + bh / 2;
              const rx = boss.width * 0.35, ry = boss.height * 0.35;
              const dx = cx - (boss.x + boss.width / 2), dy = cy - (boss.y + boss.height / 2);
              return (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) < 1;
          }
          function dragonFireHitsBird(fb) {
-             const bw = birdHitW(), bh = birdHitH();
+             const bw = (bird.MyImg && bird.MyImg.width) || 40, bh = (bird.MyImg && bird.MyImg.height) || 37;
              const cx = bird.x + bw / 2, cy = bird.y + bh / 2;
              const rr = Math.min(bw, bh) * 0.42 + fb.r * 0.85;
              const dx = cx - fb.x, dy = cy - fb.y;
@@ -2483,7 +2463,7 @@ window.playClickSound = function() {
                  
                  if (isPaused && game_mode !== 'online_match' && game_mode !== 'pvp_shetos') return; if (!ctx) return;
                  
-                 if ((game_mode === 'online_match' || game_mode === 'pvp_shetos') && isRoundStarting) { if (backgroundImages[currentBGIndex] && backgroundImages[currentBGIndex].complete) { ctx.drawImage(backgroundImages[currentBGIndex], 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); } else { ctx.fillStyle = "#222"; ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT); } bird.Do_Frame_Things(); for(let i=0; i<pipes.length; i++) { let p = pipes[i]; p.Do_Frame_Things(); } if (game_mode === 'pvp_shetos') { ctx.save(); ctx.globalAlpha = 0.7; ctx.drawImage(PLAYER_IMG, bird.x, shetosBotY, 40, 40); ctx.restore(); } else if (activeMatchID && !enemyHasCrashed) { enemyGhostRenderY += (enemyGhostY - enemyGhostRenderY) * 0.25; enemyGhostRenderX += (bird.x - enemyGhostRenderX) * 0.15; ctx.save(); ctx.globalAlpha = 0.4; let ghostW = bird.MyImg.width || 50; let ghostH = bird.MyImg.height || 50; ghostW = birdDrawW(); ghostH = birdDrawH(); ctx.drawImage(bird.MyImg, enemyGhostRenderX, enemyGhostRenderY, ghostW, ghostH); ctx.restore(); } ctx.font = 'bold 80px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.lineWidth = 4; ctx.strokeStyle="black"; let displayText = Math.ceil(onlineStartTimer); if(displayText <= 0) displayText = getLangText("go"); ctx.strokeText(displayText, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); ctx.fillText(displayText, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); onlineStartTimer -= (1/FPS); if (onlineStartTimer <= -0.5) { isRoundStarting = false; roundStartTime = Date.now(); } { onlineSyncAccum += (1000 / FPS); if (onlineSyncAccum >= 200) { onlineSyncAccum = 0; flushOnlineSync(onlineDirty || (Date.now() - lastOnlineFlush) >= 1500); } } return; }
+                 if ((game_mode === 'online_match' || game_mode === 'pvp_shetos') && isRoundStarting) { if (backgroundImages[currentBGIndex] && backgroundImages[currentBGIndex].complete) { ctx.drawImage(backgroundImages[currentBGIndex], 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); } else { ctx.fillStyle = "#222"; ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT); } bird.Do_Frame_Things(); for(let i=0; i<pipes.length; i++) { let p = pipes[i]; p.Do_Frame_Things(); } if (game_mode === 'pvp_shetos') { ctx.save(); ctx.globalAlpha = 0.7; ctx.drawImage(PLAYER_IMG, bird.x, shetosBotY, 40, 40); ctx.restore(); } else if (activeMatchID && !enemyHasCrashed) { enemyGhostRenderY += (enemyGhostY - enemyGhostRenderY) * 0.25; enemyGhostRenderX += (bird.x - enemyGhostRenderX) * 0.15; ctx.save(); ctx.globalAlpha = 0.4; let ghostW = bird.MyImg.width || 50; let ghostH = bird.MyImg.height || 50; if(bird.MyImg && bird.MyImg.complete && bird.MyImg.naturalWidth !== 0) { ghostW = bird.MyImg.width; ghostH = bird.MyImg.height; } ctx.drawImage(bird.MyImg, enemyGhostRenderX, enemyGhostRenderY, ghostW, ghostH); ctx.restore(); } ctx.font = 'bold 80px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.lineWidth = 4; ctx.strokeStyle="black"; let displayText = Math.ceil(onlineStartTimer); if(displayText <= 0) displayText = getLangText("go"); ctx.strokeText(displayText, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); ctx.fillText(displayText, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); onlineStartTimer -= (1/FPS); if (onlineStartTimer <= -0.5) { isRoundStarting = false; roundStartTime = Date.now(); } { onlineSyncAccum += (1000 / FPS); if (onlineSyncAccum >= 200) { onlineSyncAccum = 0; flushOnlineSync(onlineDirty || (Date.now() - lastOnlineFlush) >= 1500); } } return; }
                  
                  if (!isPaused) { 
                      if (isShieldActive) { shieldTimer--; if (shieldTimer <= 0) deactivateShield(); } 
@@ -2593,7 +2573,7 @@ window.playClickSound = function() {
 
                      case 'online_match':
                          { let syncNow = Date.now(); onlineSyncAccum += (1000 / FPS); if (onlineSyncAccum >= 200) { onlineSyncAccum = 0; flushOnlineSync(onlineDirty || (syncNow - lastOnlineFlush) >= 1500); } if (activeMatchID && opponentLastSeen > 0 && !isRoundStarting && !trophyProcessed && (syncNow - opponentLastSeen) > ONLINE_TIMEOUT_MS) { handleOpponentLeft(); } }
-                         if (!myHasCrashed) { time_game_last_running = new Date(); bottom_bar_offset += pipe_speed * speedMultiplier; for (var i = 0; i < pipes.length; i++) { pipes[i].Do_Frame_Things(); } pipe_spawn_timer += (1000 / FPS) * speedMultiplier; if (pipe_spawn_timer > currentSpawnInterval) { let gap_size = isWidenActive ? 280 : 140; let safe_area = CANVAS_HEIGHT - gap_size - 50; if(safe_area < 50) safe_area = 50; let top_of_gap = Math.floor(Math.random() * (safe_area - 50)) + 50; add_pipe(CANVAS_WIDTH, top_of_gap, gap_size); pipe_spawn_timer = 0; } make_bird_slow_and_fall(); check_for_end_game(); check_for_score_increase(); [pipes, shields, stars, potions, slowPotions].forEach(arr => { for (let i = arr.length - 1; i >= 0; i--) { if (arr[i].x < -100) arr.splice(i, 1); else if (arr !== pipes) arr[i].Do_Frame_Things(); } }); onlineDirty = true; if(!enemyHasCrashed) { let ghostTargetX = bird.x + ((online_score_enemy - currentScore) * 60); if (ghostTargetX < 20) ghostTargetX = 20; if (ghostTargetX > CANVAS_WIDTH - 80) ghostTargetX = CANVAS_WIDTH - 80; enemyGhostRenderY += (enemyGhostY - enemyGhostRenderY) * 0.25; enemyGhostRenderX += (ghostTargetX - enemyGhostRenderX) * 0.15; ctx.save(); ctx.globalAlpha = 0.5; let ghostW = 50; let ghostH = 50; ghostW = birdDrawW(); ghostH = birdDrawH(); ctx.drawImage(bird.MyImg, enemyGhostRenderX, enemyGhostRenderY, ghostW, ghostH); ctx.fillStyle = "white"; ctx.font = "10px Arial"; ctx.textAlign="center"; ctx.fillText(opponentName, enemyGhostRenderX + (ghostW/2), enemyGhostRenderY - 5); ctx.restore(); } } else { ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); ctx.font = "20px 'Press Start 2P'"; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(getLangText("waitingOpponent"), CANVAS_WIDTH/2, CANVAS_HEIGHT/2); } updateOnlineUI(); break;
+                         if (!myHasCrashed) { time_game_last_running = new Date(); bottom_bar_offset += pipe_speed * speedMultiplier; for (var i = 0; i < pipes.length; i++) { pipes[i].Do_Frame_Things(); } pipe_spawn_timer += (1000 / FPS) * speedMultiplier; if (pipe_spawn_timer > currentSpawnInterval) { let gap_size = isWidenActive ? 280 : 140; let safe_area = CANVAS_HEIGHT - gap_size - 50; if(safe_area < 50) safe_area = 50; let top_of_gap = Math.floor(Math.random() * (safe_area - 50)) + 50; add_pipe(CANVAS_WIDTH, top_of_gap, gap_size); pipe_spawn_timer = 0; } make_bird_slow_and_fall(); check_for_end_game(); check_for_score_increase(); [pipes, shields, stars, potions, slowPotions].forEach(arr => { for (let i = arr.length - 1; i >= 0; i--) { if (arr[i].x < -100) arr.splice(i, 1); else if (arr !== pipes) arr[i].Do_Frame_Things(); } }); onlineDirty = true; if(!enemyHasCrashed) { let ghostTargetX = bird.x + ((online_score_enemy - currentScore) * 60); if (ghostTargetX < 20) ghostTargetX = 20; if (ghostTargetX > CANVAS_WIDTH - 80) ghostTargetX = CANVAS_WIDTH - 80; enemyGhostRenderY += (enemyGhostY - enemyGhostRenderY) * 0.25; enemyGhostRenderX += (ghostTargetX - enemyGhostRenderX) * 0.15; ctx.save(); ctx.globalAlpha = 0.5; let ghostW = 50; let ghostH = 50; if(bird.MyImg && bird.MyImg.complete && bird.MyImg.naturalWidth !== 0) { ghostW = bird.MyImg.width; ghostH = bird.MyImg.height; } ctx.drawImage(bird.MyImg, enemyGhostRenderX, enemyGhostRenderY, ghostW, ghostH); ctx.fillStyle = "white"; ctx.font = "10px Arial"; ctx.textAlign="center"; ctx.fillText(opponentName, enemyGhostRenderX + (ghostW/2), enemyGhostRenderY - 5); ctx.restore(); } } else { ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); ctx.font = "20px 'Press Start 2P'"; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(getLangText("waitingOpponent"), CANVAS_WIDTH/2, CANVAS_HEIGHT/2); } updateOnlineUI(); break;
                          
                      case 'terminal_ending':
                          ctx.fillStyle = "black"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
