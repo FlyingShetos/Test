@@ -42,7 +42,7 @@
         /* The splash used to be positioned against the whole landing page (top 18% / right 12%),
            so on phones it drifted into the top-right corner, nowhere near the title. It now hangs
            off the title block itself, so it follows the logo at every screen size. */
-        #splash-text { position: absolute; left: calc(100% - 20px); top: 50%; margin-top: -10px; transform-origin: left center; transform: rotate(-15deg); color: #ffff00; font-family: 'Press Start 2P', cursive; font-size: clamp(6px, 1.4vw, 10px); text-shadow: 2px 2px #000; animation: pulse-splash 0.5s alternate infinite; pointer-events: none; z-index: 60; width: max-content; max-width: min(120px, 26vw); text-align: left; line-height: 1.35; }
+        #splash-text { position: absolute; left: calc(100% - 20px); top: calc(50% + 12px); margin-top: -10px; transform-origin: left center; transform: rotate(-15deg); color: #ffff00; font-family: 'Press Start 2P', cursive; font-size: clamp(6px, 1.4vw, 10px); text-shadow: 2px 2px #000; animation: pulse-splash 0.5s alternate infinite; pointer-events: none; z-index: 60; width: max-content; max-width: min(120px, 26vw); text-align: left; line-height: 1.35; }
         @keyframes pulse-splash { 0% { transform: rotate(-15deg) scale(1); } 100% { transform: rotate(-15deg) scale(1.08); } }
 
         .menu-stats { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; justify-content: center; max-width: 100%; }
@@ -339,7 +339,7 @@
                      <input type="range" id="sfx-vol" class="vol-slider" min="0" max="1" step="0.1" value="0.5" oninput="updateSFXVolume(this.value)" onchange="updateSFXVolume(this.value)">
                  </div>
                  <div class="toggle-row">
-                     <span data-i18n="woof">WOOF (FLAP)</span>
+                     <span data-i18n="woof">WOOF</span>
                      <label class="switch">
                          <input type="checkbox" id="woof-toggle" checked onchange="playClickSound(); toggleWoofSwitch(this.checked)">
                          <span class="slider"></span>
@@ -390,6 +390,23 @@
              <div style="display:flex; gap:10px; margin-top:30px;">
                  <button class="enter-btn btn-green btn-full-width" id="confirm-yes-btn" data-i18n="yes">YES</button>
                  <button class="enter-btn btn-red btn-full-width" onclick="playClickSound(); closeModal('confirm-modal')" data-i18n="no">NO</button>
+             </div>
+         </div>
+
+         <!-- In-game message popup: native alert() kicks the player out of fullscreen, so
+              every game message (invalid code, errors, confirmations) shows here instead. -->
+         <div id="game-message-modal" class="modal" style="display:none; height: auto; top: 40%; max-width: min(420px, 86vw); left: 50%; transform: translateX(-50%); text-align: center; padding: 26px 30px; z-index: 1200; background: #041820; border: 4px solid #f1c40f;">
+             <div id="game-message-text" style="color: white; font-family: 'Press Start 2P', cursive; font-size: 12px; line-height: 1.8; word-break: break-word;"></div>
+             <button class="enter-btn btn-yellow" style="padding: 10px 26px; font-size: 12px; margin-top: 18px;" onclick="closeGameMessage()">OK</button>
+         </div>
+
+         <!-- In-game input popup: replaces native prompt() (e.g. the donate amount) -->
+         <div id="game-prompt-modal" class="modal" style="display:none; height: auto; top: 40%; max-width: min(420px, 86vw); left: 50%; transform: translateX(-50%); text-align: center; padding: 26px 30px; z-index: 1300; background: #041820; border: 4px solid #f1c40f;">
+             <div id="game-prompt-text" style="color: white; font-family: 'Press Start 2P', cursive; font-size: 12px; line-height: 1.8; word-break: break-word; margin-bottom: 16px;"></div>
+             <input id="game-prompt-input" type="number" min="1" step="1" style="width: 100%; padding: 10px; font-size: 14px; box-sizing: border-box; background: #111; color: white; border: 2px solid white; border-radius: 5px; font-family: Arial, sans-serif;" onkeydown="if(event.key === 'Enter'){ gamePromptOK(); }">
+             <div style="display: flex; gap: 10px; margin-top: 16px;">
+                 <button class="enter-btn btn-yellow btn-full-width" onclick="gamePromptOK()">OK</button>
+                 <button class="enter-btn btn-red btn-full-width" onclick="gamePromptCancel()" data-i18n="cancel">CANCEL</button>
              </div>
          </div>
 
@@ -642,6 +659,69 @@
         window.addEventListener('touchstart', clearLoadingOnAnyInput, true);
         window.addEventListener('keydown', clearLoadingOnAnyInput, true);
 
+        // --- IN-GAME MESSAGES ------------------------------------------------
+        // alert()/prompt() yank the player out of fullscreen (and on mobile can
+        // even background the game), so every message that used to be a native
+        // dialog now renders inside the game itself. Defined here, before anything
+        // that can throw, so even a boot failure can still say so on-screen.
+        let gameMessageQueue = [];
+        window.showGameMessage = function(msg) {
+            try {
+                gameMessageQueue.push(String((msg === undefined || msg === null) ? '' : msg));
+                const modal = document.getElementById('game-message-modal');
+                if (!modal || modal.style.display === 'block') return;
+                const el = document.getElementById('game-message-text');
+                if (!el) return;
+                el.textContent = gameMessageQueue.shift();
+                modal.style.display = 'block';
+            } catch (e) {}
+        };
+        window.closeGameMessage = function() {
+            try {
+                const modal = document.getElementById('game-message-modal');
+                if (modal) modal.style.display = 'none';
+                if (typeof window.playClickSound === 'function') { try { window.playClickSound(); } catch (e) {} }
+                if (gameMessageQueue.length) {
+                    setTimeout(function() {
+                        const el = document.getElementById('game-message-text');
+                        const m2 = document.getElementById('game-message-modal');
+                        if (!el || !m2) return;
+                        el.textContent = gameMessageQueue.shift();
+                        m2.style.display = 'block';
+                    }, 150);
+                }
+            } catch (e) {}
+        };
+        let gamePromptCallback = null;
+        window.gamePrompt = function(text, cb) {
+            try {
+                const modal = document.getElementById('game-prompt-modal');
+                if (!modal) { if (typeof cb === 'function') cb(null); return; }
+                const t = document.getElementById('game-prompt-text'); if (t) t.textContent = String((text === undefined || text === null) ? '' : text);
+                const inp = document.getElementById('game-prompt-input'); if (inp) inp.value = '';
+                gamePromptCallback = (typeof cb === 'function') ? cb : null;
+                modal.style.display = 'block';
+                setTimeout(function() { try { inp.focus(); } catch (e) {} }, 60);
+            } catch (e) {}
+        };
+        window.gamePromptOK = function() {
+            try {
+                const modal = document.getElementById('game-prompt-modal'); if (modal) modal.style.display = 'none';
+                const inp = document.getElementById('game-prompt-input'); const v = inp ? inp.value : '';
+                const cb = gamePromptCallback; gamePromptCallback = null;
+                if (typeof window.playClickSound === 'function') { try { window.playClickSound(); } catch (e) {} }
+                if (cb) cb(v);
+            } catch (e) {}
+        };
+        window.gamePromptCancel = function() {
+            try {
+                const modal = document.getElementById('game-prompt-modal'); if (modal) modal.style.display = 'none';
+                const cb = gamePromptCallback; gamePromptCallback = null;
+                if (typeof window.playClickSound === 'function') { try { window.playClickSound(); } catch (e) {} }
+                if (cb) cb(null);
+            } catch (e) {}
+        };
+
         // Last resort: if a mid-boot crash still left any menu handler undefined,
         // replace it with a working stub instead of a silently dead button.
         window.addEventListener('load', function() {
@@ -649,7 +729,7 @@
             const missing = [];
             for (let i = 0; i < menuHandlers.length; i++) {
                 if (typeof window[menuHandlers[i]] !== 'function') {
-                    window[menuHandlers[i]] = function() { try { alert("The game is still loading - please refresh the page once more."); } catch (e) {} };
+                    window[menuHandlers[i]] = function() { try { showGameMessage("The game is still loading - please refresh the page once more."); } catch (e) {} };
                     missing.push(menuHandlers[i]);
                 }
             }
@@ -716,7 +796,7 @@
          const TRANSLATIONS = {
     en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", understand: "I UNDERSTAND", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS",
     comingSoon: "COMING SOON", comingSoonDesc: "Available in a future update.", storyDesc: "The classic adventure.<br>Secrets & Bosses.", endlessDesc: "Infinite run.<br>Speed increases forever.<br><b style='color:white;'>Leaderboard Enabled</b>", pvpDesc: "Score Battle!<br>Online.", trophiesLabel: "Trophies:", back: "BACK", selectOpponent: "Select Opponent", online: "ONLINE", onlineDesc: "Matchmake with<br>Real Humans.", round: "ROUND", you: "YOU", opponent: "OPPONENT", target: "Target: Don't Crash!",
-    music: "MUSIC", musicVol: "MUSIC VOL", sfx: "SFX", sfxVol: "SFX VOL", woof: "WOOF (FLAP)", language: "LANGUAGE", resume: "RESUME", quitToMenu: "QUIT TO MENU",
+    music: "MUSIC", musicVol: "MUSIC VOL", sfx: "SFX", sfxVol: "SFX VOL", woof: "WOOF", language: "LANGUAGE", resume: "RESUME", quitToMenu: "QUIT TO MENU",
     shopTitle: "Shop", dryFood: "Dry Food:", theLab: "THE LAB", skins: "SKINS", trails: "TRAILS",
     sellItem: "SELL ITEM", areYouSure: "Are you sure?", yes: "YES", no: "NO",
     friend: "Friend", typeMessage: "Type a message...", acceptChallenge: "Do you accept the challenge?", accept: "ACCEPT", decline: "DECLINE",
@@ -732,7 +812,7 @@
     b1_1: "oh, here you are", b1_2: "I was waiting for you", b2_1: "you are getting out of control", b2_2: "you werent supposed to come HERE", b2_3: "Its too late to go back now....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "So, we will not talk about how a dog is flying?", b3_2: "Why am i even asking that's not even my thoughts, It's the game developer who's typing all this nonsense.", b3_3: "I guess he thought it would be funny to make me question why a dog is flying.", b3_4: "Let's start the fight i guess.", boss3Defeated: "DRAGON DEFEATED!", sys: "System Override...", bypass: "Bypassing...", admin: "Administrator Granted.", tbc: "To Be Continued...", cat: "THAT WAS A CAT", kid: "you got clipped by a kid lmao", err1: "Connection Error", fall: "Fell down!", wall: "Hit a wall!", eaten: "EATEN BY SHETOS!" },
     de: { play: "SPIELEN", shop: "GESCHÄFT", achieve: "ERFOLGE", friends: "FREUNDE", lead: "BESTEN", ai: "KI CHAT", redeem: "EINLÖSEN", high: "Höchstpunktzahl", food: "Trockenfutter", trophies: "Trophäen", games: "Spiele", welcome: "WILLKOMMEN BEI<br>FLYING SHETOS", understand: "ICH VERSTEHE", chooseMode: "Modus wählen", story: "GESCHICHTSMODUS", endless: "ENDLOSMODUS", pvp: "PVP-MODUS", settings: "EINSTELLUNGEN",
     comingSoon: "BALD VERFÜGBAR", comingSoonDesc: "In einem zukünftigen Update verfügbar.", storyDesc: "Das klassische Abenteuer.<br>Geheimnisse & Bosse.", endlessDesc: "Endloser Lauf.<br>Die Geschwindigkeit steigt für immer.<br><b style='color:white;'>Bestenliste aktiviert</b>", pvpDesc: "Punkte-Battle!<br>Online.", trophiesLabel: "Trophäen:", back: "ZURÜCK", selectOpponent: "Gegner wählen", online: "ONLINE", onlineDesc: "Spiele gegen<br>echte Menschen.", round: "RUNDE", you: "DU", opponent: "GEGNER", target: "Ziel: Nicht abstürzen!",
-    music: "MUSIK", musicVol: "MUSIK LAUTST.", sfx: "SFX", sfxVol: "SFX LAUTST.", woof: "WUFF (FLATTERN)", language: "SPRACHE", resume: "FORTSETZEN", quitToMenu: "ZUM MENÜ",
+    music: "MUSIK", musicVol: "MUSIK LAUTST.", sfx: "SFX", sfxVol: "SFX LAUTST.", woof: "WUFF", language: "SPRACHE", resume: "FORTSETZEN", quitToMenu: "ZUM MENÜ",
     shopTitle: "Geschäft", dryFood: "Trockenfutter:", theLab: "DAS LABOR", skins: "SKINS", trails: "SPUREN",
     sellItem: "ARTIKEL VERKAUFEN", areYouSure: "Bist du sicher?", yes: "JA", no: "NEIN",
     friend: "Freund", typeMessage: "Nachricht eingeben...", acceptChallenge: "Nimmst du die Herausforderung an?", accept: "ANNEHMEN", decline: "ABLEHNEN",
@@ -746,7 +826,7 @@
     b1_1: "oh, da bist du ja", b1_2: "ich habe auf dich gewartet", b2_1: "du gerätst außer kontrolle", b2_2: "du solltest nicht HIERHER kommen", b2_3: "es ist zu spät um umzukehren....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "Also, wir reden nicht darueber, wie ein Hund fliegt?", b3_2: "Warum frage ich ueberhaupt? Das sind nicht mal meine Gedanken, der Spieleentwickler tippt hier den ganzen Unsinn.", b3_3: "Ich glaube, er dachte, es waere lustig, mich fragen zu lassen, warum ein Hund fliegt.", b3_4: "Dann fangen wir wohl besser an zu kaempfen.", boss3Defeated: "DRACHE BESIEGT!", sys: "Systemüberschreibung...", bypass: "Umgehung...", admin: "Administrator gewährt.", tbc: "Fortsetzung folgt...", cat: "DAS WAR EINE KATZE", kid: "du wurdest von einem kind erwischt lmao", err1: "Verbindungsfehler", fall: "Heruntergefallen!", wall: "Wand getroffen!", eaten: "VON SHETOS GEFRESSEN!" },
     ar: { play: "العب", shop: "المتجر", achieve: "إنجازات", friends: "أصدقاء", lead: "المتصدرين", ai: "محادثة ذكاء", redeem: "استرداد", high: "أعلى نتيجة", food: "طعام جاف", trophies: "الجوائز", games: "الألعاب", welcome: "مرحباً بكم في<br>فلاينج شيتوس", understand: "أنا أفهم", chooseMode: "اختر الوضع", story: "وضع القصة", endless: "وضع لا نهاية له", pvp: "وضع لاعب ضد لاعب", settings: "الإعدادات",
     comingSoon: "قريباً", comingSoonDesc: "متاح في تحديث مستقبلي.", storyDesc: "المغامرة الكلاسيكية.<br>أسرار وزعماء.", endlessDesc: "جري لا نهائي.<br>السرعة تزداد إلى الأبد.<br><b style='color:white;'>لوحة المتصدرين مفعّلة</b>", pvpDesc: "معركة النقاط!<br>أونلاين.", trophiesLabel: "الجوائز:", back: "رجوع", selectOpponent: "اختر الخصم", online: "أونلاين", onlineDesc: "طابق مع<br>بشر حقيقيين.", round: "الجولة", you: "أنت", opponent: "الخصم", target: "الهدف: لا تصطدم!",
-    music: "الموسيقى", musicVol: "حجم الموسيقى", sfx: "المؤثرات", sfxVol: "حجم المؤثرات", woof: "ووف (الرفرفة)", language: "اللغة", resume: "استئناف", quitToMenu: "العودة إلى القائمة",
+    music: "الموسيقى", musicVol: "حجم الموسيقى", sfx: "المؤثرات", sfxVol: "حجم المؤثرات", woof: "ووف", language: "اللغة", resume: "استئناف", quitToMenu: "العودة إلى القائمة",
     shopTitle: "المتجر", dryFood: "الطعام الجاف:", theLab: "المختبر", skins: "الأشكال", trails: "الأثر",
     sellItem: "بيع العنصر", areYouSure: "هل أنت متأكد؟", yes: "نعم", no: "لا",
     friend: "صديق", typeMessage: "اكتب رسالة...", acceptChallenge: "هل تقبل التحدي؟", accept: "قبول", decline: "رفض",
@@ -760,7 +840,7 @@
     b1_1: "أوه، ها أنت ذا", b1_2: "كنت في انتظارك", b2_1: "أنت تخرج عن السيطرة", b2_2: "لم يكن من المفترض أن تأتي إلى هنا", b2_3: "لقد فات الأوان للتراجع....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "طيب، مش هنتكلم إزاي كلب بيطير؟", b3_2: "ليه بسأل أصلًا؟ دي مش أفكاري، ده مطور اللعبة اللي بيكتب كل الهبل ده.", b3_3: "أكيد افتكر إنه مضحك يخليني أسأل ليه كلب بيطير.", b3_4: "خلينا نبدأ القتال يعني.", boss3Defeated: "تم هزيمة التنين!", sys: "تجاوز النظام...", bypass: "جاري التجاوز...", admin: "تم منح حق المسؤول.", tbc: "يتبع...", cat: "تلك كانت قطة", kid: "لقد صدمك طفل لول", err1: "خطأ في الاتصال", fall: "سقطت!", wall: "اصطدمت بجدار!", eaten: "أكلك شيتوس!" },
     it: { play: "GIOCA", shop: "NEGOZIO", achieve: "RISULTATI", friends: "AMICI", lead: "CLASSIFICA", ai: "CHAT AI", redeem: "RISCATTA", high: "Punteggio Max", food: "Cibo Secco", trophies: "Trofei", games: "Giochi", welcome: "BENVENUTO A<br>FLYING SHETOS", understand: "CAPISCO", chooseMode: "Scegli Modalità", story: "MODALITÀ STORIA", endless: "MODALITÀ INFINITA", pvp: "MODALITÀ PVP", settings: "IMPOSTAZIONI",
     comingSoon: "IN ARRIVO", comingSoonDesc: "Disponibile in un futuro aggiornamento.", storyDesc: "L'avventura classica.<br>Segreti & Boss.", endlessDesc: "Corsa infinita.<br>La velocità aumenta per sempre.<br><b style='color:white;'>Classifica attivata</b>", pvpDesc: "Battaglia di punteggi!<br>Online.", trophiesLabel: "Trofei:", back: "INDIETRO", selectOpponent: "Seleziona Avversario", online: "ONLINE", onlineDesc: "Abbinati con<br>persone reali.", round: "ROUND", you: "TU", opponent: "AVVERSARIO", target: "Obiettivo: Non schiantarti!",
-    music: "MUSICA", musicVol: "VOLUME MUSICA", sfx: "SFX", sfxVol: "VOLUME SFX", woof: "WOOF (BATTITO)", language: "LINGUA", resume: "RIPRENDI", quitToMenu: "ESCI AL MENU",
+    music: "MUSICA", musicVol: "VOLUME MUSICA", sfx: "SFX", sfxVol: "VOLUME SFX", woof: "WOOF", language: "LINGUA", resume: "RIPRENDI", quitToMenu: "ESCI AL MENU",
     shopTitle: "Negozio", dryFood: "Cibo Secco:", theLab: "IL LABORATORIO", skins: "SKIN", trails: "SCIE",
     sellItem: "VENDI OGGETTO", areYouSure: "Sei sicuro?", yes: "SÌ", no: "NO",
     friend: "Amico", typeMessage: "Scrivi un messaggio...", acceptChallenge: "Accetti la sfida?", accept: "ACCETTA", decline: "RIFIUTA",
@@ -1004,7 +1084,7 @@
          } catch(e) { console.error("Firebase Error (Running Offline):", e); }
 
         window.signInWithGoogle = function() {
-            if(!auth) return alert("Offline Mode: Login unavailable.");
+            if(!auth) return showGameMessage("Offline Mode: Login unavailable.");
             const provider = new firebase.auth.GoogleAuthProvider();
             const wasFullscreen = !!document.fullscreenElement;
             auth.signInWithPopup(provider).then(function() {
@@ -1016,7 +1096,7 @@
                 if (wasFullscreen && !document.fullscreenElement) {
                     setTimeout(function() { try { location.reload(); } catch (e) {} }, 1500);
                 }
-            }).catch(e => alert(e.message));
+            }).catch(e => showGameMessage(e.message));
         }
          window.signOutUser = async function() {
              logoutRequested = true;
@@ -1247,6 +1327,7 @@
 
          let activeInviteDocId = null;
          let activeInviteMatchId = null;
+         let challengeCancelToken = 0;   // bumped by cancelMatchSearch() to abort in-flight challenge creation
          let unsubscribeInvites = null;
          let queuedInvite = null;
 
@@ -1258,6 +1339,7 @@
                  .where('status', '==', 'pending')
                  .onSnapshot(snap => {
                      snap.docChanges().forEach(change => {
+                         if (change.type === 'removed') { if (activeInviteDocId === change.doc.id) { try { document.getElementById('inviteModal').style.display = 'none'; } catch(e) {} activeInviteDocId = null; activeInviteMatchId = null; } return; }
                          if (change.type !== 'added') return;
                          const data = change.doc.data();
                          // Drop invites that went stale while we were away instead of
@@ -1298,7 +1380,7 @@
                  activeMatchID = activeInviteMatchId; myOnlineRole = 'guest'; closeAllModals();
                  mainMenuMusic.pause(); mainMenuMusic.currentTime = 0;
                  document.getElementById('landing-page').style.display = 'none'; listenToActiveMatch();
-             } catch(e) { console.error("Accept failed:", e); alert("Could not join the match (" + (e.code || e.message) + ")"); }
+             } catch(e) { console.error("Accept failed:", e); showGameMessage("Could not join the match (" + (e.code || e.message) + ")"); }
              activeInviteDocId = null; activeInviteMatchId = null;
          }
 
@@ -1321,19 +1403,24 @@
              document.getElementById('game-container').appendChild(loadScr);
              
              let createdMatchID = null;
+             // A token so cancelMatchSearch() can abort a challenge that is still being
+             // created: the CANCEL button now works even while the match doc is in flight.
+             const myToken = ++challengeCancelToken;
              try {
                  const newMatch = await db.collection('matches').add({ hostId: currentUser.uid, hostName: currentUser.displayName || "Player", status: 'waiting_for_friend', guestId: friendID, hostScore: 0, guestScore: 0, hostStatus: 'alive', guestStatus: 'alive', round: 1, hostWins: 0, guestWins: 0, hostSeen: Date.now(), timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                 if (myToken !== challengeCancelToken) { try { await newMatch.delete(); } catch (e2) {} return; }   // canceled while creating
                  createdMatchID = newMatch.id;
                  activeMatchID = newMatch.id; myOnlineRole = 'host';
                  // The old code wrote into users/{friend}/invites - another player's document,
                  // which Firestore denies. Invites now live in their own collection.
-                 await db.collection('invites').add({ toUid: friendID, fromUid: currentUser.uid, hostName: currentUser.displayName || "Player", matchId: newMatch.id, status: 'pending', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                 const inviteRef = await db.collection('invites').add({ toUid: friendID, fromUid: currentUser.uid, hostName: currentUser.displayName || "Player", matchId: newMatch.id, status: 'pending', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                 if (myToken !== challengeCancelToken) { try { await inviteRef.delete(); } catch (e2) {} try { await newMatch.delete(); } catch (e2) {} activeMatchID = null; myOnlineRole = null; return; }   // canceled while sending the invite
                  listenToActiveMatch();
              } catch(e) {
                  console.error("Challenge failed:", e);
                  if (createdMatchID) db.collection('matches').doc(createdMatchID).delete().catch(() => {});
                  activeMatchID = null; myOnlineRole = null;
-                 alert("Failed to send challenge (" + (e.code || e.message) + ")");
+                 showGameMessage("Failed to send challenge (" + (e.code || e.message) + ")");
                  cancelMatchSearch();
              }
          }
@@ -1342,7 +1429,7 @@
 
          window.redeemCode = function() {
              playClickSound(); let code = document.getElementById('redeemInput').value.trim().toLowerCase();
-             if(code === "") return; if(redeemedCodes.some(c => String(c).toLowerCase() === code)) return alert("Code already used!");
+             if(code === "") return; if(redeemedCodes.some(c => String(c).toLowerCase() === code)) return showGameMessage("Code already used!");
              let success = false;
              let isUnlimited = false;
              if(code === "1-ugly") { collectedStars += 20; success = true; }
@@ -1368,7 +1455,7 @@
                  }
                  closeModal('redeemModal'); 
              } else { 
-                 alert("Invalid code."); 
+                 showGameMessage("Invalid code."); 
              }
          }
 
@@ -1385,46 +1472,48 @@
          // CRITICAL FIX: Add Donate function directly inside the friends list
          window.donateToFriend = async function(friendID, friendName) {
             playClickSound();
-            if (!db || !currentUser) return alert("Must be logged in to donate!");
-            let amountStr = prompt(`How much dry food do you want to donate to ${friendName}?`);
-            if (!amountStr) return;
-            let amount = parseInt(amountStr);
-            if (isNaN(amount) || amount <= 0) return alert("Invalid amount.");
-            if (amount > collectedStars) return alert("You don't have enough dry food.");
+            if (!db || !currentUser) return showGameMessage("Must be logged in to donate!");
+            // Native prompt() exits fullscreen, so ask inside the game instead.
+            gamePrompt(`How much dry food do you want to donate to ${friendName}?`, async function(amountStr) {
+                if (!amountStr) return;
+                let amount = parseInt(amountStr);
+                if (isNaN(amount) || amount <= 0) return showGameMessage("Invalid amount.");
+                if (amount > collectedStars) return showGameMessage("You don't have enough dry food.");
 
-            // Deduct locally and optimistically update
-            collectedStars -= amount;
-            localStorage.setItem('flappyStars', collectedStars);
-            updateMenuStats();
-            
-            try {
-                // Was: a transaction writing stars straight onto the friend's user doc.
-                // Firestore refuses that, so we post the gift to the shared mailbox and
-                // the friend credits themselves next time they play.
-                await db.collection('transfers').add({
-                    fromUid: currentUser.uid,
-                    fromName: currentUser.displayName || "Player",
-                    toUid: friendID,
-                    amount: amount,
-                    claimed: false,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                await saveUserData(); // Save our own new state directly to cloud
-                alert(`Sent ${amount} dry food to ${friendName}! They collect it next time they play.`);
-            } catch(e) {
-                console.error("Donation failed:", e);
-                // Rollback if failure
-                collectedStars += amount;
+                // Deduct locally and optimistically update
+                collectedStars -= amount;
                 localStorage.setItem('flappyStars', collectedStars);
                 updateMenuStats();
-                saveUserData();
-                alert("Donation failed (" + (e.code || e.message) + "). Food returned to your account.");
-            }
+
+                try {
+                    // Was: a transaction writing stars straight onto the friend's user doc.
+                    // Firestore refuses that, so we post the gift to the shared mailbox and
+                    // the friend credits themselves next time they play.
+                    await db.collection('transfers').add({
+                        fromUid: currentUser.uid,
+                        fromName: currentUser.displayName || "Player",
+                        toUid: friendID,
+                        amount: amount,
+                        claimed: false,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    await saveUserData(); // Save our own new state directly to cloud
+                    showGameMessage(`Sent ${amount} dry food to ${friendName}! They collect it next time they play.`);
+                } catch(e) {
+                    console.error("Donation failed:", e);
+                    // Rollback if failure
+                    collectedStars += amount;
+                    localStorage.setItem('flappyStars', collectedStars);
+                    updateMenuStats();
+                    saveUserData();
+                    showGameMessage("Donation failed (" + (e.code || e.message) + "). Food returned to your account.");
+                }
+            });
          }
 
          let friendsRefreshTimer = null;
          window.openFriends = async function() {
-             if (!currentUser) return alert("Login to use Friends!");
+             if (!currentUser) return showGameMessage("Login to use Friends!");
              closeAllModals(); document.getElementById('friendsModal').style.display = 'block';
              claimPendingTransfers();
              renderFriendsList();
@@ -1528,7 +1617,7 @@
 
          window.addFriend = async function() {
              const input = document.getElementById('friendInput'); const nameToFind = input.value.trim(); if(!nameToFind) return;
-             try { const q = await db.collection('users').where('displayName', '==', nameToFind).limit(1).get(); if(q.empty) { alert("User not found! (Case sensitive)"); return; } const friendDoc = q.docs[0]; const friendID = friendDoc.id; if(friendID === currentUser.uid) return alert("You can't add yourself!"); if(myFriends.includes(friendID)) return alert("Already friends!"); myFriends.push(friendID); await saveUserData(); alert(`Added ${nameToFind} to friends!`); input.value = ""; openFriends(); } catch(e) { console.error(e); alert("Error searching user."); }
+             try { const q = await db.collection('users').where('displayName', '==', nameToFind).limit(1).get(); if(q.empty) { showGameMessage("User not found! (Case sensitive)"); return; } const friendDoc = q.docs[0]; const friendID = friendDoc.id; if(friendID === currentUser.uid) return showGameMessage("You can't add yourself!"); if(myFriends.includes(friendID)) return showGameMessage("Already friends!"); myFriends.push(friendID); await saveUserData(); showGameMessage(`Added ${nameToFind} to friends!`); input.value = ""; openFriends(); } catch(e) { console.error(e); showGameMessage("Error searching user."); }
          }
 
          let chatHistory = [{ name: "SHETOS", text: "I'M ONLINE. DON'T BOTHER ME UNLESS IT'S IMPORTANT.", type: 'ai' }];
@@ -1572,7 +1661,7 @@ window.triggerPvpTrashTalk = async function() {
          try { let cTrail = JSON.parse(localStorage.getItem('flappyCustomTrail')); if(cTrail) customTrailColors = {...customTrailColors, ...cTrail}; } catch(e) {}
 
          window.openLabMenu = function() { closeAllModals(); document.getElementById('labModal').style.display = 'block'; if (labUnlocked) { document.getElementById('lab-locked').style.display = 'none'; document.getElementById('lab-unlocked').style.display = 'block'; refreshLabUI(); } else { document.getElementById('lab-locked').style.display = 'block'; document.getElementById('lab-unlocked').style.display = 'none'; } }
-         window.purchaseLab = function() { playClickSound(); if (collectedStars >= 1500) { collectedStars -= 1500; localStorage.setItem('flappyStars', collectedStars); labUnlocked = true; localStorage.setItem('flappyLabUnlocked', 'true'); updateMenuStats(); saveUserData(); if(!sfxMuted){buySound.currentTime=0; buySound.play().catch(e=>{});} openLabMenu(); } else { alert("Not enough Dry Food! You need 1500."); } }
+         window.purchaseLab = function() { playClickSound(); if (collectedStars >= 1500) { collectedStars -= 1500; localStorage.setItem('flappyStars', collectedStars); labUnlocked = true; localStorage.setItem('flappyLabUnlocked', 'true'); updateMenuStats(); saveUserData(); if(!sfxMuted){buySound.currentTime=0; buySound.play().catch(e=>{});} openLabMenu(); } else { showGameMessage("Not enough Dry Food! You need 1500."); } }
 
          function refreshLabUI() {
              let usedPts = customStats.lives + customStats.dashes + customStats.bombs + (customStats.shrinks || 0) + (customStats.widens || 0);
@@ -1762,7 +1851,7 @@ window.triggerPvpTrashTalk = async function() {
          }
          window.addEventListener('click', () => { if(mainMenuMusic.paused && !musicMuted && game_mode === 'waiting_for_website') { mainMenuMusic.play().catch(e => console.log("Music auto-started")); } }, {once: true});
 
-         let boss = { x: 9999, y: 100, width: 150, height: 150, stamina: 100, speedY: 2, movingIn: true, hitImg: BOSS_IMG }; let chocolates = []; let victoryTimer = 0; let deathMessage = "Game Over"; let bossIntroState = 0; let bossIntroTimer = 0; let boss1Defeated = false; let isBoss2 = false; let isBoss3 = false; let dragonDefeated = false; let dragonHP = 100; let dragonPhase = 1; let dragonAtkState = 'idle'; let dragonAtkTimer = 0; let dragonCycle = 0; let dragonDashesDone = 0; let dragonDashVec = null; let dragonBodyCd = 0; let dragonDashSpeed = 13.5; let dragonMouthTimer = 0; let dragonDizzyDone = false; let dragonDizzyTimer = 0; let dragonDefeatTimer = 0; let dragonBob = 0; let dragonFire = []; let dragonTauntFx = []; const BOSS2_MAX_HITS = 5; let deleteBtnTimer = 0; let deleteBtnSpawnTimer = 0; let errorSigns = []; let errorSignCooldown = 0; 
+         let boss = { x: 9999, y: 100, width: 150, height: 150, stamina: 100, speedY: 2, movingIn: true, hitImg: BOSS_IMG }; let chocolates = []; let victoryTimer = 0; let deathMessage = "Game Over"; let bossIntroState = 0; let bossIntroTimer = 0; let bossIntroSkipLock = 0; let boss1Defeated = false; let isBoss2 = false; let isBoss3 = false; let dragonDefeated = false; let dragonHP = 100; let dragonPhase = 1; let dragonAtkState = 'idle'; let dragonAtkTimer = 0; let dragonCycle = 0; let dragonDashesDone = 0; let dragonDashVec = null; let dragonBodyCd = 0; let dragonDashSpeed = 13.5; let dragonMouthTimer = 0; let dragonDizzyDone = false; let dragonDizzyTimer = 0; let dragonDefeatTimer = 0; let dragonBob = 0; let dragonFire = []; let dragonTauntFx = []; const BOSS2_MAX_HITS = 5; let deleteBtnTimer = 0; let deleteBtnSpawnTimer = 0; let errorSigns = []; let errorSignCooldown = 0; 
          function getAreaName(i) { return getLangText("area" + i); } const GLITCH_TEXTS = ["thats not the reality", "404", "not found", "wake up", "null", "error"]; let currentBGIndex = 0; let previousBGIndex = 0; let transitionText = ""; let transitionTimer = 0; let transitionType = "normal"; let transitionDuration = 0; const NORMAL_TRANSITION_DURATION = 32; const GLITCH_TRANSITION_DURATION = 80; let flashColor = null; let flashTimer = 0; let levelReached = 1; let cheatBuffer = ""; let floatingTexts = []; 
          var jump_amount = -7; var max_fall_speed = +8; var acceleration = 0.6; const SUPER_JUMP_AMOUNT = -3.8; const SUPER_ACCELERATION = 0.18; const SUPER_MAX_FALL_SPEED = +3.5; const VOID_ACCEL = 0.35; const VOID_MAX_FALL = 6.0; const MAGNET_RADIUS = 300; const INITIAL_LIVES = 3; let currentLives = 0; const MAX_DESTROY_CHARGES = 5; let wallDestroyCharges = 0; const WALLS_TO_DESTROY = 2; let dashCharges = 0; let isDashActive = false; const DASH_DURATION = 68; let dashTimer = 0; let shrinkCharges = 0; let isShrunk = false; let shrinkTimer = 0; const SHRINK_DURATION = 160; let widenCharges = 0; let isWidenActive = false; let widenTimer = 0; const WIDEN_DURATION = 240; let heisenBlinkTimer = 0; let pipe_speed = -2; let currentSpawnInterval = 2500; let speedMultiplier = 1; let trailRedTimer = 0; let trailGoldTimer = 0;
          var time_game_last_running; var bottom_bar_offset = 0; var pipes = []; var pipe_spawn_timer = 0; let currentScore = 0; let lastPipeY = 250; let totalGamesPlayed = 0; try { totalGamesPlayed = parseInt(localStorage.getItem('flappyGamesPlayed')) || 0; } catch(e) {}
@@ -1840,9 +1929,13 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
                      if (TRAILS[currentTrailKey] && TRAILS[currentTrailKey].color === 'rainbow') { let hue = (Date.now() / 5) % 360; ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`; } else if (currentTrailKey === 'trail_transparent') { if (trailRedTimer > 0) ctx.strokeStyle = '#ff3333'; else if (isShieldActive) ctx.strokeStyle = '#00ccff'; else if (isDoubleStarsActive) ctx.strokeStyle = '#ff00ff'; else if (isSlowMotionActive) ctx.strokeStyle = '#ffffff'; else if (trailGoldTimer > 0) ctx.strokeStyle = '#ffd700'; else ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; } else if (currentTrailKey === 'trail_custom') { if (trailRedTimer > 0) ctx.strokeStyle = customTrailColors.damage; else if (isShieldActive) ctx.strokeStyle = customTrailColors.shield; else if (isDoubleStarsActive) ctx.strokeStyle = customTrailColors.potion; else if (isSlowMotionActive) ctx.strokeStyle = customTrailColors.slow; else if (trailGoldTimer > 0) ctx.strokeStyle = customTrailColors.food; else ctx.strokeStyle = customTrailColors.base; } else if (TRAILS[currentTrailKey]) { ctx.strokeStyle = TRAILS[currentTrailKey].color; }
                      ctx.moveTo(trailHistory[0].x, trailHistory[0].y); for (let i = 1; i < trailHistory.length; i++) { ctx.lineTo(trailHistory[i].x, trailHistory[i].y); } ctx.stroke(); }
              }
+             // Shield bubble: a tight circle around the bird's VISIBLE art. The old one
+             // used drawWidth (the 1.4x trail size) for its radius, so it ballooned to
+             // about twice the bird. birdHitRect() is the exact drawn hitbox, and the
+             // radius just covers its corners + a few px of padding.
+             if (isShieldActive && this === bird) { const shr = birdHitRect(); const sr = Math.sqrt((shr.w / 2) * (shr.w / 2) + (shr.h / 2) * (shr.h / 2)) + 4; ctx.beginPath(); ctx.arc(shr.x + shr.w / 2, shr.y + shr.h / 2, sr, 0, 2 * Math.PI); ctx.fillStyle = 'rgba(0, 255, 255, 0.5)'; ctx.fill(); ctx.closePath(); }
              ctx.save(); let offsetX = drawWidth / 2; let offsetY = drawHeight / 2; if(this === bird && isShrunk) { offsetX /= 2; offsetY /= 2; }
              ctx.translate(this.x + offsetX, this.y + offsetY); ctx.rotate((this.angle * Math.PI) / 180); if (this.flipV) ctx.scale(1, -1); if (this.flipH) ctx.scale(-1, 1); if (this === bird && isShrunk) ctx.scale(0.5, 0.5);
-             if (isShieldActive && this === bird) { ctx.beginPath(); ctx.arc(0, 0, drawWidth / 2 + 5, 0, 2 * Math.PI); ctx.fillStyle = 'rgba(0, 255, 255, 0.5)'; ctx.fill(); ctx.closePath(); }
              if (isDashActive && this === bird) { ctx.globalAlpha = 0.5; } if (isHrBreakActive && this === bird) { ctx.globalAlpha = 0.5; } 
              if (this.visible && !this.color) { if (imgReady) { ctx.drawImage(this.MyImg, -drawWidth / 2, -drawHeight / 2); } else { ctx.fillStyle = "#FF00FF"; ctx.fillRect(-20, -20, 40, 40); } }
              if (!this.oscillate && !this.parentPipe) this.y = this.y + this.velocity_y * mult; ctx.restore();
@@ -2065,14 +2158,13 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          function purchaseOrEquipSkin(key) {
              if (key === 'custom' || key === 'trail_custom') return; 
              if (SKINS[key] && shopCategory === 'skins') { const skin = SKINS[key]; if (availableSkins.includes(key)) { if (!skin.current) { playClickSound(); for (let k in SKINS) { SKINS[k].current = false; } skin.current = true; let tempImg = new Image(); tempImg.onload = function() { bird.MyImg = tempImg; }; tempImg.src = skin.src; currentSkinKey = key; localStorage.setItem('currentSkin', key); updateMenuCharacter(); 
-                 wallDestroyCharges = (currentSkinKey === 'yellow' || currentSkinKey === 'black') ? MAX_DESTROY_CHARGES : 0; dashCharges = (currentSkinKey === 'doordash' || currentSkinKey === 'black') ? 4 : 0; shrinkCharges = (currentSkinKey === 'luigi' || currentSkinKey === 'black') ? 4 : 0; widenCharges = (currentSkinKey === 'heisenbark' || currentSkinKey === 'black') ? 4 : 0; if (currentSkinKey === 'black' || currentSkinKey === 'tough' || currentSkinKey === 'sherlock') currentLives = (currentSkinKey === 'sherlock' ? 1 : INITIAL_LIVES); else currentLives = 0; updateAbilityButtons(); renderShopItems(); } } else if (collectedStars >= skin.cost) { collectedStars -= skin.cost; availableSkins.push(key); if(!sfxMuted){buySound.currentTime = 0; buySound.play().catch(e => console.warn(e));} if (key === 'employed' && availableSkins.includes(key)) { alert("Congrats, you finally got a J*b"); } localStorage.setItem('flappyStars', collectedStars); localStorage.setItem('flappySkins', JSON.stringify(availableSkins)); updateMenuStats(); saveUserData(); purchaseOrEquipSkin(key); } } 
+                 wallDestroyCharges = (currentSkinKey === 'yellow' || currentSkinKey === 'black') ? MAX_DESTROY_CHARGES : 0; dashCharges = (currentSkinKey === 'doordash' || currentSkinKey === 'black') ? 4 : 0; shrinkCharges = (currentSkinKey === 'luigi' || currentSkinKey === 'black') ? 4 : 0; widenCharges = (currentSkinKey === 'heisenbark' || currentSkinKey === 'black') ? 4 : 0; if (currentSkinKey === 'black' || currentSkinKey === 'tough' || currentSkinKey === 'sherlock') currentLives = (currentSkinKey === 'sherlock' ? 1 : INITIAL_LIVES); else currentLives = 0; updateAbilityButtons(); renderShopItems(); } } else if (collectedStars >= skin.cost) { collectedStars -= skin.cost; availableSkins.push(key); if(!sfxMuted){buySound.currentTime = 0; buySound.play().catch(e => console.warn(e));} if (key === 'employed' && availableSkins.includes(key)) { showGameMessage("Congrats, you finally got a J*b"); } localStorage.setItem('flappyStars', collectedStars); localStorage.setItem('flappySkins', JSON.stringify(availableSkins)); updateMenuStats(); saveUserData(); purchaseOrEquipSkin(key); } } 
              else if (TRAILS[key] && shopCategory === 'trails') { const trail = TRAILS[key]; if (availableTrails.includes(key)) { if (!trail.current) { playClickSound(); for (let k in TRAILS) { TRAILS[k].current = false; } trail.current = true; currentTrailKey = key; localStorage.setItem('currentTrail', key); renderShopItems(); } } else if (collectedStars >= trail.cost) { collectedStars -= trail.cost; availableTrails.push(key); if(!sfxMuted){buySound.currentTime = 0; buySound.play().catch(e => console.warn(e));} localStorage.setItem('flappyStars', collectedStars); localStorage.setItem('flappyTrails', JSON.stringify(availableTrails)); updateMenuStats(); saveUserData(); purchaseOrEquipSkin(key); } }
          }
 
+         // The woof is the dry-food pickup sound (NOT a flap sound). The WOOF switch
+         // in the settings menu turns it on/off.
          function playPowerUpSound() { if(!sfxMuted && !woofMuted) {flapSound.currentTime = 0; flapSound.play().catch(e => console.warn(e));} }
-         // The woof is the game's flap sound: every tap/flap barks, and the WOOF (FLAP)
-         // switch in the settings menu turns this off (it also silences the powerup woof).
-         function playFlapSound() { if(!sfxMuted && !woofMuted) { flapSound.currentTime = 0; flapSound.play().catch(e => console.warn(e)); } }
          function activateDoubleStars() { isDoubleStarsActive = true; doubleStarTimer = POTION_DURATION_FRAMES; } function setGameSpeed(slow) { if (slow) speedMultiplier = 0.7; else speedMultiplier = 1; } function activateSlowMotion() { isSlowMotionActive = true; setGameSpeed(true); slowMoTimer = SLOW_POTION_DURATION_FRAMES; } function useWallDestruction() { if (!(currentSkinKey === 'yellow' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && wallDestroyCharges > 0)) || wallDestroyCharges <= 0) return false; let destroyedSets = 0; for (let i = 0; i < pipes.length; i += 2) { if (destroyedSets >= WALLS_TO_DESTROY) break; if (pipes[i].x > bird.x + bird.MyImg.width && pipes[i].visible) { pipes[i].visible = false; if (pipes[i+1]) pipes[i+1].visible = false; destroyedSets++; } } if (destroyedSets > 0) { wallDestroyCharges--; if(!sfxMuted){explosionSound.currentTime = 0; explosionSound.play().catch(e => console.warn(e));} return true; } return false; }
          function spawnChocolate() { let choc = new MySprite(); choc.MyImg = CHOCO_IMG; choc.x = boss.x; choc.y = boss.y + boss.height/2; choc.velocity_x = -6; choc.velocity_y = (bird.y - boss.y) / 40; chocolates.push(choc); } function spawnErrorSign() { let err = new MySprite(); err.isError = true; err.x = CANVAS_WIDTH; err.y = Math.random() * Math.max(80, CANVAS_HEIGHT - 100); err.velocity_x = -9; err.errW = 60 + Math.random() * 80; err.errH = 60 + Math.random() * 80; errorSigns.push(err); }
 
@@ -2453,7 +2545,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          }
          function updateBoss() {
              if (boss.movingIn) { boss.x -= 2 * speedMultiplier; let bossStopX = Math.min(bird.x + 300, CANVAS_WIDTH - boss.width - 10); if (isBoss3) bossStopX = dragonPerchX(); if (boss.x <= bossStopX) { boss.x = bossStopX; boss.movingIn = false; } let img = (isBoss2) ? BOSS2_IMG : (isBoss3 ? DRAGON_IMG : BOSS_IMG); if (img.complete && img.naturalWidth !== 0) { drawBossGlow(); ctx.drawImage(img, boss.x, boss.y, boss.width, boss.height); } return; }
-             if (bossIntroState < 5) { updateAbilityButtons(); let img = (isBoss2) ? BOSS2_IMG : (isBoss3 ? dragonIntroImg() : BOSS_IMG); if (img.complete && img.naturalWidth !== 0) { drawBossGlow(); ctx.drawImage(img, boss.x, boss.y, boss.width, boss.height); } else { ctx.fillStyle = "red"; ctx.fillRect(boss.x, boss.y, boss.width, boss.height); } if (bossIntroState === 0) { bossIntroState = 1; bossIntroTimer = isBoss3 ? dragonIntroTime(getLangText('b3_1')) : 120; } if (isBoss3) { const dIdx = bossIntroState - 1; const dLine = DRAGON_INTRO_LINES[dIdx]; if (dLine) { const dTxt = getLangText(dLine.text); drawDialogueBox(dTxt); bossIntroTimer--; if (bossIntroTimer <= 0) { if (dIdx >= DRAGON_INTRO_LINES.length - 1) { bossIntroState = 5; if(!musicMuted) { boss1Music.playbackRate = 1.12; boss1Music.play().catch(e=>console.log(e)); } } else { const nextTxt = getLangText(DRAGON_INTRO_LINES[dIdx + 1].text); bossIntroState = bossIntroState + 1; bossIntroTimer = dragonIntroTime(nextTxt); } } } } else if (!isBoss2) { if (bossIntroState === 1) { drawDialogueBox(getLangText('b1_1')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=2; bossIntroTimer=120;} } else if (bossIntroState === 2) { drawDialogueBox(getLangText('b1_2')); bossIntroTimer--; if(bossIntroTimer<=0){ bossIntroState=5; if(!musicMuted) { boss1Music.playbackRate = 1; boss1Music.play().catch(e=>console.log(e)); } } } } else { if (bossIntroState === 1) { drawDialogueBox(getLangText('b2_1')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=2; bossIntroTimer=120;} } else if (bossIntroState === 2) { drawDialogueBox(getLangText('b2_2')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=3; bossIntroTimer=120;} } else if (bossIntroState === 3) { drawDialogueBox(getLangText('b2_3')); bossIntroTimer--; if(bossIntroTimer<=0){ bossIntroState=5; if(!musicMuted) boss2Music.play().catch(e=>console.log(e)); } } } return; } restoreActionBar();
+             if (bossIntroState < 5) { updateAbilityButtons(); let img = (isBoss2) ? BOSS2_IMG : (isBoss3 ? dragonIntroImg() : BOSS_IMG); if (img.complete && img.naturalWidth !== 0) { drawBossGlow(); ctx.drawImage(img, boss.x, boss.y, boss.width, boss.height); } else { ctx.fillStyle = "red"; ctx.fillRect(boss.x, boss.y, boss.width, boss.height); } if (bossIntroSkipLock > 0) bossIntroSkipLock--; if (bossIntroState === 0) { bossIntroState = 1; bossIntroTimer = isBoss3 ? dragonIntroTime(getLangText('b3_1')) : 120; bossIntroSkipLock = 120; } if (isBoss3) { const dIdx = bossIntroState - 1; const dLine = DRAGON_INTRO_LINES[dIdx]; if (dLine) { const dTxt = getLangText(dLine.text); drawDialogueBox(dTxt); bossIntroTimer--; if (bossIntroTimer <= 0) { if (dIdx >= DRAGON_INTRO_LINES.length - 1) { bossIntroState = 5; if(!musicMuted) { boss1Music.playbackRate = 1.12; boss1Music.play().catch(e=>console.log(e)); } } else { const nextTxt = getLangText(DRAGON_INTRO_LINES[dIdx + 1].text); bossIntroState = bossIntroState + 1; bossIntroTimer = dragonIntroTime(nextTxt); } } } } else if (!isBoss2) { if (bossIntroState === 1) { drawDialogueBox(getLangText('b1_1')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=2; bossIntroTimer=120;} } else if (bossIntroState === 2) { drawDialogueBox(getLangText('b1_2')); bossIntroTimer--; if(bossIntroTimer<=0){ bossIntroState=5; if(!musicMuted) { boss1Music.playbackRate = 1; boss1Music.play().catch(e=>console.log(e)); } } } } else { if (bossIntroState === 1) { drawDialogueBox(getLangText('b2_1')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=2; bossIntroTimer=120;} } else if (bossIntroState === 2) { drawDialogueBox(getLangText('b2_2')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=3; bossIntroTimer=120;} } else if (bossIntroState === 3) { drawDialogueBox(getLangText('b2_3')); bossIntroTimer--; if(bossIntroTimer<=0){ bossIntroState=5; if(!musicMuted) boss2Music.play().catch(e=>console.log(e)); } } } return; } restoreActionBar();
              
              boss.y += boss.speedY * speedMultiplier; let bossMaxY = Math.max(60, CANVAS_HEIGHT - boss.height - 50); if (boss.y > bossMaxY || boss.y < 50) boss.speedY *= -1; let fightImg = (isBoss2) ? BOSS2_IMG : (isBoss3 ? DRAGON_IMG : BOSS_IMG); if (!isBoss3 && fightImg.complete && fightImg.naturalWidth !== 0) { drawBossGlow(); ctx.drawImage(fightImg, boss.x, boss.y, boss.width, boss.height); } else if (!isBoss3) { ctx.fillStyle = "red"; ctx.fillRect(boss.x, boss.y, boss.width, boss.height); }
              if (isBoss3) { updateDragonBoss(); } else if (!isBoss2) { if (Math.random() < 0.06) spawnChocolate(); boss.stamina -= 0.1; if (boss.stamina <= 0) { unlockAchievement('monster'); triggerFlash("lime"); showCheatFeedback(getLangText("bossDefeated")); currentLives += 2; victoryTimer = 100; game_mode = 'running'; currentScore = 51; boss1Defeated = true; boss.x = CANVAS_WIDTH + 500; chocolates = []; pipe_spawn_timer = 0; bossIntroState = 0; boss.movingIn = true; boss.stamina = 100; boss1Music.pause(); boss1Music.currentTime = 0; if (!musicMuted) voidMusic.play().catch(e=>console.log(e)); } } else { if (Math.random() < 0.05) { let container = document.getElementById('game-container'); let r = Math.random(); if (r < 0.33) container.className = "upside-down"; else if (r < 0.66) container.className = "shake"; else container.className = ""; } if (errorSignCooldown > 0) errorSignCooldown--; if (errorSignCooldown <= 0 && Math.random() < 0.04 && errorSigns.length < 4) { spawnErrorSign(); errorSignCooldown = 25; } if (deleteBtnTimer > 0) { deleteBtnTimer -= (1000/FPS); if (deleteBtnTimer <= 0) document.getElementById('delete-boss-btn').style.display = 'none'; } else { deleteBtnSpawnTimer += (1000/FPS); if (deleteBtnSpawnTimer > 4000) { document.getElementById('delete-boss-btn').style.display = 'block'; deleteBtnTimer = 1200; deleteBtnSpawnTimer = 0; } } }
@@ -2473,7 +2565,7 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
          window.openFriendChat = function(friendID, friendName) { closeAllModals(); document.getElementById('friendChatModal').style.display = 'flex'; document.getElementById('fc-friend-name').innerText = friendName; document.getElementById('fc-messages').innerHTML = '<div>Loading...</div>'; activeFriendChatID = friendID; const chatID = currentUser.uid < friendID ? `${currentUser.uid}_${friendID}` : `${friendID}_${currentUser.uid}`; if (friendChatListener) friendChatListener(); friendChatListener = db.collection('chats').doc(chatID).collection('messages').orderBy('timestamp', 'asc').limitToLast(20).onSnapshot(snapshot => { const div = document.getElementById('fc-messages'); div.innerHTML = ''; snapshot.forEach(doc => { const msg = doc.data(); const bubble = document.createElement('div'); bubble.className = `fc-msg-bubble ${msg.senderId === currentUser.uid ? 'fc-mine' : 'fc-theirs'}`; bubble.innerText = msg.text; div.appendChild(bubble); }); div.scrollTop = div.scrollHeight; }); }
          window.closeFriendChat = function() { document.getElementById('friendChatModal').style.display = 'none'; if (friendChatListener) friendChatListener(); activeFriendChatID = null; }
          window.sendFriendMessage = async function() { const input = document.getElementById('fc-input'); const text = input.value.trim(); if (!text || !activeFriendChatID) return; const chatID = currentUser.uid < activeFriendChatID ? `${currentUser.uid}_${activeFriendChatID}` : `${activeFriendChatID}_${currentUser.uid}`; try { await db.collection('chats').doc(chatID).collection('messages').add({ text: text, senderId: currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); input.value = ''; } catch(e) { console.error("Msg Error", e); } }
-         window.cancelMatchSearch = function() { playClickSound(); const loader = document.getElementById('temp-online-loader'); if(loader) loader.remove(); if(activeMatchID) { if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } if (myOnlineRole === 'host') { db.collection('matches').doc(activeMatchID).delete().catch(e=>console.log(e)); } else { db.collection('matches').doc(activeMatchID).update({ status: 'ended' }).catch(e=>console.log(e)); } activeMatchID = null; } document.getElementById('user-profile').style.display = 'block'; document.getElementById('landing-page').style.display = 'flex'; game_mode = 'waiting_for_website'; }
+         window.cancelMatchSearch = function() { challengeCancelToken++; playClickSound(); const loader = document.getElementById('temp-online-loader'); if(loader) loader.remove(); if(activeMatchID) { if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } if (myOnlineRole === 'host') { try { db.collection('invites').where('matchId', '==', activeMatchID).get().then(q => { q.forEach(d => d.ref.delete().catch(() => {})); }).catch(() => {}); } catch(e) {} db.collection('matches').doc(activeMatchID).delete().catch(e=>console.log(e)); } else { db.collection('matches').doc(activeMatchID).update({ status: 'ended' }).catch(e=>console.log(e)); } activeMatchID = null; myOnlineRole = null; } document.getElementById('user-profile').style.display = 'block'; document.getElementById('landing-page').style.display = 'flex'; game_mode = 'waiting_for_website'; }
          window.hitBossTwo = function() { if (!isBoss2 || game_mode !== 'boss' || deleteBtnTimer <= 0 || isPaused) return; boss2Hits++; playClickSound(); document.getElementById('delete-boss-btn').style.display = 'none'; deleteBtnTimer = 0; triggerFlash("red"); if (boss2Hits >= BOSS2_MAX_HITS) { game_mode = 'terminal_ending'; window.endingState = 0; window.endingTimer = 150; window.terminalPercent = 0; document.getElementById('game-container').className = ""; boss2Music.pause(); boss2Music.currentTime = 0; } }
 
          function triggerFlash(color) { flashColor = color; flashTimer = 10; }
@@ -2543,7 +2635,7 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
          }
          function listenToActiveMatch() { unsubscribeMatch = db.collection('matches').doc(activeMatchID).onSnapshot((snap) => { const data = snap.data(); if (!data) { if (game_mode === 'online_match') { handleOpponentLeft(); } else { const deadLoader = document.getElementById('temp-online-loader'); if (deadLoader) deadLoader.remove(); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; } return; } /* only REMOTE updates count as opponent presence (our own writes must not) */ if (!snap.metadata.hasPendingWrites) opponentLastSeen = Date.now(); if (myOnlineRole === 'host') { opponentName = data.guestName || "Opponent"; if (data.guestY !== undefined) enemyGhostY = data.guestY; if (data.guestScore !== undefined) enemyGhostScore = data.guestScore; online_score_enemy = data.guestScore || 0; enemyCurrentVisibleScore = online_score_enemy; enemyWins = data.guestWins || 0; myWins = data.hostWins || 0; enemyHasCrashed = data.guestStatus === 'crashed'; } else { opponentName = data.hostName || "Opponent"; if (data.hostY !== undefined) enemyGhostY = data.hostY; if (data.hostScore !== undefined) enemyGhostScore = data.hostScore; online_score_enemy = data.hostScore || 0; enemyCurrentVisibleScore = online_score_enemy; enemyWins = data.hostWins || 0; myWins = data.guestWins || 0; enemyHasCrashed = data.hostStatus === 'crashed'; } if (data.status === 'declined') { const dl = document.getElementById('temp-online-loader'); if (dl) dl.remove(); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } db.collection('matches').doc(activeMatchID).delete().catch(() => {}); activeMatchID = null; myOnlineRole = null; showCheatFeedback(getLangText("challengeDeclined")); quitToMenu(); return; } if (data.status === 'starting' && document.getElementById('temp-online-loader')) { document.getElementById('temp-online-loader').remove(); trophyProcessed = false; startGameLoopOnline(); } if ((data.hostWins || 0) >= 2 || (data.guestWins || 0) >= 2) { endMatchLogic(data); return; } if (data.status === 'ended') { if (game_mode === 'online_match') { handleOpponentLeft(); } else { if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; const staleLoader = document.getElementById('temp-online-loader'); if (staleLoader) staleLoader.remove(); } return; } if (data.round > online_round) { online_round = data.round; resetOnlineRound(); triggerFlash("white"); } if (game_mode === 'online_match') { try { checkRoundResult(); } catch (e) { console.log(e); } } }, (err) => console.error("Match listener error:", err)); }
          
-         window.startOnlineMode = async function() { if (!auth || !currentUser) return alert("You must login to play Online!"); if (!db) return alert("Database offline!"); closeAllModals(); mainMenuMusic.pause(); mainMenuMusic.currentTime = 0; document.getElementById('landing-page').style.display = 'none'; let loadScr = document.createElement('div'); loadScr.id = "temp-online-loader"; loadScr.style.position = "absolute"; loadScr.style.top=0; loadScr.style.left=0; loadScr.style.width="100%"; loadScr.style.height="100%"; loadScr.style.background="black"; loadScr.style.color="white"; loadScr.style.display="flex"; loadScr.style.flexDirection="column"; loadScr.style.justifyContent="center"; loadScr.style.alignItems="center"; loadScr.style.fontFamily="'Press Start 2P'"; loadScr.innerHTML = `<div style="margin-bottom:20px;">${getLangText('searchingOpponent')}</div><div class="loader-spinner" style="width:40px;height:40px;border:4px solid white;border-top:4px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;"></div><button onclick="cancelMatchSearch()" class="btn-yellow" style="padding:10px 20px;font-family:'Press Start 2P';cursor:pointer;">${getLangText('cancel')}</button><style>@keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}</style>`; document.getElementById('game-container').appendChild(loadScr);
+         window.startOnlineMode = async function() { if (!auth || !currentUser) return showGameMessage("You must login to play Online!"); if (!db) return showGameMessage("Database offline!"); closeAllModals(); mainMenuMusic.pause(); mainMenuMusic.currentTime = 0; document.getElementById('landing-page').style.display = 'none'; let loadScr = document.createElement('div'); loadScr.id = "temp-online-loader"; loadScr.style.position = "absolute"; loadScr.style.top=0; loadScr.style.left=0; loadScr.style.width="100%"; loadScr.style.height="100%"; loadScr.style.background="black"; loadScr.style.color="white"; loadScr.style.display="flex"; loadScr.style.flexDirection="column"; loadScr.style.justifyContent="center"; loadScr.style.alignItems="center"; loadScr.style.fontFamily="'Press Start 2P'"; loadScr.innerHTML = `<div style="margin-bottom:20px;">${getLangText('searchingOpponent')}</div><div class="loader-spinner" style="width:40px;height:40px;border:4px solid white;border-top:4px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;"></div><button onclick="cancelMatchSearch()" class="btn-yellow" style="padding:10px 20px;font-family:'Press Start 2P';cursor:pointer;">${getLangText('cancel')}</button><style>@keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}</style>`; document.getElementById('game-container').appendChild(loadScr);
              try {
                 // Look for a match to join. We fetch a few candidates, skip stale/dead ones,
                 // and claim one atomically with a transaction so two guests can never pile
@@ -2569,7 +2661,7 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
                 }
                 if (!joined) { const newMatch = await db.collection('matches').add({ hostId: currentUser.uid, hostName: currentUser.displayName || "Player", status: 'searching', hostScore: 0, guestScore: 0, hostStatus: 'alive', guestStatus: 'alive', round: 1, hostWins: 0, guestWins: 0, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); activeMatchID = newMatch.id; myOnlineRole = 'host'; }
                 listenToActiveMatch();
-            } catch(e) { console.error("Matchmaking error:", e); const loader = document.getElementById('temp-online-loader'); if(loader) loader.remove(); alert("Matchmaking failed. Try again."); quitToMenu(); } }
+            } catch(e) { console.error("Matchmaking error:", e); const loader = document.getElementById('temp-online-loader'); if(loader) loader.remove(); showGameMessage("Matchmaking failed. Try again."); quitToMenu(); } }
 
          function startGameLoopOnline() { game_mode = 'online_match'; reset_game(); online_score_player = 0; online_score_enemy = 0; online_round = 1; myWins = 0; enemyWins = 0; opponentLastSeen = Date.now(); lastOnlineFlush = 0; onlineDirty = true; onlineSyncAccum = 0; resetOnlineRound(); document.getElementById('online-ui').style.display = 'block'; updateOnlineUI(true); document.getElementById('settings-btn').style.display = 'block'; if (!musicMuted) { bgMusic.currentTime = 0; bgMusic.play().catch(e => console.log(e)); } }
          let onlineUICache = {};
@@ -2644,7 +2736,7 @@ window.playClickSound = function() {
              
              bird.x = CANVAS_WIDTH / 3; bird.y = CANVAS_HEIGHT / 2; bird.angle = 0; bird.velocity_y = 0; pipes = []; stars = []; shields = []; potions = []; slowPotions = []; errorSigns = []; trailHistory = [];  currentScore = 0; pipe_spawn_timer = 0; floatingTexts = []; myCanvas.style.filter = "none";
              
-             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; bossIntroState = 0; bossIntroTimer = 0; isBoss2 = false; boss2Hits = 0; isBoss3 = false; dragonDefeated = false; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 0; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; boss.width = 150; boss.height = 150; boss.speedY = 2; boss.hitImg = BOSS_IMG; boss1Music.playbackRate = 1; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; previousBGIndex = 0; transitionType = "normal"; transitionDuration = 0; transitionText = ""; transitionTimer = 0; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; restoreActionBar(); 
+             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; bossIntroState = 0; bossIntroTimer = 0; bossIntroSkipLock = 0; isBoss2 = false; boss2Hits = 0; isBoss3 = false; dragonDefeated = false; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 0; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; boss.width = 150; boss.height = 150; boss.speedY = 2; boss.hitImg = BOSS_IMG; boss1Music.playbackRate = 1; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; previousBGIndex = 0; transitionType = "normal"; transitionDuration = 0; transitionText = ""; transitionTimer = 0; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; restoreActionBar(); 
 
              isSherlockActive = false; sherlockCooldown = 0; sherlockTimer = 0;
              isHrBreakActive = false; hrBreakCooldown = 0; hrBreakTimer = 0;
@@ -2942,17 +3034,18 @@ window.playClickSound = function() {
              }
              
              switch (game_mode) {
-             case 'prestart': game_mode = 'running'; playFlapSound(); break;
+             case 'prestart': game_mode = 'running'; break;
              case 'running': case 'boss': case 'online_match': case 'pvp_shetos':
                  if (game_mode === 'online_match' && myHasCrashed) return; if (game_mode === 'pvp_shetos' && myHasCrashed) return;
-                 // tap/space to skip to the next line of a boss monologue (the timer also runs out on its own)
-                 if (game_mode === 'boss' && bossIntroState >= 1 && bossIntroState < 5) { bossIntroTimer = 0; return; }
+                 // tap/space to skip to the next line of a boss monologue (the timer also runs out on its own).
+                 // The FIRST line is protected for 3 seconds, so mashing to flap right when
+                 // the fight starts can no longer skip the opening dialogue by accident.
+                 if (game_mode === 'boss' && bossIntroState >= 1 && bossIntroState < 5) { if (bossIntroState === 1 && bossIntroSkipLock > 0) return; bossIntroTimer = 0; return; }
                  if (MyEvent.type === 'touchstart' || MyEvent.type === 'mousedown') { 
                      if (MyEvent.type === 'touchstart' && MyEvent.cancelable) {
                          MyEvent.preventDefault(); 
                      }
                      let current_jump = jump_amount; bird.velocity_y = current_jump; 
-                     playFlapSound();
                  }
                  if (MyEvent.type === 'keydown' && MyEvent.keyCode === 68) { useWallDestruction(); } 
                  if (MyEvent.type === 'keydown' && (MyEvent.key === 'Delete' || MyEvent.key === 'Backspace')) { hitBossTwo(); }
@@ -2963,7 +3056,6 @@ window.playClickSound = function() {
                      MyEvent.preventDefault();
                      let current_jump = jump_amount; 
                      bird.velocity_y = current_jump; 
-                     playFlapSound();
                  }
                  break;
              case 'over':
@@ -3051,9 +3143,9 @@ window.playClickSound = function() {
                  }
              }
 
-             checkPowerups(shields, () => { isShieldActive = true; shieldTimer = SHIELD_DURATION_FRAMES; playPowerUpSound(); });
-             checkPowerups(potions, () => { activateDoubleStars(); playPowerUpSound(); });
-             checkPowerups(slowPotions, () => { activateSlowMotion(); playPowerUpSound(); });
+             checkPowerups(shields, () => { isShieldActive = true; shieldTimer = SHIELD_DURATION_FRAMES; });
+             checkPowerups(potions, () => { activateDoubleStars(); });
+             checkPowerups(slowPotions, () => { activateSlowMotion(); });
              checkPowerups(stars, () => {
                  playPowerUpSound();
                  let gain = isDoubleStarsActive ? STAR_VALUE * 2 : STAR_VALUE;
