@@ -73,6 +73,7 @@
         #hrbreak-btn { background: rgba(128, 128, 128, 0.7); }
         #arthur-btn { background: rgba(139, 69, 19, 0.7); }
         #santa-btn { background: rgba(192, 25, 35, 0.8); }
+        #witch-btn { background: rgba(106, 27, 154, 0.8); }
         
         #delete-boss-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 30px; background: red; z-index: 40; display: none; padding: 20px; border: 5px solid white; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.1); } 100% { transform: translate(-50%, -50%) scale(1); } }
@@ -264,6 +265,7 @@
              <button id="hrbreak-btn" data-i18n="hrBreakBtn" class="game-action-btn" onclick="triggerHRBreak()">HR BREAK</button>
             <button id="arthur-btn" data-i18n="deadEyeBtn" class="game-action-btn" onclick="triggerArthur()">DEAD EYE</button>
             <button id="santa-btn" data-i18n="santaBtn" class="game-action-btn" onclick="triggerSantaPower()">GIFT</button>
+            <button id="witch-btn" data-i18n="witchBtn" class="game-action-btn" onclick="triggerWitchPower()">MAGIC</button>
         </div>
 
          <div id="cheat-feedback">CODE REDEEMED!</div>
@@ -806,7 +808,7 @@
     dnd: "DND", dndInfo: "Do Not Disturb: mutes ALL game music and sound effects so your own music keeps playing uninterrupted.",
     profileBtn: "STATS", charactersTitle: "Characters", fromFriend: "from", challengeDeclined: "CHALLENGE DECLINED", giftSent: "GIFT SENT!",
     splash: "Splash!", achievements: "Achievements", characterInfo: "Character Info", noDescription: "No description available.", endlessLeaderboard: "Endless Leaderboard", allTime: "ALL TIME", weekly: "WEEKLY", rank: "Rank", player: "Player", score: "Score", loading: "Loading...", offlineMode: "Offline Mode", noScores: "No scores yet.", errorLoading: "Error loading scores.", friendsTitle: "Friends", enterUsername: "Enter Exact Username", add: "ADD", loadingFriends: "Loading Friends...", noFriends: "No friends added yet.", chat: "CHAT", donate: "DONATE", challenge: "CHALLENGE", redeemCode: "REDEEM CODE", secretCode: "Enter your secret code here. One-time use only!", enterCode: "Enter code...", submit: "SUBMIT",
-    privacyLink: "Privacy Policy", bugsAdvice: "Bugs/Advice:", login: "Login", logout: "Logout", dash: "DASH", shrink: "SHRINK", widen: "WIDEN", bomb: "BOMB", predictBtn: "PREDICT", hrBreakBtn: "HR BREAK", deadEyeBtn: "DEAD EYE", santaBtn: "GIFT", sleighBlitzMsg: "SLEIGH BLITZ!", niceFilterMsg: "NAUGHTY OR NICE FILTER!", delete: "DELETE", downloading: "Downloading Assets...",
+    privacyLink: "Privacy Policy", bugsAdvice: "Bugs/Advice:", login: "Login", logout: "Logout", dash: "DASH", shrink: "SHRINK", widen: "WIDEN", bomb: "BOMB", predictBtn: "PREDICT", hrBreakBtn: "HR BREAK", deadEyeBtn: "DEAD EYE", santaBtn: "GIFT", sleighBlitzMsg: "SLEIGH BLITZ!", niceFilterMsg: "NAUGHTY OR NICE FILTER!", witchBtn: "MAGIC", broomMsg: "WITCH'S BROOM BOOST!", batsMsg: "BAT'S PROTECTION!", batsLabel: "BATS: ", delete: "DELETE", downloading: "Downloading Assets...",
     scoreLabel: "Score: ", endlessLabel: "Endless: ", error: "ERROR", foodLabel: "Food: ", shield: "SHIELD", doubleDryfood: "DOUBLE DRYFOOD", slowMotion: "SLOW MOTION", livesLabel: "Lives: ", godMode: "GOD MODE", bombsLabel: "Bombs: ", dashesLabel: "Dashes: ", shrinksLabel: "Shrinks: ", widensLabel: "Widens: ", victory: "VICTORY!", go: "GO!", waitingShetos: "Waiting for Shetos...", waitingOpponent: "Waiting for Opponent...", tapMenu: "Tap to return to Menu", unknownArea: "UNKNOWN AREA", active: "ACTIVE", autoPilot: "AUTO-PILOT", searching: "Searching...",
     area0: "The Beginning", area1: "The SKY", area2: "The SUNSET", area3: "The NIGHT", area4: "The VOID",
     syncingData: "SYNCING DATA...", dataSynced: "DATA SYNCED!", bossDefeated: "BOSS DEFEATED!", boss2Defeated: "BOSS 2 DEFEATED!", opponentDisconnected: "OPPONENT DISCONNECTED!", customEquipped: "CUSTOM EQUIPPED!", itemSold: "ITEM SOLD!", maxToggles: "MAX 3 TOGGLES ALLOWED", warpAhead: "WARP AHEAD! +10", warpBack: "WARP BACK! -10", endlessMode: "ENDLESS MODE!", codeRedeemed: "CODE REDEEMED!", unlimitedAir: "you got unlimited amount of air", searchingOpponent: "SEARCHING FOR OPPONENT...", waitingFor: "WAITING FOR", cancel: "CANCEL", challengedYou: "CHALLENGED YOU!",
@@ -820,7 +822,7 @@
     friend: "Freund", typeMessage: "Nachricht eingeben...", acceptChallenge: "Nimmst du die Herausforderung an?", accept: "ANNEHMEN", decline: "ABLEHNEN",
     unlockLabText: "Schalte die Macht frei, um<br>deinen ultimativen Custom Shetos zu bauen.", labCost: "Kosten: 1500 Trockenfutter", unlockLab: "LABOR FREISCHALTEN", pointsAvailable: "VERFÜGBARE PUNKTE:", baseAppearance: "GRUNDAUSSEHEN", abilities: "FÄHIGKEITEN (Max 10 Gesamt) - Max 3 aktivieren", lives: "Leben (Herzen)", dashes: "Sprints", bombs: "Bomben", shrinks: "Schrumpfen", widenGap: "Lücke vergrößern", magnetizeFood: "Futter magnetisieren", predict: "Vorhersagen (Autopilot)", hrBreak: "HR-Pause (Unverwundbarkeit)", deadEye: "Todesblick (Zielen)", customTrailColors: "INDIVIDUELLE SPURFARBEN", baseColor: "Basisfarbe", shieldColor: "Schildfarbe", damageColor: "Schadensfarbe", potionColor: "Trankfarbe", slowColor: "Zeitlupenfarbe", foodColor: "Futterfarbe", saveEquip: "SPEICHERN & AUSRÜSTEN",
     splash: "Splash!", achievements: "Erfolge", characterInfo: "Charakterinfo", noDescription: "Keine Beschreibung verfügbar.", endlessLeaderboard: "Endlos-Bestenliste", allTime: "ALLZEIT", weekly: "WÖCHENTLICH", rank: "Rang", player: "Spieler", score: "Punkte", loading: "Lädt...", offlineMode: "Offline-Modus", noScores: "Noch keine Punkte.", errorLoading: "Fehler beim Laden der Punkte.", friendsTitle: "Freunde", enterUsername: "Exakten Benutzernamen eingeben", add: "HINZUFÜGEN", loadingFriends: "Lade Freunde...", noFriends: "Noch keine Freunde hinzugefügt.", chat: "CHAT", donate: "SPENDEN", challenge: "HERAUSFORDERN", redeemCode: "CODE EINLÖSEN", secretCode: "Gib hier deinen geheimen Code ein. Nur einmal verwendbar!", enterCode: "Code eingeben...", submit: "ABSENDEN",
-    privacyLink: "Datenschutzerklärung", bugsAdvice: "Fehler/Rat:", login: "Anmelden", logout: "Abmelden", dash: "SPRINT", shrink: "SCHRUMPFEN", widen: "ERWEITERN", bomb: "BOMBE", predictBtn: "VORHERSAGEN", hrBreakBtn: "HR-PAUSE", deadEyeBtn: "TODESBLICK", santaBtn: "GESCHENK", sleighBlitzMsg: "SCHLITTEN-BLITZ!", niceFilterMsg: "BÖSE ODER LIEB-FILTER!", delete: "LÖSCHEN", downloading: "Assets werden geladen...",
+    privacyLink: "Datenschutzerklärung", bugsAdvice: "Fehler/Rat:", login: "Anmelden", logout: "Abmelden", dash: "SPRINT", shrink: "SCHRUMPFEN", widen: "ERWEITERN", bomb: "BOMBE", predictBtn: "VORHERSAGEN", hrBreakBtn: "HR-PAUSE", deadEyeBtn: "TODESBLICK", santaBtn: "GESCHENK", sleighBlitzMsg: "SCHLITTEN-BLITZ!", niceFilterMsg: "BÖSE ODER LIEB-FILTER!", witchBtn: "MAGIE", broomMsg: "HEXENBESEN-SCHUB!", batsMsg: "FLEDERMAUS-SCHUTZ!", batsLabel: "FLEDERMÄUSE: ", delete: "LÖSCHEN", downloading: "Assets werden geladen...",
     scoreLabel: "Punkte: ", endlessLabel: "Endlos: ", error: "FEHLER", foodLabel: "Futter: ", shield: "SCHILD", doubleDryfood: "DOPPELTROFUTTER", slowMotion: "ZEITLUPE", livesLabel: "Leben: ", godMode: "GOTT-MODUS", bombsLabel: "Bomben: ", dashesLabel: "Sprints: ", shrinksLabel: "Schrumpfen: ", widensLabel: "Erweitern: ", victory: "SIEG!", go: "LOS!", waitingShetos: "Warte auf Shetos...", waitingOpponent: "Warte auf Gegner...", tapMenu: "Tippen, um zum Menü zurückzukehren", unknownArea: "UNBEKANNTES GEBIET", active: "AKTIV", autoPilot: "AUTOPILOT", searching: "Suche...",
     area0: "Der Anfang", area1: "Der HIMMEL", area2: "Der SONNENUNTERGANG", area3: "Die NACHT", area4: "Die LEERE",
     syncingData: "DATEN WERDEN SYNCHRONISIERT...", dataSynced: "DATEN SYNCHRONISIERT!", bossDefeated: "BOSS BESIEGT!", boss2Defeated: "BOSS 2 BESIEGT!", opponentDisconnected: "GEGNER GETRENNT!", customEquipped: "CUSTOM AUSGERÜSTET!", itemSold: "ARTIKEL VERKAUFT!", maxToggles: "MAX 3 SCHALTER ERLAUBT", warpAhead: "VORWÄRTS GEWARPT! +10", warpBack: "ZURÜCK GEWARPT! -10", endlessMode: "ENDLOSMODUS!", codeRedeemed: "CODE EINGELÖST!", unlimitedAir: "du hast unbegrenzt Luft bekommen", searchingOpponent: "SUCHE GEGNER...", waitingFor: "WARTE AUF", cancel: "ABBRECHEN", challengedYou: "FORDERT DICH HERAUS!",
@@ -834,7 +836,7 @@
     friend: "صديق", typeMessage: "اكتب رسالة...", acceptChallenge: "هل تقبل التحدي؟", accept: "قبول", decline: "رفض",
     unlockLabText: "افتح القوة لبناء<br>شيتوس المخصص النهائي.", labCost: "التكلفة: 1500 طعام جاف", unlockLab: "فتح المختبر", pointsAvailable: "النقاط المتاحة:", baseAppearance: "المظهر الأساسي", abilities: "القدرات (الحد الأقصى 10) - فعّل 3 كحد أقصى", lives: "الأرواح (قلوب)", dashes: "الاندفاعات", bombs: "القنابل", shrinks: "الانكماش", widenGap: "توسيع الفجوة", magnetizeFood: "جذب الطعام", predict: "التنبؤ (الطيار الآلي)", hrBreak: "استراحة (حصانة)", deadEye: "العين القاتلة (التصويب)", customTrailColors: "ألوان الأثر المخصصة", baseColor: "اللون الأساسي", shieldColor: "لون الدرع", damageColor: "لون الضرر", potionColor: "لون الجرعة", slowColor: "لون البطء", foodColor: "لون الطعام", saveEquip: "حفظ وتجهيز المخصص",
     splash: "دفقة!", achievements: "الإنجازات", characterInfo: "معلومات الشخصية", noDescription: "لا يوجد وصف متاح.", endlessLeaderboard: "لوحة متصدرين الوضع اللانهائي", allTime: "كل الأوقات", weekly: "أسبوعي", rank: "الترتيب", player: "اللاعب", score: "النقاط", loading: "جارٍ التحميل...", offlineMode: "وضع غير متصل", noScores: "لا توجد نتائج بعد.", errorLoading: "خطأ في تحميل النتائج.", friendsTitle: "الأصدقاء", enterUsername: "أدخل اسم المستخدم بالضبط", add: "إضافة", loadingFriends: "جارٍ تحميل الأصدقاء...", noFriends: "لم تتم إضافة أصدقاء بعد.", chat: "محادثة", donate: "تبرع", challenge: "تحدي", redeemCode: "استرداد الرمز", secretCode: "أدخل رمزك السري هنا. للاستخدام مرة واحدة فقط!", enterCode: "أدخل الرمز...", submit: "إرسال",
-    privacyLink: "سياسة الخصوصية", bugsAdvice: "الأخطاء/النصيحة:", login: "تسجيل الدخول", logout: "تسجيل الخروج", dash: "اندفاع", shrink: "انكماش", widen: "توسيع", bomb: "قنبلة", predictBtn: "تنبؤ", hrBreakBtn: "استراحة", deadEyeBtn: "عين قاتلة", santaBtn: "هدية", sleighBlitzMsg: "اندفاع الزلاجة!", niceFilterMsg: "شقي أم لطيف!", delete: "حذف", downloading: "جارٍ تحميل الأصول...",
+    privacyLink: "سياسة الخصوصية", bugsAdvice: "الأخطاء/النصيحة:", login: "تسجيل الدخول", logout: "تسجيل الخروج", dash: "اندفاع", shrink: "انكماش", widen: "توسيع", bomb: "قنبلة", predictBtn: "تنبؤ", hrBreakBtn: "استراحة", deadEyeBtn: "عين قاتلة", santaBtn: "هدية", sleighBlitzMsg: "اندفاع الزلاجة!", niceFilterMsg: "شقي أم لطيف!", witchBtn: "سحر", broomMsg: "اندفاع مكنسة الساحرة!", batsMsg: "حماية الخفافيش!", batsLabel: "الخفافيش: ", delete: "حذف", downloading: "جارٍ تحميل الأصول...",
     scoreLabel: "النقاط: ", endlessLabel: "لا نهائي: ", error: "خطأ", foodLabel: "الطعام: ", shield: "درع", doubleDryfood: "طعام جاف مضاعف", slowMotion: "حركة بطيئة", livesLabel: "الأرواح: ", godMode: "وضع الإله", bombsLabel: "القنابل: ", dashesLabel: "الاندفاعات: ", shrinksLabel: "الانكماش: ", widensLabel: "التوسيع: ", victory: "النصر!", go: "انطلق!", waitingShetos: "في انتظار شيتوس...", waitingOpponent: "في انتظار الخصم...", tapMenu: "اضغط للعودة إلى القائمة", unknownArea: "منطقة غير معروفة", active: "نشط", autoPilot: "الطيار الآلي", searching: "جارٍ البحث...",
     area0: "البداية", area1: "السماء", area2: "الغروب", area3: "الليل", area4: "الفراغ",
     syncingData: "جارٍ مزامنة البيانات...", dataSynced: "تمت مزامنة البيانات!", bossDefeated: "تم هزيمة الزعيم!", boss2Defeated: "تم هزيمة الزعيم 2!", opponentDisconnected: "انقطع الخصم!", customEquipped: "تم تجهيز المخصص!", itemSold: "تم بيع العنصر!", maxToggles: "مسموح بـ 3 مفاتيح كحد أقصى", warpAhead: "قفزة للأمام! +10", warpBack: "قفزة للخلف! -10", endlessMode: "الوضع اللانهائي!", codeRedeemed: "تم استرداد الرمز!", unlimitedAir: "حصلت على كمية غير محدودة من الهواء", searchingOpponent: "جارٍ البحث عن خصم...", waitingFor: "في انتظار", cancel: "إلغاء", challengedYou: "تحداك!",
@@ -848,7 +850,7 @@
     friend: "Amico", typeMessage: "Scrivi un messaggio...", acceptChallenge: "Accetti la sfida?", accept: "ACCETTA", decline: "RIFIUTA",
     unlockLabText: "Sblocca il potere per costruire<br>il tuo Shetos personalizzato definitivo.", labCost: "Costo: 1500 Cibo Secco", unlockLab: "SBLOCCA LAB", pointsAvailable: "PUNTI DISPONIBILI:", baseAppearance: "ASPETTO BASE", abilities: "ABILITÀ (Max 10 Totali) - Attiva Max 3", lives: "Vite (Cuori)", dashes: "Scatti", bombs: "Bombe", shrinks: "Rimpicciolimenti", widenGap: "Allarga il varco", magnetizeFood: "Magnetizza il cibo", predict: "Prevedi (Pilota automatico)", hrBreak: "Pausa HR (Invincibilità)", deadEye: "Occhio mortale (Mira)", customTrailColors: "COLORI SCIA PERSONALIZZATI", baseColor: "Colore base", shieldColor: "Colore scudo", damageColor: "Colore danno", potionColor: "Colore pozione", slowColor: "Colore rallentamento", foodColor: "Colore cibo", saveEquip: "SALVA & EQUIPAGGIA",
     splash: "Splash!", achievements: "Obiettivi", characterInfo: "Info personaggio", noDescription: "Nessuna descrizione disponibile.", endlessLeaderboard: "Classifica Infinita", allTime: "SEMPRE", weekly: "SETTIMANALE", rank: "Posizione", player: "Giocatore", score: "Punteggio", loading: "Caricamento...", offlineMode: "Modalità offline", noScores: "Nessun punteggio ancora.", errorLoading: "Errore nel caricamento dei punteggi.", friendsTitle: "Amici", enterUsername: "Inserisci il nome utente esatto", add: "AGGIUNGI", loadingFriends: "Caricamento amici...", noFriends: "Nessun amico aggiunto.", chat: "CHAT", donate: "DONA", challenge: "SFIDA", redeemCode: "RISCATTA CODICE", secretCode: "Inserisci il tuo codice segreto qui. Usabile una sola volta!", enterCode: "Inserisci il codice...", submit: "INVIA",
-    privacyLink: "Informativa sulla privacy", bugsAdvice: "Bug/Consigli:", login: "Accedi", logout: "Esci", dash: "SCATTO", shrink: "RIMPICCIOLISCI", widen: "ALLARGA", bomb: "BOMBA", predictBtn: "PREVEDI", hrBreakBtn: "PAUSA HR", deadEyeBtn: "OCCHIO MORTALE", santaBtn: "REGALO", sleighBlitzMsg: "SLITTA BLITZ!", niceFilterMsg: "CATTIVO O BUONO!", delete: "ELIMINA", downloading: "Download risorse...",
+    privacyLink: "Informativa sulla privacy", bugsAdvice: "Bug/Consigli:", login: "Accedi", logout: "Esci", dash: "SCATTO", shrink: "RIMPICCIOLISCI", widen: "ALLARGA", bomb: "BOMBA", predictBtn: "PREVEDI", hrBreakBtn: "PAUSA HR", deadEyeBtn: "OCCHIO MORTALE", santaBtn: "REGALO", sleighBlitzMsg: "SLITTA BLITZ!", niceFilterMsg: "CATTIVO O BUONO!", witchBtn: "MAGIA", broomMsg: "SCOPA DELLA STREGA!", batsMsg: "PROTEZIONE DEI PIPISTRELLI!", batsLabel: "PIPISTRELLI: ", delete: "ELIMINA", downloading: "Download risorse...",
     scoreLabel: "Punteggio: ", endlessLabel: "Infinito: ", error: "ERRORE", foodLabel: "Cibo: ", shield: "SCUDO", doubleDryfood: "CIBO SECCO DOPPIO", slowMotion: "RALLENTATORE", livesLabel: "Vite: ", godMode: "MODALITÀ DIO", bombsLabel: "Bombe: ", dashesLabel: "Scatti: ", shrinksLabel: "Rimpicciolimenti: ", widensLabel: "Allargamenti: ", victory: "VITTORIA!", go: "VIA!", waitingShetos: "In attesa di Shetos...", waitingOpponent: "In attesa dell'avversario...", tapMenu: "Tocca per tornare al menu", unknownArea: "ZONA SCONOSCIUTA", active: "ATTIVO", autoPilot: "PILOTA AUTOMATICO", searching: "Ricerca...",
     area0: "L'inizio", area1: "Il CIELO", area2: "Il TRAMONTO", area3: "La NOTTE", area4: "Il VUOTO",
     syncingData: "SINCRONIZZAZIONE DATI...", dataSynced: "DATI SINCRONIZZATI!", bossDefeated: "BOSS SCONFITTO!", boss2Defeated: "BOSS 2 SCONFITTO!", opponentDisconnected: "AVVERSARIO DISCONNESSO!", customEquipped: "PERSONALIZZATO EQUIPAGGIATO!", itemSold: "OGGETTO VENDUTO!", maxToggles: "MAX 3 INTERRUTTORI CONSENTITI", warpAhead: "AVANZI! +10", warpBack: "INDIETRO! -10", endlessMode: "MODALITÀ INFINITA!", codeRedeemed: "CODICE RISCATTATO!", unlimitedAir: "hai ottenuto aria illimitata", searchingOpponent: "CERCO UN AVVERSARIO...", waitingFor: "IN ATTESA DI", cancel: "ANNULLA", challengedYou: "TI HA SFIDATO!",
@@ -950,10 +952,10 @@
              'boss.png', 'boss_2.png', 'player.png', 'chocolate.png', 'shield.png', 'player_shielded.png',
              'potion.png', 'slow_potion.png', 'dryfood.png', 'doordash_cheetos.png', 'luigi_shetos.png', 'heisen_bark.png', 
              'red.png', 'wall.png',
-            'sherlock.png', 'employed.png', 'arthur.png', 'santa_shetos.png', 
+            'sherlock.png', 'employed.png', 'arthur.png', 'santa_shetos.png', 'witch_shetos.png', 
             'big_player.png', 'big_player_rich.png', 'big_employed.png', 'big_doordash_cheetos.png', 'big_arthur.png',
             'big_luigi_shetos.png', 'big_sherlock.png', 'big_heisen_bark.png', 'big_player_yellow.png', 'big_player_black.png',
-            'big_santa_shetos.png',
+            'big_santa_shetos.png', 'big_witch_shetos.png',
              'bg1.png', 'bg2.png', 'bg3.png', 'bg4.png', 'bg5.png',
              'main_menu.mp3', 'woof.mp3', 'bg_song.mp3', 'void.mp3', 'song_connector.mp3', 'alarm_clock.mp3',
              'breathing.mp3', 'shield_breaking.mp3', 'damage.mp3', 'explosion.mp3', 'button.mp3', 'buy.mp3',
@@ -1039,6 +1041,12 @@
          let isNiceFilterActive = false; let niceFilterTimer = 0; // Naughty or Nice: 7s window in which boss throws can turn nice
          let nicePipeQuota = 0;                       // pipe pairs still to be converted for spawns that happen after activation
          let pipePairCounter = 0;                     // groups top+bottom pipe of one obstacle into a pair
+         // --- WITCH SHETOS: zone-decided power (before SUNSET = broom glide, SUNSET+ = bats), 30s cooldown after the power ends ---
+         let witchCooldown = 0;
+         let isBroomActive = false; let broomTimer = 0;
+         let isBatsActive = false; let batsTimer = 0; let witchBats = []; let witchBlockCd = 0;
+         const BROOM_GLIDE_FALL = 1.2; const BROOM_MAX_FALL = 2.4; const BROOM_MAX_RISE = 3.2;
+         const SUNSET_AREA = 2;                       // "The SUNSET" is area index 2 (bg3); bats unlock from here on
 
          try {
              if (firebaseConfig.apiKey && typeof firebase !== 'undefined') {
@@ -1878,6 +1886,7 @@ window.triggerPvpTrashTalk = async function() {
              'luigi':      { src: 'luigi_shetos.png', cost: 250, current: false, name: 'Luigi Shetos', desc: 'Can SHRINK for 4 sec (Press S). Starts with 4 uses.' },
              'sherlock':   { src: 'sherlock.png', cost: 250, current: false, name: 'Sherlock Shetos', desc: 'Engages Auto-Pilot and dodges everything. 6s Duration. 15s Cooldown.' },
              'heisenbark': { src: 'heisen_bark.png', cost: 260, current: false, name: 'Heisenbark Shetos', desc: 'Widens gaps 2x for 6s (Press W). Side effect: Screen blinks. 4 uses.' },
+            'witch':      { src: 'witch_shetos.png', cost: 260, current: false, name: 'Witch Shetos', desc: 'Hocus pocus! MAGIC (Press F): before THE SUNSET -> WITCH\'S BROOM BOOST (12s smooth steady glide instead of sharp flap-falls); in THE SUNSET or later -> BAT\'S PROTECTION (4 circling bats block any pipe/boss hit for 15s, then fly away). 30s Cooldown.' },
              'yellow':     { src: 'player_yellow.png', cost: 300, current: false, name: 'Terrorist Shetos', desc: 'Can DESTROY walls (Press D). Starts with 5 Bombs.' }, 
              'black':      { src: 'player_black.png', cost: 700, current: false, name: 'Legendary Shetos', desc: 'ALL POWERS COMBINED!\n3 Lives, Dash, 5 Bombs, Shrink, Widen, Magnet.' },
              'custom':     { src: 'player.png', cost: 0, current: false, name: 'Custom Shetos', desc: 'Your personal Lab creation.' }
@@ -1948,6 +1957,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              ctx.translate(this.x + offsetX, this.y + offsetY); ctx.rotate((this.angle * Math.PI) / 180); if (this.flipV) ctx.scale(1, -1); if (this.flipH) ctx.scale(-1, 1); if (this === bird && isShrunk) ctx.scale(0.5, 0.5);
             if (isDashActive && this === bird) { ctx.globalAlpha = 0.5; } if (isHrBreakActive && this === bird) { ctx.globalAlpha = 0.5; } 
             if (this === bird && isSleighActive && this.visible) { drawSleighUnderBird(); }   // Santa rides the sleigh (drawn beneath him)
+            if (this === bird && isBroomActive && this.visible) { drawBroomUnderBird(); }   // the witch rides her broom (drawn beneath her)
             if (this.visible && !this.color) { if (imgReady) { ctx.drawImage(this.MyImg, -drawWidth / 2, -drawHeight / 2); } else { ctx.fillStyle = "#FF00FF"; ctx.fillRect(-20, -20, 40, 40); } }
             if (this.nice && this.visible && this.MyImg !== pipe_piece) {   // glowing green "Nice" tint on converted boss throws
                 ctx.save(); ctx.globalAlpha = 0.35 + 0.2 * Math.sin(Date.now() / 150); ctx.fillStyle = '#4dff88'; ctx.shadowColor = '#4dff88'; ctx.shadowBlur = 14; ctx.fillRect(-drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight); ctx.restore();
@@ -2055,6 +2065,13 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
 
          function make_bird_slow_and_fall() { 
              bird.x = CANVAS_WIDTH / 3; bird.velocity_x = 0;
+             if (isBroomActive) {   // Witch's Broom Boost: smooth steady glide, no sharp flap-falls
+                 bird.velocity_y += (BROOM_GLIDE_FALL - bird.velocity_y) * 0.10;
+                 if (bird.velocity_y > BROOM_MAX_FALL) bird.velocity_y = BROOM_MAX_FALL;
+                 if (bird.velocity_y < -BROOM_MAX_RISE) bird.velocity_y = -BROOM_MAX_RISE;
+                 bird.angle = 0;
+                 return;
+             }
              let current_accel = acceleration; let current_max = max_fall_speed; current_accel = Math.abs(current_accel); current_max = Math.abs(current_max); if (bird.velocity_y < current_max) { bird.velocity_y += current_accel; } if (bird.velocity_y > current_max) { bird.velocity_y = current_max; } bird.angle = 0; 
          }
 
@@ -2088,7 +2105,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          window.togglePause = function() { playClickSound(); if (game_mode === 'waiting_for_website') { let menu = document.getElementById('pause-menu'); if(menu.style.display === 'flex') { menu.style.display = 'none'; } else { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'none'; } return; } if (game_mode === 'online_match' || game_mode === 'pvp_shetos') { let menu = document.getElementById('pause-menu'); if(menu.style.display === 'flex') { menu.style.display = 'none'; } else { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'block'; } return; } isPaused = !isPaused; let menu = document.getElementById('pause-menu'); if (isPaused) { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'block'; if (game_mode === 'running' || game_mode === 'boss') { bgMusic.pause(); voidMusic.pause(); breathingSound.pause(); boss1Music.pause(); boss2Music.pause(); connectorMusic.pause(); } } else { menu.style.display = 'none'; if (!musicMuted && (game_mode === 'running' || game_mode === 'boss')) { if (game_mode === 'boss') { if (!isBoss2) boss1Music.play().catch(e=>console.log(e)); else boss2Music.play().catch(e=>console.log(e)); } else { if (currentBGIndex === 4) voidMusic.play(); else if(connectorMusic.currentTime > 0 && !connectorMusic.ended) connectorMusic.play(); else bgMusic.play(); } } } }
          window.quitToMenu = function() { restoreActionBar(); document.getElementById('user-profile').style.display = 'block'; bgMusic.pause(); bgMusic.currentTime = 0; voidMusic.pause(); voidMusic.currentTime = 0; connectorMusic.pause(); connectorMusic.currentTime = 0; boss1Music.pause(); boss1Music.currentTime = 0; boss2Music.pause(); boss2Music.currentTime = 0; breathingSound.pause(); breathingSound.currentTime = 0; const loader = document.getElementById('temp-online-loader'); if(loader) loader.remove(); if (activeMatchID) { db.collection('matches').doc(activeMatchID).update({ status: 'ended' }).catch(e=>console.log(e)); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; } isPaused = false; document.getElementById('pause-menu').style.display = 'none'; document.getElementById('online-ui').style.display = 'none'; document.getElementById('settings-btn').style.display = 'block'; 
              myCanvas.width = CANVAS_WIDTH; myCanvas.height = CANVAS_HEIGHT; let container = document.getElementById('game-container'); container.classList.remove('portrait-shake'); myCanvas.style.filter = "none";
-             document.getElementById('landing-page').style.display = 'flex'; updateMenuStats(); game_mode = 'waiting_for_website'; reset_game(); document.getElementById('user-profile').style.display = 'block'; // boot lands on the main menu: login/logout visible document.getElementById('dash-btn').style.display = 'none'; document.getElementById('bomb-btn').style.display = 'none'; document.getElementById('shrink-btn').style.display = 'none'; document.getElementById('widen-btn').style.display = 'none'; document.getElementById('sherlock-btn').style.display = 'none'; document.getElementById('hrbreak-btn').style.display = 'none'; document.getElementById('arthur-btn').style.display = 'none'; document.getElementById('santa-btn').style.display = 'none';
+             document.getElementById('landing-page').style.display = 'flex'; updateMenuStats(); game_mode = 'waiting_for_website'; reset_game(); document.getElementById('user-profile').style.display = 'block'; // boot lands on the main menu: login/logout visible document.getElementById('dash-btn').style.display = 'none'; document.getElementById('bomb-btn').style.display = 'none'; document.getElementById('shrink-btn').style.display = 'none'; document.getElementById('widen-btn').style.display = 'none'; document.getElementById('sherlock-btn').style.display = 'none'; document.getElementById('hrbreak-btn').style.display = 'none'; document.getElementById('arthur-btn').style.display = 'none'; document.getElementById('santa-btn').style.display = 'none'; document.getElementById('witch-btn').style.display = 'none';
              currentBGIndex = 0; ctx.fillStyle = "#041820"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); if(!musicMuted) mainMenuMusic.play().catch(e => console.log(e)); window.updateSplashText(); applyScale(); setTimeout(() => { try { showQueuedInvite(); } catch(e) {} }, 400); }
 
          window.openShopFromMenu = function() { 
@@ -2433,6 +2450,98 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              ctx.restore();
          }
 
+         // ======================= WITCH SHETOS =======================
+         // One button (MAGIC / press F), 30s cooldown that starts when the power ends.
+         // The ZONE decides the effect: before THE SUNSET -> Broom Boost, SUNSET or later -> Bats.
+         window.triggerWitchPower = function() {
+             if (currentSkinKey !== 'witch' || witchCooldown > 0 || isBroomActive || isBatsActive || isPaused || (game_mode !== 'running' && game_mode !== 'boss')) return;
+             playClickSound();
+             if (currentBGIndex >= SUNSET_AREA) {
+                 activateBatsProtection();
+             } else {
+                 // --- WITCH'S BROOM BOOST: 12s of smooth, steady gliding ---
+                 isBroomActive = true; broomTimer = 12 * FPS;
+                 if (!sfxMuted) { dashSound.currentTime = 0; dashSound.play().catch(e => console.warn(e)); }
+                 triggerFlash("rgba(156, 39, 176, 0.30)");
+                 showCheatFeedback(getLangText("broomMsg"));
+             }
+         };
+
+         // Flapping while on the broom nudges the glide instead of snapping the velocity.
+         function flapBird() {
+             if (isBroomActive) { bird.velocity_y = Math.max(bird.velocity_y - 2.6, -BROOM_MAX_RISE); }
+             else { bird.velocity_y = jump_amount; }
+         }
+
+         // Pixel broomstick drawn under the bird while the Broom Boost runs (bird-local space).
+         function drawBroomUnderBird() {
+             const t = Date.now() / 110;
+             ctx.save();
+             for (let i = 0; i < 4; i++) {   // little magic sparkles trailing the bristles
+                 const sx = -46 - i * 8 - (t % 8); const sy = 16 + Math.sin(t * 0.6 + i * 1.9) * 4;
+                 ctx.globalAlpha = Math.max(0.1, 0.7 - i * 0.15);
+                 ctx.fillStyle = (i % 2) ? '#e1bee7' : '#bf00ff';
+                 ctx.fillRect(sx, sy, 4, 2);
+             }
+             ctx.globalAlpha = 1;
+             ctx.fillStyle = '#8d6e63'; ctx.fillRect(-38, 14, 72, 5);        // handle
+             ctx.fillStyle = '#5d4037'; ctx.fillRect(-38, 17, 72, 2);
+             ctx.fillStyle = '#d7a86e';                                      // straw bristles
+             ctx.fillRect(-52, 10, 14, 13);
+             ctx.fillStyle = '#b9834f'; ctx.fillRect(-56, 12, 6, 9);
+             ctx.fillStyle = '#7b1fa2'; ctx.fillRect(-40, 11, 5, 11);       // binding ribbon
+             ctx.restore();
+         }
+
+         // --- BAT'S PROTECTION: 4 bats circle the player and block any hit for 15s ---
+         function activateBatsProtection() {
+             isBatsActive = true; batsTimer = 15 * FPS; witchBats = [];
+             for (let i = 0; i < 4; i++) witchBats.push({ baseAng: i * Math.PI / 2, state: 'orbit', x: bird.x, y: bird.y, flap: Math.random() * 6 });
+             playDragonSfx('blue_bolt.mp3', 1.4);
+             triggerFlash("rgba(80, 40, 120, 0.35)");
+             showCheatFeedback(getLangText("batsMsg"));
+         }
+         function batsRemaining() { let n = 0; for (let i = 0; i < witchBats.length; i++) if (witchBats[i].state === 'orbit') n++; return n; }
+         // A circling bat sacrifices itself to block one hit. Returns true if it blocked.
+         function consumeBat() {
+             if (!isBatsActive) return false;
+             const b = witchBats.find(b => b.state === 'orbit');
+             if (!b) return false;
+             b.state = 'flee';
+             if (!sfxMuted) { shieldBreakSound.currentTime = 0; shieldBreakSound.play().catch(e => console.warn(e)); }
+             if (batsRemaining() <= 0) { isBatsActive = false; witchCooldown = 30 * FPS; }   // last bat spent -> power ends
+             return true;
+         }
+         function releaseBats() { for (let i = 0; i < witchBats.length; i++) if (witchBats[i].state === 'orbit') witchBats[i].state = 'flee'; }   // time's up: fly to the top and leave
+         function updateWitchBats() {
+             if (!witchBats.length) return;
+             const t = Date.now() / 450;
+             const cx = bird.x + birdHitW() / 2, cy = bird.y + birdHitH() / 2;
+             for (let i = witchBats.length - 1; i >= 0; i--) {
+                 const b = witchBats[i];
+                 b.flap += 0.35;
+                 if (b.state === 'orbit') {
+                     const a = b.baseAng + t;
+                     b.x = cx + Math.cos(a) * 48; b.y = cy + Math.sin(a) * 34;
+                 } else {
+                     b.y -= 9; b.x += Math.sin(b.flap) * 1.5;   // fly to the top of the screen and leave
+                     if (b.y < -80) { witchBats.splice(i, 1); continue; }
+                 }
+                 drawWitchBat(b);
+             }
+         }
+         function drawWitchBat(b) {
+             ctx.save(); ctx.translate(b.x, b.y);
+             const w = Math.sin(b.flap) * 6;   // wing flap
+             ctx.fillStyle = '#3b1f47';
+             ctx.beginPath(); ctx.moveTo(-2, 0); ctx.quadraticCurveTo(-10, -4 - w, -16, -1 - w); ctx.quadraticCurveTo(-10, 3, -2, 3); ctx.closePath(); ctx.fill();
+             ctx.beginPath(); ctx.moveTo(2, 0); ctx.quadraticCurveTo(10, -4 - w, 16, -1 - w); ctx.quadraticCurveTo(10, 3, 2, 3); ctx.closePath(); ctx.fill();
+             ctx.fillStyle = '#5e2b8a'; ctx.fillRect(-3, -4, 6, 8);          // body
+             ctx.fillStyle = '#3b1f47'; ctx.fillRect(-3, -7, 2, 3); ctx.fillRect(1, -7, 2, 3);   // ears
+             ctx.fillStyle = '#ffd54f'; ctx.fillRect(-2, -3, 2, 2); ctx.fillRect(1, -3, 2, 2);   // eyes
+             ctx.restore();
+         }
+
          function updateAbilityButtons() { 
              if (game_mode !== 'waiting_for_website') { 
                  document.getElementById('dash-btn').style.display = (dashCharges > 0) ? 'flex' : 'none'; 
@@ -2443,11 +2552,13 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
                  document.getElementById('hrbreak-btn').style.display = (currentSkinKey === 'employed' || (currentSkinKey === 'custom' && customStats.hrbreak)) ? 'flex' : 'none'; 
                 document.getElementById('arthur-btn').style.display = (currentSkinKey === 'arthur' || (currentSkinKey === 'custom' && customStats.arthur)) ? 'flex' : 'none'; 
                 document.getElementById('santa-btn').style.display = (currentSkinKey === 'santa') ? 'flex' : 'none'; 
+                document.getElementById('witch-btn').style.display = (currentSkinKey === 'witch') ? 'flex' : 'none'; 
                 
                 if (sherlockCooldown <= 0 && !isSherlockActive && document.getElementById('sherlock-btn').style.display !== 'none') document.getElementById('sherlock-btn').innerText = getLangText("predictBtn");
                 if (hrBreakCooldown <= 0 && !isHrBreakActive && document.getElementById('hrbreak-btn').style.display !== 'none') document.getElementById('hrbreak-btn').innerText = getLangText("hrBreakBtn");
                 if (arthurCooldown <= 0 && !isArthurActive && document.getElementById('arthur-btn').style.display !== 'none') document.getElementById('arthur-btn').innerText = getLangText("deadEyeBtn");
                 if (santaCooldown <= 0 && !isSleighActive && !isNiceFilterActive && document.getElementById('santa-btn').style.display !== 'none') document.getElementById('santa-btn').innerText = getLangText("santaBtn");
+                if (witchCooldown <= 0 && !isBroomActive && !isBatsActive && document.getElementById('witch-btn').style.display !== 'none') document.getElementById('witch-btn').innerText = getLangText("witchBtn");
              } else { 
                  document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none'); 
              } 
@@ -2626,6 +2737,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
                  // HR break is full invincibility. ImagesTouching() honours it, but the dragon
                  // uses its own ellipse test, so employed Shetos was still taking dash hits.
                  if (isHrBreakActive || isSleighActive) { dragonBodyCd = 20; }
+                else if (isBatsActive && batsRemaining() > 0) { if (witchBlockCd <= 0) { consumeBat(); witchBlockCd = 40; } dragonBodyCd = 20; }   // bats block the ram
                  else if (isDashActive) { dragonHP -= 3; dragonBodyCd = 30; playDragonSfx('shield_breaking.mp3', 1.1); triggerFlash("lime"); } // counter!
                  else if (isShieldActive) { deactivateShield(); dragonBodyCd = 40; playDragonSfx('shield_breaking.mp3', 1); }
                  else if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; dragonBodyCd = 50; if (!sfxMuted) { damageSound.currentTime = 0; damageSound.play().catch(e => console.warn(e)); } trailRedTimer = 120; }
@@ -2641,6 +2753,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
                  if (!fb.nice && dragonFireHitsBird(fb)) {   // "nice" fireballs are harmless green gifts
                      if (isHrBreakActive) { continue; }   // same hole as the body check: fire ignored HR break
                      if (isSleighActive) { dragonFire.splice(i, 1); playDragonSfx('shield_breaking.mp3', 1.15); continue; } // sleigh smashes through
+                     if (consumeBat()) { dragonFire.splice(i, 1); continue; }   // a bat takes the fireball
                      if (isDashActive) { dragonFire.splice(i, 1); dragonHP -= 2.5; playDragonSfx('shield_breaking.mp3', 1.15); continue; } // deflect!
                      if (isShieldActive) { deactivateShield(); dragonFire.splice(i, 1); continue; }
                      if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; if (!sfxMuted) { damageSound.currentTime = 0; damageSound.play().catch(e => console.warn(e)); } dragonFire.splice(i, 1); trailRedTimer = 120; continue; }
@@ -2669,8 +2782,8 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              boss.y += boss.speedY * speedMultiplier; let bossMaxY = Math.max(60, CANVAS_HEIGHT - boss.height - 50); if (boss.y > bossMaxY || boss.y < 50) boss.speedY *= -1; let fightImg = (isBoss2) ? BOSS2_IMG : (isBoss3 ? DRAGON_IMG : BOSS_IMG); if (!isBoss3 && fightImg.complete && fightImg.naturalWidth !== 0) { drawBossGlow(); ctx.drawImage(fightImg, boss.x, boss.y, boss.width, boss.height); } else if (!isBoss3) { ctx.fillStyle = "red"; ctx.fillRect(boss.x, boss.y, boss.width, boss.height); }
              if (isBoss3) { updateDragonBoss(); } else if (!isBoss2) { if (Math.random() < 0.06) spawnChocolate(); boss.stamina -= 0.1; if (boss.stamina <= 0) { unlockAchievement('monster'); triggerFlash("lime"); showCheatFeedback(getLangText("bossDefeated")); currentLives += 2; victoryTimer = 100; game_mode = 'running'; currentScore = 51; boss1Defeated = true; boss.x = CANVAS_WIDTH + 500; chocolates = []; pipe_spawn_timer = 0; bossIntroState = 0; boss.movingIn = true; boss.stamina = 100; boss1Music.pause(); boss1Music.currentTime = 0; if (!musicMuted) voidMusic.play().catch(e=>console.log(e)); } } else { if (Math.random() < 0.05) { let container = document.getElementById('game-container'); let r = Math.random(); if (r < 0.33) container.className = "upside-down"; else if (r < 0.66) container.className = "shake"; else container.className = ""; } if (errorSignCooldown > 0) errorSignCooldown--; if (errorSignCooldown <= 0 && Math.random() < 0.04 && errorSigns.length < 4) { spawnErrorSign(); errorSignCooldown = 25; } if (deleteBtnTimer > 0) { deleteBtnTimer -= (1000/FPS); if (deleteBtnTimer <= 0) document.getElementById('delete-boss-btn').style.display = 'none'; } else { deleteBtnSpawnTimer += (1000/FPS); if (deleteBtnSpawnTimer > 4000) { document.getElementById('delete-boss-btn').style.display = 'block'; deleteBtnTimer = 1200; deleteBtnSpawnTimer = 0; } } }
              
-             for (let i = chocolates.length - 1; i >= 0; i--) { chocolates[i].Do_Frame_Things(); if (ImagesTouching(bird, chocolates[i]) && chocolates[i].visible && !chocolates[i].nice) { if (isSleighActive) { chocolates[i].visible = false; if(!sfxMuted){ explosionSound.currentTime=0; explosionSound.play().catch(e=>{}); } continue; } if (isDashActive) { chocolates[i].visible = false; continue; } if (isShieldActive) { deactivateShield(); chocolates.splice(i, 1); } else if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} chocolates.splice(i, 1); trailRedTimer = 120; } else { if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} triggerPlayerDeath(); } } else if (chocolates[i].x < -50) chocolates.splice(i, 1); }
-             for (let i = errorSigns.length - 1; i >= 0; i--) { errorSigns[i].Do_Frame_Things(); if (ImagesTouching(bird, errorSigns[i]) && errorSigns[i].visible && !errorSigns[i].nice) { if (isSleighActive) { errorSigns[i].visible = false; if(!sfxMuted){ explosionSound.currentTime=0; explosionSound.play().catch(e=>{}); } continue; } if (isDashActive) { errorSigns[i].visible = false; continue; } if (isShieldActive) { deactivateShield(); errorSigns.splice(i, 1); } else if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} errorSigns.splice(i, 1); trailRedTimer = 120; } else { if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} triggerPlayerDeath(); } } else if (errorSigns[i].x < -150) errorSigns.splice(i, 1); }
+             for (let i = chocolates.length - 1; i >= 0; i--) { chocolates[i].Do_Frame_Things(); if (ImagesTouching(bird, chocolates[i]) && chocolates[i].visible && !chocolates[i].nice) { if (isSleighActive) { chocolates[i].visible = false; if(!sfxMuted){ explosionSound.currentTime=0; explosionSound.play().catch(e=>{}); } continue; } if (consumeBat()) { chocolates.splice(i, 1); continue; } if (isDashActive) { chocolates[i].visible = false; continue; } if (isShieldActive) { deactivateShield(); chocolates.splice(i, 1); } else if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} chocolates.splice(i, 1); trailRedTimer = 120; } else { if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} triggerPlayerDeath(); } } else if (chocolates[i].x < -50) chocolates.splice(i, 1); }
+             for (let i = errorSigns.length - 1; i >= 0; i--) { errorSigns[i].Do_Frame_Things(); if (ImagesTouching(bird, errorSigns[i]) && errorSigns[i].visible && !errorSigns[i].nice) { if (isSleighActive) { errorSigns[i].visible = false; if(!sfxMuted){ explosionSound.currentTime=0; explosionSound.play().catch(e=>{}); } continue; } if (consumeBat()) { errorSigns.splice(i, 1); continue; } if (isDashActive) { errorSigns[i].visible = false; continue; } if (isShieldActive) { deactivateShield(); errorSigns.splice(i, 1); } else if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} errorSigns.splice(i, 1); trailRedTimer = 120; } else { if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} triggerPlayerDeath(); } } else if (errorSigns[i].x < -150) errorSigns.splice(i, 1); }
              if (bossIntroState >= 5) { let barX = CANVAS_WIDTH/2 - 50; let barY = 20; let barW = 100; let barH = 10; let hpPercent = 1; if (isBoss2) { hpPercent = Math.max(0, (BOSS2_MAX_HITS - boss2Hits) / BOSS2_MAX_HITS); } else if (isBoss3) { hpPercent = Math.max(0, dragonHP / 100); } else { hpPercent = Math.max(0, boss.stamina / 100); } ctx.fillStyle = "black"; ctx.fillRect(barX, barY, barW, barH); ctx.fillStyle = "#FF0000"; ctx.fillRect(barX, barY, barW * hpPercent, barH); ctx.strokeStyle = "white"; ctx.lineWidth = 2; ctx.strokeRect(barX, barY, barW, barH); }
          }
 let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let shetosBotVelocityY = 0; let activeFriendChatID = null; let friendChatListener = null;
@@ -2861,6 +2974,7 @@ window.playClickSound = function() {
              isHrBreakActive = false; hrBreakCooldown = 0; hrBreakTimer = 0;
              isArthurActive = false; arthurCooldown = 0; arthurTimer = 0;
             isSleighActive = false; sleighTimer = 0; isNiceFilterActive = false; niceFilterTimer = 0; nicePipeQuota = 0; santaCooldown = 0;
+            isBroomActive = false; broomTimer = 0; isBatsActive = false; batsTimer = 0; witchBats = []; witchBlockCd = 0; witchCooldown = 0;
              
              if (currentSkinKey === 'custom') { currentLives = customStats.lives || 0; wallDestroyCharges = customStats.bombs || 0; dashCharges = customStats.dashes || 0; shrinkCharges = customStats.shrinks || 0; widenCharges = customStats.widens || 0; } else { if (currentSkinKey === 'black' || currentSkinKey === 'tough' || currentSkinKey === 'sherlock') currentLives = (currentSkinKey === 'sherlock' ? 1 : INITIAL_LIVES); else currentLives = 0; wallDestroyCharges = (currentSkinKey === 'yellow' || currentSkinKey === 'black') ? MAX_DESTROY_CHARGES : 0; dashCharges = (currentSkinKey === 'doordash' || currentSkinKey === 'black') ? 4 : 0; shrinkCharges = (currentSkinKey === 'luigi' || currentSkinKey === 'black') ? 4 : 0; widenCharges = (currentSkinKey === 'heisenbark' || currentSkinKey === 'black') ? 4 : 0; }
              updateAbilityButtons(); lastPipeY = 250; add_pipe(CANVAS_WIDTH, 100, 140); deactivateShield(true); voidMusic.pause(); voidMusic.currentTime = 0; connectorMusic.pause(); connectorMusic.currentTime = 0; boss1Music.pause(); boss1Music.currentTime = 0; boss2Music.pause(); boss2Music.currentTime = 0;
@@ -2879,7 +2993,7 @@ window.playClickSound = function() {
 
          function display_star_count() { ctx.font = '20px Arial'; ctx.textAlign = 'left'; if (voidUIErrorTimer > 0) { ctx.fillStyle = 'red'; ctx.fillText(getLangText('error'), 10, 80); } else { ctx.fillStyle = 'yellow'; ctx.fillText(getLangText('foodLabel') + collectedStars, 10, 80); } let stackIndex = 0; if (isShieldActive) { let pct = shieldTimer / SHIELD_DURATION_FRAMES; drawTimerBar(pct, "cyan", getLangText("shield"), stackIndex++); } if (isDoubleStarsActive) { let pct = doubleStarTimer / POTION_DURATION_FRAMES; drawTimerBar(pct, "#ff00ff", getLangText("doubleDryfood"), stackIndex++); } if (isSlowMotionActive) { let pct = slowMoTimer / SLOW_POTION_DURATION_FRAMES; drawTimerBar(pct, "#00ffff", getLangText("slowMotion"), stackIndex++); } }
          function display_score() { if (game_mode === 'online_match' || game_mode === 'pvp_shetos') return; ctx.font = 'bold 24px Arial'; ctx.textAlign = 'left'; ctx.strokeStyle = 'black'; ctx.lineWidth = 3; let displayStr = getLangText('scoreLabel') + currentScore; if (isEndless) displayStr = getLangText('endlessLabel') + currentScore; if (voidUIErrorTimer > 0) displayStr = getLangText("error"); else if (currentBGIndex === 4 && Math.random() < 0.1) { displayStr = "Sc#re: " + Math.floor(Math.random()*999); } ctx.strokeText(displayStr, 10, 115); ctx.fillStyle = voidUIErrorTimer > 0 ? 'red' : 'white'; ctx.fillText(displayStr, 10, 115); }
-         function display_lives() { let y = 150; ctx.font = 'bold 22px Arial'; ctx.textAlign = 'left'; if (voidUIErrorTimer > 0) { ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText(getLangText('error'), 10, y); ctx.fillStyle = 'red'; ctx.fillText(getLangText('error'), 10, y); return; } if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText(getLangText('livesLabel') + currentLives, 10, y); ctx.fillStyle = '#ff4d4d'; ctx.fillText(getLangText('livesLabel') + currentLives, 10, y); y += 35; } else if (currentLives >= 100) { ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText(getLangText('godMode'), 10, y); ctx.fillStyle = '#ff4d4d'; ctx.fillText(getLangText('godMode'), 10, y); y += 35; } if ((currentSkinKey === 'yellow' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && wallDestroyCharges > 0)) && wallDestroyCharges > 0) { ctx.textAlign = 'left'; ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText(getLangText('bombsLabel') + wallDestroyCharges, 10, y); ctx.fillStyle = 'orange'; ctx.fillText(getLangText('bombsLabel') + wallDestroyCharges, 10, y); y+=35; } if ((currentSkinKey === 'doordash' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && dashCharges > 0)) && dashCharges > 0) { ctx.textAlign = 'left'; ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText(getLangText('dashesLabel') + dashCharges, 10, y); ctx.fillStyle = '#ff4500'; ctx.fillText(getLangText('dashesLabel') + dashCharges, 10, y); y+=35; } if ((currentSkinKey === 'luigi' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && shrinkCharges > 0)) && shrinkCharges > 0) { ctx.textAlign = 'left'; ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText(getLangText('shrinksLabel') + shrinkCharges, 10, y); ctx.fillStyle = '#2ecc71'; ctx.fillText(getLangText('shrinksLabel') + shrinkCharges, 10, y); y+=35; } if ((currentSkinKey === 'heisenbark' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && widenCharges > 0)) && widenCharges > 0) { ctx.textAlign = 'left'; ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText(getLangText('widensLabel') + widenCharges, 10, y); ctx.fillStyle = '#9b59b6'; ctx.fillText(getLangText('widensLabel') + widenCharges, 10, y); } }
+         function display_lives() { let y = 150; ctx.font = 'bold 22px Arial'; ctx.textAlign = 'left'; if (voidUIErrorTimer > 0) { ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText(getLangText('error'), 10, y); ctx.fillStyle = 'red'; ctx.fillText(getLangText('error'), 10, y); return; } if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText(getLangText('livesLabel') + currentLives, 10, y); ctx.fillStyle = '#ff4d4d'; ctx.fillText(getLangText('livesLabel') + currentLives, 10, y); y += 35; } else if (currentLives >= 100) { ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText(getLangText('godMode'), 10, y); ctx.fillStyle = '#ff4d4d'; ctx.fillText(getLangText('godMode'), 10, y); y += 35; } if ((currentSkinKey === 'yellow' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && wallDestroyCharges > 0)) && wallDestroyCharges > 0) { ctx.textAlign = 'left'; ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText(getLangText('bombsLabel') + wallDestroyCharges, 10, y); ctx.fillStyle = 'orange'; ctx.fillText(getLangText('bombsLabel') + wallDestroyCharges, 10, y); y+=35; } if ((currentSkinKey === 'doordash' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && dashCharges > 0)) && dashCharges > 0) { ctx.textAlign = 'left'; ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText(getLangText('dashesLabel') + dashCharges, 10, y); ctx.fillStyle = '#ff4500'; ctx.fillText(getLangText('dashesLabel') + dashCharges, 10, y); y+=35; } if ((currentSkinKey === 'luigi' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && shrinkCharges > 0)) && shrinkCharges > 0) { ctx.textAlign = 'left'; ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText(getLangText('shrinksLabel') + shrinkCharges, 10, y); ctx.fillStyle = '#2ecc71'; ctx.fillText(getLangText('shrinksLabel') + shrinkCharges, 10, y); y+=35; } if ((currentSkinKey === 'heisenbark' || currentSkinKey === 'black' || (currentSkinKey === 'custom' && widenCharges > 0)) && widenCharges > 0) { ctx.textAlign = 'left'; ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText(getLangText('widensLabel') + widenCharges, 10, y); ctx.fillStyle = '#9b59b6'; ctx.fillText(getLangText('widensLabel') + widenCharges, 10, y); } if (currentSkinKey === 'witch' && batsRemaining() > 0) { ctx.textAlign = 'left'; ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.strokeText(getLangText('batsLabel') + batsRemaining(), 10, y); ctx.fillStyle = '#bf00ff'; ctx.fillText(getLangText('batsLabel') + batsRemaining(), 10, y); } }
 
          let canQuitTimer = 0;
          function Do_a_Frame() {
@@ -2954,6 +3068,25 @@ window.playClickSound = function() {
                         document.getElementById('santa-btn').innerText = getLangText("santaBtn");
                     }
 
+                    // --- Witch Shetos power timers (30s cooldown, starts after the power ends) ---
+                    if (isBroomActive) { 
+                        broomTimer--; 
+                        if (document.getElementById('witch-btn').style.display !== 'none') document.getElementById('witch-btn').innerText = getLangText("active"); 
+                        if (broomTimer <= 0) { isBroomActive = false; witchCooldown = 30 * FPS; } 
+                    }
+                    if (isBatsActive) { 
+                        batsTimer--; 
+                        if (document.getElementById('witch-btn').style.display !== 'none') document.getElementById('witch-btn').innerText = getLangText("active"); 
+                        if (batsTimer <= 0) { releaseBats(); isBatsActive = false; witchCooldown = 30 * FPS; }   // bats fly to the top and leave
+                    }
+                    if (witchBlockCd > 0) witchBlockCd--;
+                    if (witchCooldown > 0) { 
+                        witchCooldown--; 
+                        if (document.getElementById('witch-btn').style.display !== 'none') document.getElementById('witch-btn').innerText = Math.ceil(witchCooldown/FPS) + "s"; 
+                    } else if (!isBroomActive && !isBatsActive && document.getElementById('witch-btn').style.display !== 'none') {
+                        document.getElementById('witch-btn').innerText = getLangText("witchBtn");
+                    }
+
                      if (currentBGIndex === 4 && Math.random() < 0.01) { voidUIErrorTimer = 5; } if (voidUIErrorTimer > 0) voidUIErrorTimer--; 
                  }
 
@@ -2979,7 +3112,7 @@ window.playClickSound = function() {
                      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
                  }
                  if (game_mode !== 'waiting_for_website') { const arenaLbl = getAreaName(currentBGIndex); if (arenaLbl) { ctx.save(); ctx.font = '9px "Press Start 2P", cursive'; ctx.textAlign = 'right'; ctx.globalAlpha = 0.92; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.85)'; ctx.strokeText(arenaLbl, CANVAS_WIDTH - 8, 22); ctx.fillStyle = '#FFE44D'; ctx.fillText(arenaLbl, CANVAS_WIDTH - 8, 22); ctx.restore(); } } // arena label
-                 bird.Do_Frame_Things(); if (bottom_bar.complete && bossIntroState >= 5) { if (bottom_bar_offset < -23) bottom_bar_offset = 0; ctx.drawImage(bottom_bar, bottom_bar_offset, CANVAS_HEIGHT - bottom_bar.height); } else if (bottom_bar.complete && game_mode !== 'boss' && game_mode !== 'terminal_ending') { if (bottom_bar_offset < -23) bottom_bar_offset = 0; ctx.drawImage(bottom_bar, bottom_bar_offset, CANVAS_HEIGHT - bottom_bar.height); } else if (bottom_bar.complete && game_mode !== 'terminal_ending') { ctx.drawImage(bottom_bar, bottom_bar_offset, CANVAS_HEIGHT - bottom_bar.height); }
+                 bird.Do_Frame_Things(); updateWitchBats(); if (bottom_bar.complete && bossIntroState >= 5) { if (bottom_bar_offset < -23) bottom_bar_offset = 0; ctx.drawImage(bottom_bar, bottom_bar_offset, CANVAS_HEIGHT - bottom_bar.height); } else if (bottom_bar.complete && game_mode !== 'boss' && game_mode !== 'terminal_ending') { if (bottom_bar_offset < -23) bottom_bar_offset = 0; ctx.drawImage(bottom_bar, bottom_bar_offset, CANVAS_HEIGHT - bottom_bar.height); } else if (bottom_bar.complete && game_mode !== 'terminal_ending') { ctx.drawImage(bottom_bar, bottom_bar_offset, CANVAS_HEIGHT - bottom_bar.height); }
 
                  switch (game_mode) {
                      case 'prestart': game_mode = 'running'; break;
@@ -3183,7 +3316,7 @@ window.playClickSound = function() {
                      if (MyEvent.type === 'touchstart' && MyEvent.cancelable) {
                          MyEvent.preventDefault(); 
                      }
-                     let current_jump = jump_amount; bird.velocity_y = current_jump; 
+                     flapBird(); 
                  }
                  if (MyEvent.type === 'keydown' && MyEvent.keyCode === 68) { useWallDestruction(); } 
                  if (MyEvent.type === 'keydown' && (MyEvent.key === 'Delete' || MyEvent.key === 'Backspace')) { hitBossTwo(); }
@@ -3191,10 +3324,10 @@ window.playClickSound = function() {
                  if (MyEvent.type === 'keydown' && (MyEvent.key === 's' || MyEvent.key === 'S')) { triggerShrink(); }
                  if (MyEvent.type === 'keydown' && (MyEvent.key === 'w' || MyEvent.key === 'W')) { triggerWiden(); }
                 if (MyEvent.type === 'keydown' && (MyEvent.key === 'e' || MyEvent.key === 'E')) { triggerSantaPower(); }
+                if (MyEvent.type === 'keydown' && (MyEvent.key === 'f' || MyEvent.key === 'F')) { triggerWitchPower(); }
                  if (MyEvent.type === 'keydown' && (MyEvent.keyCode === 32 || MyEvent.keyCode === 38)) { 
                      MyEvent.preventDefault();
-                     let current_jump = jump_amount; 
-                     bird.velocity_y = current_jump; 
+                     flapBird(); 
                  }
                  break;
              case 'over':
@@ -3213,6 +3346,12 @@ window.playClickSound = function() {
                         continue;
                     }
                     if (isSleighActive) { smashPipePair(pipes[i]); continue; }   // Sleigh Blitz smashes straight through
+                    if (consumeBat()) {   // a circling bat blocks the pipe collision
+                        pipes[i].visible = false;
+                        if (pipes[i].parentPipe) pipes[i].parentPipe.visible = false;
+                        if (pipes[i].pairId) { for (let k = 0; k < pipes.length; k++) { if (pipes[k].pairId === pipes[i].pairId) pipes[k].visible = false; } }
+                        continue;
+                    }
                      if (isShieldActive) {
                          deactivateShield();
                          pipes[i].visible = false;
@@ -3233,6 +3372,7 @@ window.playClickSound = function() {
              }
             if (game_mode === 'boss' && !isBoss2 && ImagesTouching(bird, boss)) {
                 if(isDashActive || isHrBreakActive || isSleighActive) return;
+                if (isBatsActive && batsRemaining() > 0) { if (witchBlockCd <= 0) { consumeBat(); witchBlockCd = 40; } return; }   // bats ward the boss body off
                  if(isShieldActive) deactivateShield();
                  else if(currentLives > 0) currentLives--;
                  else triggerPlayerDeath(getLangText('eaten'));
