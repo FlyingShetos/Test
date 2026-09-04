@@ -35,7 +35,10 @@
         .btn-blue { background: #3498db; color: white; border-color: white; text-shadow: none; }
         .btn-red { background: #e74c3c; color: white; border-color: white; text-shadow: none; }
         
-        #landing-page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #041820; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; padding: 50px 16px 56px 16px; box-sizing: border-box; gap: 6px; -webkit-overflow-scrolling: touch; }
+        #landing-page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(#0a1f3d 0%, #041820 55%, #07242f 100%); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; padding: 50px 16px 56px 16px; box-sizing: border-box; gap: 6px; -webkit-overflow-scrolling: touch; }
+        /* Christmas overlay: falling snow, ground snow and twinkling string lights.
+           Fixed to the viewport, above the menu content, never steals taps. */
+        #xmas-fx { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 55; }
         #landing-page h1 { font-family: 'Pacifico', cursive; font-size: clamp(28px, 6vw, 50px); color: #f1c40f; margin: 0 0 6px 0; text-shadow: 2px 2px #e67e22; text-align: center; line-height: 1.2; }
         
         .title-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; max-width: 100%; flex-shrink: 0; }
@@ -488,6 +491,7 @@
          </div>
 
          <div id="landing-page"> 
+             <canvas id="xmas-fx"></canvas>
              <div class="title-wrap">
                  <h1>Flying Shetos</h1>
                  <div id="splash-text">Splash!</div>
@@ -1880,14 +1884,14 @@ window.triggerPvpTrashTalk = async function() {
              'default':    { src: 'player.png', cost: 0, current: true, name: 'Original Shetos', desc: 'No special abilities.' }, 
              'rich':       { src: 'player_rich.png', cost: 100, current: false, name: 'Rich Shetos', desc: 'Magnetizes dry food towards you.' }, 
              'employed':   { src: 'employed.png', cost: 200, current: false, name: 'Employed Shetos', desc: 'HR strict breaks: Gain Invincibility for 6s. 25s Cooldown.' },
-             'doordash':   { src: 'doordash_cheetos.png', cost: 200, current: false, name: 'DoorDash Shetos', desc: 'Can DASH (Right Click or Shift). Starts with 4 Dashes.' }, 
+             'doordash':   { src: 'doordash_cheetos.png', cost: 200, current: false, name: 'DoorDash Shetos', desc: 'Can DASH with the DASH button. Starts with 4 Dashes.' }, 
              'arthur':     { src: 'arthur.png', cost: 240, current: false, name: 'Arthur Shetos', desc: 'Enter Slow-Mo. Click red X marks to destroy pipes/bosses. 30s Cooldown.' },
-            'santa':      { src: 'santa_shetos.png', cost: 240, current: false, name: 'Santa Shetos', desc: 'Ho ho ho! Open a gift (Press E): 50% SLEIGH BLITZ (7s invincible, smashes pipes at high speed, magnets collectibles) / 50% NAUGHTY OR NICE FILTER (4 upcoming pipes turn into passable green Nice gaps; vs bosses ~10% of their throws turn nice). 30s Cooldown.' },
-             'luigi':      { src: 'luigi_shetos.png', cost: 250, current: false, name: 'Luigi Shetos', desc: 'Can SHRINK for 4 sec (Press S). Starts with 4 uses.' },
+            'santa':      { src: 'santa_shetos.png', cost: 240, current: false, name: 'Santa Shetos', desc: 'Ho ho ho! Open a gift with the GIFT button: 50% SLEIGH BLITZ (7s invincible, smashes pipes at high speed, magnets collectibles) / 50% NAUGHTY OR NICE FILTER (4 upcoming pipes turn into passable green Nice gaps; vs bosses ~10% of their throws turn nice). 30s Cooldown.' },
+             'luigi':      { src: 'luigi_shetos.png', cost: 250, current: false, name: 'Luigi Shetos', desc: 'Can SHRINK for 4 sec with the SHRINK button. Starts with 4 uses.' },
              'sherlock':   { src: 'sherlock.png', cost: 250, current: false, name: 'Sherlock Shetos', desc: 'Engages Auto-Pilot and dodges everything. 6s Duration. 15s Cooldown.' },
-             'heisenbark': { src: 'heisen_bark.png', cost: 260, current: false, name: 'Heisenbark Shetos', desc: 'Widens gaps 2x for 6s (Press W). Side effect: Screen blinks. 4 uses.' },
-            'witch':      { src: 'witch_shetos.png', cost: 260, current: false, name: 'Witch Shetos', desc: 'Hocus pocus! MAGIC (Press F): before THE SUNSET -> WITCH\'S BROOM BOOST (12s smooth steady glide instead of sharp flap-falls); in THE SUNSET or later -> BAT\'S PROTECTION (4 circling bats block any pipe/boss hit for 15s, then fly away). 30s Cooldown.' },
-             'yellow':     { src: 'player_yellow.png', cost: 300, current: false, name: 'Terrorist Shetos', desc: 'Can DESTROY walls (Press D). Starts with 5 Bombs.' }, 
+             'heisenbark': { src: 'heisen_bark.png', cost: 260, current: false, name: 'Heisenbark Shetos', desc: 'Widens gaps 2x for 6s with the WIDEN button. Side effect: Screen blinks. 4 uses.' },
+            'witch':      { src: 'witch_shetos.png', cost: 260, current: false, name: 'Witch Shetos', desc: 'Hocus pocus! Use the MAGIC button: before THE SUNSET -> WITCH\'S BROOM BOOST (12s smooth steady glide instead of sharp flap-falls); in THE SUNSET or later -> BAT\'S PROTECTION (4 circling bats block any pipe/boss hit for 15s, then fly away). 30s Cooldown.' },
+             'yellow':     { src: 'player_yellow.png', cost: 300, current: false, name: 'Terrorist Shetos', desc: 'Can DESTROY walls with the BOMB button. Starts with 5 Bombs.' }, 
              'black':      { src: 'player_black.png', cost: 700, current: false, name: 'Legendary Shetos', desc: 'ALL POWERS COMBINED!\n3 Lives, Dash, 5 Bombs, Shrink, Widen, Magnet.' },
              'custom':     { src: 'player.png', cost: 0, current: false, name: 'Custom Shetos', desc: 'Your personal Lab creation.' }
          };
@@ -3052,7 +3056,7 @@ window.playClickSound = function() {
 
                     // --- Santa Shetos gift timers (shared 30s cooldown) ---
                     if (isSleighActive) { 
-                        sleighTimer--; speedMultiplier = 1.8; 
+                        sleighTimer--; speedMultiplier = 4;   // Sleigh Blitz: 4x speed smash ride
                         if (document.getElementById('santa-btn').style.display !== 'none') document.getElementById('santa-btn').innerText = getLangText("active"); 
                         if (sleighTimer <= 0) { isSleighActive = false; speedMultiplier = isSlowMotionActive ? 0.7 : 1; santaCooldown = 30 * FPS; } 
                     }
@@ -3318,17 +3322,8 @@ window.playClickSound = function() {
                      }
                      flapBird(); 
                  }
-                 if (MyEvent.type === 'keydown' && MyEvent.keyCode === 68) { useWallDestruction(); } 
-                 if (MyEvent.type === 'keydown' && (MyEvent.key === 'Delete' || MyEvent.key === 'Backspace')) { hitBossTwo(); }
-                 if (MyEvent.type === 'keydown' && (MyEvent.key === 'Shift')) { triggerDash(); }
-                 if (MyEvent.type === 'keydown' && (MyEvent.key === 's' || MyEvent.key === 'S')) { triggerShrink(); }
-                 if (MyEvent.type === 'keydown' && (MyEvent.key === 'w' || MyEvent.key === 'W')) { triggerWiden(); }
-                if (MyEvent.type === 'keydown' && (MyEvent.key === 'e' || MyEvent.key === 'E')) { triggerSantaPower(); }
-                if (MyEvent.type === 'keydown' && (MyEvent.key === 'f' || MyEvent.key === 'F')) { triggerWitchPower(); }
-                 if (MyEvent.type === 'keydown' && (MyEvent.keyCode === 32 || MyEvent.keyCode === 38)) { 
-                     MyEvent.preventDefault();
-                     flapBird(); 
-                 }
+                 // NOTE: the game is mobile-only - there are intentionally NO keyboard
+                 // controls. PC is only used for testing, via mouse clicks / taps.
                  break;
              case 'over':
                  if (canQuitTimer <= 0) quitToMenu();
@@ -3521,7 +3516,6 @@ window.playClickSound = function() {
              document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none');
          }
 
-         window.addEventListener('keydown', Got_Player_Input);
          window.addEventListener('mousedown', Got_Player_Input);
          window.addEventListener('touchstart', Got_Player_Input, {passive: false});
 
@@ -3537,6 +3531,79 @@ window.playClickSound = function() {
          bootStep('applyDNDUI', applyDNDUI);
          bootStep('updateMenuStats', updateMenuStats);
          
+         // ======================= CHRISTMAS MAIN MENU =======================
+         // Falling snow, snow on the ground and animated twinkling string lights,
+         // drawn on a fixed overlay canvas that only shows while the menu is open.
+         // Purely cosmetic: pointer-events none, so every tap still reaches the buttons.
+         let xmasFlakes = []; let xmasLast = 0;
+         const XMAS_LIGHT_COLORS = ['#ff3b3b', '#ffd54f', '#4dff88', '#4fc3f7', '#ff8bd1'];
+         function xmasGroundH(x) { return 30 + Math.sin(x * 0.012) * 8 + Math.sin(x * 0.005 + 2) * 12 + Math.sin(x * 0.021 + 5) * 4; }
+         function initXmasFlakes() {
+             xmasFlakes = [];
+             const n = Math.max(50, Math.min(140, Math.floor(window.innerWidth / 8)));
+             for (let i = 0; i < n; i++) xmasFlakes.push({ x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight, r: 1.2 + Math.random() * 2.8, s: 0.5 + Math.random() * 1.5, d: Math.random() * Math.PI * 2, o: 0.45 + Math.random() * 0.55 });
+         }
+         function drawXmasLights(cx, w, now) {
+             const swag = 170, topY = 8, sag = 26;
+             cx.strokeStyle = '#1b5e20'; cx.lineWidth = 2; cx.beginPath();   // the wire, sagging in swags
+             for (let x = 0; x <= w; x += 8) {
+                 const y = topY + Math.sin(Math.PI * ((x % swag) / swag)) * sag;
+                 if (x === 0) cx.moveTo(x, y); else cx.lineTo(x, y);
+             }
+             cx.stroke();
+             for (let i = 0, x = 14; x < w; i++, x += 28) {   // twinkling coloured bulbs
+                 const y = topY + Math.sin(Math.PI * ((x % swag) / swag)) * sag + 7;
+                 const color = XMAS_LIGHT_COLORS[(i + Math.floor(now / 500)) % XMAS_LIGHT_COLORS.length];
+                 const alpha = 0.55 + 0.45 * Math.sin(now / 260 + i * 1.3);
+                 cx.save(); cx.globalAlpha = Math.max(0.25, alpha); cx.shadowColor = color; cx.shadowBlur = 12;
+                 cx.fillStyle = color; cx.beginPath(); cx.arc(x, y, 3.5, 0, Math.PI * 2); cx.fill();
+                 cx.shadowBlur = 0; cx.fillStyle = 'rgba(255,255,255,0.9)'; cx.beginPath(); cx.arc(x - 1, y - 1, 1.2, 0, Math.PI * 2); cx.fill();
+                 cx.restore();
+             }
+         }
+         function drawXmasGround(cx, w, h, now) {
+             cx.save();
+             const g = cx.createLinearGradient(0, h - 60, 0, h);
+             g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#cfe6f5');
+             cx.fillStyle = g;
+             cx.beginPath(); cx.moveTo(0, h);
+             for (let x = 0; x <= w + 16; x += 16) cx.lineTo(x, h - xmasGroundH(x));
+             cx.lineTo(w, h); cx.closePath(); cx.fill();   // snowy drifts along the bottom
+             cx.fillStyle = 'rgba(255,255,255,0.95)';
+             for (let i = 0; i < 14; i++) {   // sparkles on the snow
+                 const sx = (i * 97 + 31) % w; const sy = h - xmasGroundH(sx) * 0.5;
+                 cx.globalAlpha = 0.3 + 0.6 * Math.abs(Math.sin(now / 500 + i));
+                 cx.fillRect(sx, sy, 2, 2);
+             }
+             cx.restore();
+         }
+         function xmasFrame(now) {
+             requestAnimationFrame(xmasFrame);
+             const cv = document.getElementById('xmas-fx'); const land = document.getElementById('landing-page');
+             if (!cv || !land) return;
+             if (land.style.display === 'none') { xmasLast = 0; return; }   // menu closed: sleep
+             if (!xmasFlakes.length) initXmasFlakes();
+             const w = window.innerWidth, h = window.innerHeight;
+             if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+             const cx = cv.getContext('2d');
+             const dt = xmasLast ? Math.min(50, now - xmasLast) : 16; xmasLast = now;
+             cx.clearRect(0, 0, w, h);
+             drawXmasLights(cx, w, now);
+             drawXmasGround(cx, w, h, now);
+             cx.fillStyle = '#ffffff';
+             for (let i = 0; i < xmasFlakes.length; i++) {
+                 const f = xmasFlakes[i];
+                 f.y += f.s * dt * 0.06; f.d += 0.02; f.x += Math.sin(f.d) * 0.5;   // fall + gentle drift
+                 if (f.x > w + 6) f.x = -6; if (f.x < -6) f.x = w + 6;
+                 if (f.y > h - xmasGroundH(f.x) + 4) { f.y = -6; f.x = Math.random() * w; }   // settle on the snow, respawn at the top
+                 cx.globalAlpha = f.o;
+                 cx.beginPath(); cx.arc(f.x, f.y, f.r, 0, Math.PI * 2); cx.fill();
+             }
+             cx.globalAlpha = 1;
+         }
+         initXmasFlakes();
+         requestAnimationFrame(xmasFrame);
+
          // Main loop: fixed 40 steps/sec logic driven by requestAnimationFrame.
         // The old setInterval version drifted and piled up backlog whenever a frame ran
         // long (Firestore snapshots, GC, ...), which made the game stutter and run slow.
