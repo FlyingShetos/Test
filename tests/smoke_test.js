@@ -31,7 +31,7 @@ function makeEl(tag) {
     style: new Proxy({}, { get: (t, p) => (p in t ? t[p] : ''), set: (t, p, v) => { t[p] = v; return true; } }),
     classList: (() => { const set = new Set(); return { add: c => set.add(c), remove: c => set.delete(c), contains: c => set.has(c), toggle: (c, f) => { f = f === undefined ? !set.has(c) : !!f; f ? set.add(c) : set.delete(c); return f; } }; })(),
     setAttribute() {}, getAttribute: () => null, removeAttribute() {},
-    appendChild(c) { this.children.push(c); return c; }, removeChild() {}, insertBefore() {},
+    appendChild(c) { this.children.push(c); return c; }, removeChild() {}, insertBefore() {}, remove() {},
     addEventListener() {}, removeEventListener() {}, dispatchEvent() {},
     closest: () => null, querySelector: () => makeEl(), querySelectorAll: () => [],
     getContext: () => ctx2d, width: 480, height: 360, clientWidth: 480, clientHeight: 360,
@@ -364,6 +364,40 @@ try {
   run(`toggleLabSetting('witch', false); toggleLabSetting('witch', true);`);
   check('max 3 lab toggles still enforced across all six powers', run(`customStats.witch === false`));
   run(`customStats.magnet = false; customStats.sherlock = false; customStats.hrbreak = false; customStats.santa = false; customStats.witch = false; currentSkinKey = 'witch'; game_mode = 'running'; reset_game(); game_mode = 'running';`);
+
+  // ================= FNF BATTLE MODE (ONLINE RHYTHM DUEL) =================
+  run(`fnfMode = false; snowballMode = false; startFnfMode();`);   // no auth/db in harness: flag flips, matchmaking politely bails
+  check('fnf mode goes online with a flag', run(`fnfMode === true`), run('game_mode'));
+  run(`game_mode = 'online_match'; fnfMode = true; reset_game(); game_mode = 'online_match'; myOnlineRole = 'guest'; activeMatchID = null; online_round = 1; resetFNFState();`);
+  check('chart is generated, long and time-sorted', run(`fnfNotes.length === 240 && fnfNotes.every((n, i) => i === 0 || n.t > fnfNotes[i-1].t) && fnfNotes.every(n => n.lane >= 0 && n.lane < 4 && n.t >= 3000)`));
+  check('same seed = identical chart on both clients', run(`JSON.stringify(fnfGenerateChart(777)) === JSON.stringify(fnfGenerateChart(777))`));
+  check('different rounds = different charts', run(`JSON.stringify(fnfGenerateChart(777)) !== JSON.stringify(fnfGenerateChart(778))`));
+  run(`myHasCrashed = false; enemyHasCrashed = false; isRoundStarting = false; window.roundEnding = false; pipes.length = 0; bird.y = 300; bird.velocity_y = 0;`);
+  stepFrames(30);
+  check('fnf duel has no pipes and no bird physics', run(`pipes.length === 0 && bird.y === 300 && myHasCrashed === false`), 'y=' + run('bird.y'));
+  run(`fnfChartStart = performance.now() - fnfNotes[0].t; fnfTap(fnfNotes[0].lane);`);
+  check('tap on the beat lands a hit', run(`fnfHits === 1 && fnfCombo === 1 && fnfNotes[0].hit === true`), 'hits=' + run('fnfHits'));
+  run(`fnfChartStart = performance.now() - (fnfNotes[0].t + 10); fnfTap((fnfNotes[1].lane + 2) % 4);`);
+  check('flailing at an empty lane is a miss', run(`fnfMisses === 1 && fnfCombo === 0`), 'misses=' + run('fnfMisses'));
+  run(`resetFNFState(); window.roundEnding = false; fnfChartStart = performance.now() - (fnfNotes[0].t + 400); updateFNFBattle();`);
+  check('notes that drift past un-tapped count as misses', run(`fnfMisses >= 1 && fnfNotes[0].missed === true`), 'misses=' + run('fnfMisses'));
+  run(`resetFNFState(); fnfHits = 20; fnfMisses = 0; fnfEnemyHits = 0; fnfEnemyMisses = 0; window.roundEnding = false;`);
+  check('bar reaches my edge at net +20', run('fnfBarMine() === 100'));
+  run(`checkRoundResult();`);
+  check('pushing the bar across wins the round', run('window.roundEnding === true'));
+  run(`fnfHits = 0; fnfEnemyHits = 20; window.roundEnding = false; checkRoundResult();`);
+  check('rival pushing the bar across loses the round', run('window.roundEnding === true'));
+  run(`fnfHits = 7; fnfEnemyHits = 4; updateOnlineUI(true);`);
+  check('scoreboard shows rhythm hits', elements['p-score'].innerText === '🎵 7' && elements['e-score'].innerText === '🎵 4', elements['p-score'].innerText + ' vs ' + elements['e-score'].innerText);
+  run(`resetFNFState(); window.roundEnding = false; fnfChartStart = performance.now() - fnfNotes[0].t;`);
+  run(`Got_Player_Input({ type: 'mousedown', clientX: (fnfNotes[0].lane * 120) + 60, clientY: 300, button: 0, preventDefault() {}, target: { tagName: 'CANVAS', closest: () => null } });`);
+  check('screen taps map to the right lane', run('fnfHits === 1'), 'hits=' + run('fnfHits'));
+
+  // ================= MATCH WAITING SCREEN =================
+  run(`showMatchLoader('SEARCHING');`);
+  const loaderEl = elements['game-container'].children[elements['game-container'].children.length - 1];
+  check('waiting screen is animated, not a blank page', loaderEl && loaderEl.id === 'temp-online-loader' && /loader-hero/.test(loaderEl.innerHTML) && /loader-flake/.test(loaderEl.innerHTML) && /loader-tip/.test(loaderEl.innerHTML) && loaderEl.innerHTML.indexOf('SEARCHING') >= 0 && loaderEl.innerHTML.indexOf('🎵') >= 0, loaderEl && loaderEl.innerHTML ? loaderEl.innerHTML.slice(0, 70) : 'missing');
+  run(`fnfMode = false; snowballMode = false; game_mode = 'running'; reset_game(); game_mode = 'running'; currentSkinKey = 'witch';`);
 
   // ================= MOBILE-ONLY: NO KEYBOARD CONTROLS =================
   check('no character info mentions keyboard keys', run(`Object.values(SKINS).every(s => !/Press [A-Z]\\)|Right Click|Shift|keyboard/i.test(s.desc))`));
