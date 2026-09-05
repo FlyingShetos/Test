@@ -313,30 +313,57 @@ try {
   // ================= RED.PNG REMOVED =================
   check('red.png no longer referenced anywhere', run(`typeof bottom_bar === 'undefined' && ASSETS_TO_LOAD.indexOf('red.png') === -1 && ASSETS_TO_LOAD.indexOf('wall.png') >= 0`));
 
-  // ================= SNOWBALL PVP MODE (ONLINE) =================
+  // ================= SNOWBALL DUEL (ONLINE, NO PIPES) =================
   run(`snowballMode = false; startSnowballMode();`);   // harness has no auth/db: the flag flips, matchmaking politely bails
   check('snowball mode is online, not vs a bot', run(`snowballMode === true && typeof botHitsPipe === 'undefined' && typeof shetosBotStun === 'undefined'`), run('game_mode'));
   run(`game_mode = 'online_match'; snowballMode = true; reset_game(); game_mode = 'online_match'; resetSnowballState();`);
-  run(`myHasCrashed = false; enemyHasCrashed = false; isRoundStarting = false; window.roundEnding = false; online_round = 1; pipes.length = 0;`);
-  run(`bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; enemyGhostRenderX = bird.x + 40; enemyGhostRenderY = bird.y - 45; enemyGhostY = enemyGhostRenderY; updateAbilityButtons();`);
+  run(`myHasCrashed = false; enemyHasCrashed = false; isRoundStarting = false; window.roundEnding = false; online_round = 1; pipes.length = 0; myOnlineRole = 'guest'; activeMatchID = null;`);
+  run(`bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; enemyGhostY = CANVAS_HEIGHT / 2 - 40; enemyGhostRenderY = enemyGhostY; enemyGhostRenderX = snowballRivalX(); updateAbilityButtons();`);
   check('snow button visible in online snowball match', elements['snowball-btn'].style.display === 'flex' && run('snowballAmmo') === 3, elements['snowball-btn'].innerText);
-  run(`throwSnowball();`);
+  stepFrames(200);
+  check('duel spawns no pipes and the floor just stops you', run(`pipes.length === 0 && myHasCrashed === false && bird.y <= CANVAS_HEIGHT - 13 && bird.y >= CANVAS_HEIGHT - 15`), 'y=' + run('bird.y').toFixed(1) + ' pipes=' + run('pipes.length'));
+  check('rival holds the right side of the screen', run('enemyGhostRenderX > CANVAS_WIDTH - 200'), run('enemyGhostRenderX').toFixed(0));
+  run(`bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; throwSnowball();`);
   check('throw spends ammo, launches ball, queues sync payload', run(`snowballAmmo === 2 && snowballs.length === 1 && snowballs[0].fromBot === false && pendingSnowThrow && pendingSnowThrow.seq === 1 && pendingSnowThrow.r === 1`));
-  stepFrames(15);
-  check('own snowball homes to the rival ghost and bursts', run('snowballs.length') === 0, run('snowballs.length'));
-  run(`bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; enemyGhostRenderY = bird.y - 30; spawnEnemySnowball({ seq: 1, y: bird.y - 30, vy: 0, r: 1 });`);
-  stepFrames(8);
-  check('incoming opponent snowball snows me', run('playerSnowed > 0'), 'snowed=' + run('playerSnowed'));
+  stepFrames(110);   // the rival sits on the far right: the ball needs the full homing flight
+  check('own snowball crosses to the rival and bursts', run('snowballs.length') === 0, run('snowballs.length'));
+  run(`bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; enemyGhostRenderX = bird.x; enemyGhostRenderY = bird.y - 45; spawnEnemySnowball({ seq: 1, y: bird.y - 45, vy: 0, r: 1 });`);
+  stepFrames(14);
+  check('incoming snowball snows me and scores for the rival', run('playerSnowed > 0 && snowHitsTaken === 1'), 'snowed=' + run('playerSnowed') + ' taken=' + run('snowHitsTaken'));
   run(`bird.velocity_y = 0; flapBird();`);
   check('snowed flaps are weak', run('bird.velocity_y') > run('jump_amount') * 0.75 && run('bird.velocity_y') < run('jump_amount') * 0.4, 'vy=' + run('bird.velocity_y').toFixed(2));
+  run(`updateOnlineUI(true);`);
+  check('scoreboard shows duel hits', elements['p-score'].innerText === '❄ 0' && elements['e-score'].innerText === '❄ 1', elements['p-score'].innerText + ' vs ' + elements['e-score'].innerText);
+  check('target text explains first to 5', elements['online-target-text'].innerText.indexOf('5') >= 0, elements['online-target-text'].innerText);
   run(`snowballAmmo = 1; snowballRecharge = 2;`);
   stepFrames(3);
   check('ammo recharges over time', run('snowballAmmo') === 2, run('snowballAmmo'));
+  run(`snowEnemyTaken = 5; window.roundEnding = false; checkRoundResult();`);
+  check('landing 5 hits wins the round', run('window.roundEnding === true'));
+  run(`window.roundEnding = false; snowEnemyTaken = 0; snowHitsTaken = 5; checkRoundResult();`);
+  check('taking 5 hits loses the round', run('window.roundEnding === true'));
   run(`snowballMode = false; updateAbilityButtons();`);
   check('plain online match has no snowball button', elements['snowball-btn'].style.display === 'none');
   run(`startShetosMode();`);
   check('Shetos AI battle stays snowball-free', run(`snowballMode === false && game_mode === 'pvp_shetos'`) && elements['snowball-btn'].style.display === 'none');
   run(`game_mode = 'running'; reset_game(); game_mode = 'running'; currentSkinKey = 'witch';`);
+
+  // ================= LAB: ALL POWERUPS AVAILABLE =================
+  check('lab exposes santa and witch power toggles', run(`customStats.santa === false && customStats.witch === false && !!document.getElementById('lab-tog-santa') && !!document.getElementById('lab-tog-witch')`));
+  run(`customStats.magnet = false; customStats.sherlock = false; customStats.hrbreak = false; customStats.arthur = false;`);
+  run(`toggleLabSetting('santa', true); toggleLabSetting('witch', true);`);
+  check('lab saves santa and witch into the custom build', run(`customStats.santa === true && customStats.witch === true`));
+  run(`currentSkinKey = 'custom'; game_mode = 'running'; reset_game(); game_mode = 'running'; santaCooldown = 0; witchCooldown = 0; currentBGIndex = 0; isBroomActive = false; isBatsActive = false; isSleighActive = false; isNiceFilterActive = false; updateAbilityButtons();`);
+  check('custom build shows GIFT and MAGIC buttons', elements['santa-btn'].style.display === 'flex' && elements['witch-btn'].style.display === 'flex');
+  run(`triggerSantaPower();`);
+  check('custom build can fire the Santa power', run(`isSleighActive || isNiceFilterActive`));
+  run(`isSleighActive = false; isNiceFilterActive = false; sleighTimer = 0; santaCooldown = 0; triggerWitchPower();`);
+  check('custom build can fire the Witch power', run(`isBroomActive || isBatsActive`));
+  run(`isBroomActive = false; isBatsActive = false; broomTimer = 0; batsTimer = 0; witchCooldown = 0;`);
+  run(`customStats.magnet = true; customStats.sherlock = true; customStats.hrbreak = true;`);
+  run(`toggleLabSetting('witch', false); toggleLabSetting('witch', true);`);
+  check('max 3 lab toggles still enforced across all six powers', run(`customStats.witch === false`));
+  run(`customStats.magnet = false; customStats.sherlock = false; customStats.hrbreak = false; customStats.santa = false; customStats.witch = false; currentSkinKey = 'witch'; game_mode = 'running'; reset_game(); game_mode = 'running';`);
 
   // ================= MOBILE-ONLY: NO KEYBOARD CONTROLS =================
   check('no character info mentions keyboard keys', run(`Object.values(SKINS).every(s => !/Press [A-Z]\\)|Right Click|Shift|keyboard/i.test(s.desc))`));
