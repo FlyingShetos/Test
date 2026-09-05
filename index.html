@@ -79,6 +79,24 @@
         #santa-btn { background: rgba(192, 25, 35, 0.8); }
         #witch-btn { background: rgba(106, 27, 154, 0.8); }
         #snowball-btn { background: rgba(30, 144, 255, 0.75); }
+        /* Match-waiting screen: animated night sky, falling mode emblems, bobbing Shetos,
+           pulsing dots, a mode chip and a rotating fun tip - replaces the old blank black screen. */
+        #temp-online-loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(#0a1f3d 0%, #1a0b2e 55%, #041820 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'Press Start 2P', cursive; z-index: 300; overflow: hidden; }
+        .loader-flakes { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .loader-flake { position: absolute; top: -8%; font-size: 18px; opacity: 0.8; animation-name: loader-fall; animation-timing-function: linear; animation-iteration-count: infinite; }
+        @keyframes loader-fall { 0% { transform: translateY(-6vh) rotate(0deg); } 100% { transform: translateY(112vh) rotate(340deg); } }
+        .loader-hero { width: 118px; image-rendering: pixelated; animation: loader-bob 0.9s ease-in-out infinite alternate; filter: drop-shadow(0 0 14px rgba(241, 196, 15, 0.55)); }
+        @keyframes loader-bob { 0% { transform: translateY(0) rotate(-4deg); } 100% { transform: translateY(-16px) rotate(4deg); } }
+        .loader-shadow { width: 80px; height: 12px; margin: 8px auto 0; background: rgba(0, 0, 0, 0.5); border-radius: 50%; animation: loader-shrink 0.9s ease-in-out infinite alternate; }
+        @keyframes loader-shrink { 0% { transform: scaleX(1); opacity: 0.6; } 100% { transform: scaleX(0.55); opacity: 0.25; } }
+        .loader-title { font-size: 14px; text-align: center; line-height: 1.8; text-shadow: 2px 2px #000; margin: 20px 12px 12px; }
+        .loader-dots span { opacity: 0; animation: loader-blink 1.2s infinite; }
+        .loader-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loader-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes loader-blink { 0%, 60%, 100% { opacity: 0; } 30% { opacity: 1; } }
+        .loader-chip { font-size: 10px; padding: 8px 14px; border-radius: 20px; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.4); margin-bottom: 14px; letter-spacing: 1px; }
+        .loader-tip { font-size: 11px; color: #f1c40f; max-width: 78%; text-align: center; line-height: 1.5; margin-bottom: 24px; font-family: Arial, sans-serif; font-weight: bold; }
+        .loader-cancel { padding: 12px 22px; font-family: 'Press Start 2P', cursive; cursor: pointer; }
         
         #delete-boss-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 30px; background: red; z-index: 40; display: none; padding: 20px; border: 5px solid white; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.1); } 100% { transform: translate(-50%, -50%) scale(1); } }
@@ -302,7 +320,11 @@
                  </div>
                  <div class="mode-card" style="background:linear-gradient(#bfe6ff, #4fc3f7);" onclick="startSnowballMode()">
                      <h3 style="color:black;" data-i18n="snowMode">SNOWBALL MODE</h3>
-                     <div class="mode-desc" style="color:#222; font-weight:bold;" data-i18n-html="snowModeDesc">Online snowball fight!<br>Friend or random rival.</div>
+                     <div class="mode-desc" style="color:#222; font-weight:bold;" data-i18n-html="snowModeDesc">Dodge & throw online!<br>First to 5 hits wins the round.</div>
+                 </div>
+                 <div class="mode-card" style="background:linear-gradient(#2b1055, #7b2ff7);" onclick="startFnfMode()">
+                     <h3 style="color:white;" data-i18n="fnfMode">FNF BATTLE</h3>
+                     <div class="mode-desc" style="color:#ddd; font-weight:bold;" data-i18n-html="fnfModeDesc">Rhythm duel online!<br>Tap the lanes, push the bar!</div>
                  </div>
                  <button class="enter-btn secondary-btn" style="margin-top:10px; width:100px; font-size:14px;" onclick="backToMainMenu()" data-i18n="back">BACK</button>
              </div>
@@ -320,7 +342,7 @@
                      <span id="e-score" style="color:red; font-size:16px;">0</span>
                  </div>
              </div>
-             <div style="font-size:10px; color:#aaa; margin-top:5px;" data-i18n="target">Target: Don't Crash!</div>
+             <div id="online-target-text" style="font-size:10px; color:#aaa; margin-top:5px;" data-i18n="target">Target: Don't Crash!</div>
          </div>
 
          <div id="pause-menu">
@@ -483,6 +505,8 @@
                          <div class="lab-row"><span data-i18n="predict">Predict (Auto-Pilot)</span> <label class="switch"><input type="checkbox" id="lab-tog-sherlock" onchange="toggleLabSetting('sherlock', this.checked)"><span class="slider"></span></label></div>
                          <div class="lab-row"><span data-i18n="hrBreak">HR Break (Invincibility)</span> <label class="switch"><input type="checkbox" id="lab-tog-hr" onchange="toggleLabSetting('hrbreak', this.checked)"><span class="slider"></span></label></div>
                          <div class="lab-row"><span data-i18n="deadEye">Dead Eye (Targeting)</span> <label class="switch"><input type="checkbox" id="lab-tog-arthur" onchange="toggleLabSetting('arthur', this.checked)"><span class="slider"></span></label></div>
+                         <div class="lab-row"><span data-i18n="santaPower">Santa's Gift (Sleigh / Nice Filter)</span> <label class="switch"><input type="checkbox" id="lab-tog-santa" onchange="toggleLabSetting('santa', this.checked)"><span class="slider"></span></label></div>
+                         <div class="lab-row"><span data-i18n="witchPower">Witch's Magic (Broom / Bats)</span> <label class="switch"><input type="checkbox" id="lab-tog-witch" onchange="toggleLabSetting('witch', this.checked)"><span class="slider"></span></label></div>
                      </div>
 
                      <div class="lab-section" style="border: 1px solid #ff3333;">
@@ -813,7 +837,7 @@
 
          const TRANSLATIONS = {
     en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", understand: "I UNDERSTAND", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS",
-    comingSoon: "COMING SOON", comingSoonDesc: "Available in a future update.", storyDesc: "The classic adventure.<br>Secrets & Bosses.", endlessDesc: "Infinite run.<br>Speed increases forever.<br><b style='color:white;'>Leaderboard Enabled</b>", pvpDesc: "Score Battle!<br>Online.", trophiesLabel: "Trophies:", back: "BACK", selectOpponent: "Select Opponent", online: "ONLINE", onlineDesc: "Matchmake with<br>Real Humans.", snowMode: "SNOWBALL MODE", snowModeDesc: "Online snowball fight!<br>Friend or random rival.", snowBtn: "SNOW", round: "ROUND", you: "YOU", opponent: "OPPONENT", target: "Target: Don't Crash!",
+    comingSoon: "COMING SOON", comingSoonDesc: "Available in a future update.", storyDesc: "The classic adventure.<br>Secrets & Bosses.", endlessDesc: "Infinite run.<br>Speed increases forever.<br><b style='color:white;'>Leaderboard Enabled</b>", pvpDesc: "Score Battle!<br>Online.", trophiesLabel: "Trophies:", back: "BACK", selectOpponent: "Select Opponent", online: "ONLINE", onlineDesc: "Matchmake with<br>Real Humans.", snowMode: "SNOWBALL MODE", snowModeDesc: "Dodge & throw online!<br>First to 5 hits wins the round.", snowBtn: "SNOW", snowTarget: "First to 5 hits wins the round!", santaPower: "Santa's Gift (Sleigh / Nice Filter)", witchPower: "Witch's Magic (Broom / Bats)", fnfMode: "FNF BATTLE", fnfModeDesc: "Rhythm duel online!<br>Tap the lanes, push the bar!", fnfTarget: "Push the tug-of-war bar to your side!", round: "ROUND", you: "YOU", opponent: "OPPONENT", target: "Target: Don't Crash!",
     music: "MUSIC", musicVol: "MUSIC VOL", sfx: "SFX", sfxVol: "SFX VOL", woof: "WOOF", xmasMode: "CHRISTMAS", language: "LANGUAGE", resume: "RESUME", quitToMenu: "QUIT TO MENU",
     shopTitle: "Shop", dryFood: "Dry Food:", theLab: "THE LAB", skins: "SKINS", trails: "TRAILS",
     sellItem: "SELL ITEM", areYouSure: "Are you sure?", yes: "YES", no: "NO",
@@ -829,7 +853,7 @@
     shopEquipped: "EQUIPPED", shopEquip: "EQUIP", shopBuy: "BUY", shopSell: "SELL", achReward: "Reward:", none: "None",
     b1_1: "oh, here you are", b1_2: "I was waiting for you", b2_1: "you are getting out of control", b2_2: "you werent supposed to come HERE", b2_3: "Its too late to go back now....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "So, we will not talk about how a dog is flying?", b3_2: "Why am i even asking that's not even my thoughts, It's the game developer who's typing all this nonsense.", b3_3: "I guess he thought it would be funny to make me question why a dog is flying.", b3_4: "Let's start the fight i guess.", boss3Defeated: "DRAGON DEFEATED!", sys: "System Override...", bypass: "Bypassing...", admin: "Administrator Granted.", tbc: "To Be Continued...", cat: "THAT WAS A CAT", kid: "you got clipped by a kid lmao", err1: "Connection Error", fall: "Fell down!", wall: "Hit a wall!", eaten: "EATEN BY SHETOS!" },
     de: { play: "SPIELEN", shop: "GESCHÄFT", achieve: "ERFOLGE", friends: "FREUNDE", lead: "BESTEN", ai: "KI CHAT", redeem: "EINLÖSEN", high: "Höchstpunktzahl", food: "Trockenfutter", trophies: "Trophäen", games: "Spiele", welcome: "WILLKOMMEN BEI<br>FLYING SHETOS", understand: "ICH VERSTEHE", chooseMode: "Modus wählen", story: "GESCHICHTSMODUS", endless: "ENDLOSMODUS", pvp: "PVP-MODUS", settings: "EINSTELLUNGEN",
-    comingSoon: "BALD VERFÜGBAR", comingSoonDesc: "In einem zukünftigen Update verfügbar.", storyDesc: "Das klassische Abenteuer.<br>Geheimnisse & Bosse.", endlessDesc: "Endloser Lauf.<br>Die Geschwindigkeit steigt für immer.<br><b style='color:white;'>Bestenliste aktiviert</b>", pvpDesc: "Punkte-Battle!<br>Online.", trophiesLabel: "Trophäen:", back: "ZURÜCK", selectOpponent: "Gegner wählen", online: "ONLINE", onlineDesc: "Spiele gegen<br>echte Menschen.", snowMode: "SCHNEEBALL-MODUS", snowModeDesc: "Online-Schneeballschlacht!<br>Freund oder Zufallsgegner.", snowBtn: "SCHNEE", round: "RUNDE", you: "DU", opponent: "GEGNER", target: "Ziel: Nicht abstürzen!",
+    comingSoon: "BALD VERFÜGBAR", comingSoonDesc: "In einem zukünftigen Update verfügbar.", storyDesc: "Das klassische Abenteuer.<br>Geheimnisse & Bosse.", endlessDesc: "Endloser Lauf.<br>Die Geschwindigkeit steigt für immer.<br><b style='color:white;'>Bestenliste aktiviert</b>", pvpDesc: "Punkte-Battle!<br>Online.", trophiesLabel: "Trophäen:", back: "ZURÜCK", selectOpponent: "Gegner wählen", online: "ONLINE", onlineDesc: "Spiele gegen<br>echte Menschen.", snowMode: "SCHNEEBALL-MODUS", snowModeDesc: "Online ausweichen & werfen!<br>Erste zu 5 Treffern gewinnt.", snowBtn: "SCHNEE", snowTarget: "Erste zu 5 Treffern gewinnt die Runde!", santaPower: "Santas Geschenk (Schlitten / Filter)", witchPower: "Hexen-Magie (Besen / Fledermäuse)", fnfMode: "FNF-DUELL", fnfModeDesc: "Rhythmus-Duell online!<br>Tippe die Lanes, schieb den Balken!", fnfTarget: "Schieb den Balken auf deine Seite!", round: "RUNDE", you: "DU", opponent: "GEGNER", target: "Ziel: Nicht abstürzen!",
     music: "MUSIK", musicVol: "MUSIK LAUTST.", sfx: "SFX", sfxVol: "SFX LAUTST.", woof: "WUFF", xmasMode: "WEIHNACHTEN", language: "SPRACHE", resume: "FORTSETZEN", quitToMenu: "ZUM MENÜ",
     shopTitle: "Geschäft", dryFood: "Trockenfutter:", theLab: "DAS LABOR", skins: "SKINS", trails: "SPUREN",
     sellItem: "ARTIKEL VERKAUFEN", areYouSure: "Bist du sicher?", yes: "JA", no: "NEIN",
@@ -843,7 +867,7 @@
     shopEquipped: "AUSGERÜSTET", shopEquip: "AUSRÜSTEN", shopBuy: "KAUFEN", shopSell: "VERKAUFEN", achReward: "Belohnung:", none: "Keine",
     b1_1: "oh, da bist du ja", b1_2: "ich habe auf dich gewartet", b2_1: "du gerätst außer kontrolle", b2_2: "du solltest nicht HIERHER kommen", b2_3: "es ist zu spät um umzukehren....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "Also, wir reden nicht darueber, wie ein Hund fliegt?", b3_2: "Warum frage ich ueberhaupt? Das sind nicht mal meine Gedanken, der Spieleentwickler tippt hier den ganzen Unsinn.", b3_3: "Ich glaube, er dachte, es waere lustig, mich fragen zu lassen, warum ein Hund fliegt.", b3_4: "Dann fangen wir wohl besser an zu kaempfen.", boss3Defeated: "DRACHE BESIEGT!", sys: "Systemüberschreibung...", bypass: "Umgehung...", admin: "Administrator gewährt.", tbc: "Fortsetzung folgt...", cat: "DAS WAR EINE KATZE", kid: "du wurdest von einem kind erwischt lmao", err1: "Verbindungsfehler", fall: "Heruntergefallen!", wall: "Wand getroffen!", eaten: "VON SHETOS GEFRESSEN!" },
     ar: { play: "العب", shop: "المتجر", achieve: "إنجازات", friends: "أصدقاء", lead: "المتصدرين", ai: "محادثة ذكاء", redeem: "استرداد", high: "أعلى نتيجة", food: "طعام جاف", trophies: "الجوائز", games: "الألعاب", welcome: "مرحباً بكم في<br>فلاينج شيتوس", understand: "أنا أفهم", chooseMode: "اختر الوضع", story: "وضع القصة", endless: "وضع لا نهاية له", pvp: "وضع لاعب ضد لاعب", settings: "الإعدادات",
-    comingSoon: "قريباً", comingSoonDesc: "متاح في تحديث مستقبلي.", storyDesc: "المغامرة الكلاسيكية.<br>أسرار وزعماء.", endlessDesc: "جري لا نهائي.<br>السرعة تزداد إلى الأبد.<br><b style='color:white;'>لوحة المتصدرين مفعّلة</b>", pvpDesc: "معركة النقاط!<br>أونلاين.", trophiesLabel: "الجوائز:", back: "رجوع", selectOpponent: "اختر الخصم", online: "أونلاين", onlineDesc: "طابق مع<br>بشر حقيقيين.", snowMode: "وضع كرة الثلج", snowModeDesc: "معركة كرات ثلج أونلاين!<br>مع صديق أو خصم عشوائي.", snowBtn: "ثلج", round: "الجولة", you: "أنت", opponent: "الخصم", target: "الهدف: لا تصطدم!",
+    comingSoon: "قريباً", comingSoonDesc: "متاح في تحديث مستقبلي.", storyDesc: "المغامرة الكلاسيكية.<br>أسرار وزعماء.", endlessDesc: "جري لا نهائي.<br>السرعة تزداد إلى الأبد.<br><b style='color:white;'>لوحة المتصدرين مفعّلة</b>", pvpDesc: "معركة النقاط!<br>أونلاين.", trophiesLabel: "الجوائز:", back: "رجوع", selectOpponent: "اختر الخصم", online: "أونلاين", onlineDesc: "طابق مع<br>بشر حقيقيين.", snowMode: "وضع كرة الثلج", snowModeDesc: "راوغ وارمِ أونلاين!<br>أول من يسجل 5 إصابات يفوز.", snowBtn: "ثلج", snowTarget: "أول من يسجل 5 إصابات يفوز بالجولة!", santaPower: "هدية سانتا (المزلجة / الفلتر)", witchPower: "سحر الساحرة (المكنسة / الخفافيش)", fnfMode: "معركة الإيقاع", fnfModeDesc: "مبارزة إيقاع أونلاين!<br>اضغط المسارات وادفع الشريط!", fnfTarget: "ادفع الشريط إلى جهتك!", round: "الجولة", you: "أنت", opponent: "الخصم", target: "الهدف: لا تصطدم!",
     music: "الموسيقى", musicVol: "حجم الموسيقى", sfx: "المؤثرات", sfxVol: "حجم المؤثرات", woof: "ووف", xmasMode: "عيد الميلاد", language: "اللغة", resume: "استئناف", quitToMenu: "العودة إلى القائمة",
     shopTitle: "المتجر", dryFood: "الطعام الجاف:", theLab: "المختبر", skins: "الأشكال", trails: "الأثر",
     sellItem: "بيع العنصر", areYouSure: "هل أنت متأكد؟", yes: "نعم", no: "لا",
@@ -857,7 +881,7 @@
     shopEquipped: "مُجهَّز", shopEquip: "تجهيز", shopBuy: "شراء", shopSell: "بيع", achReward: "المكافأة:", none: "لا شيء",
     b1_1: "أوه، ها أنت ذا", b1_2: "كنت في انتظارك", b2_1: "أنت تخرج عن السيطرة", b2_2: "لم يكن من المفترض أن تأتي إلى هنا", b2_3: "لقد فات الأوان للتراجع....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "طيب، مش هنتكلم إزاي كلب بيطير؟", b3_2: "ليه بسأل أصلًا؟ دي مش أفكاري، ده مطور اللعبة اللي بيكتب كل الهبل ده.", b3_3: "أكيد افتكر إنه مضحك يخليني أسأل ليه كلب بيطير.", b3_4: "خلينا نبدأ القتال يعني.", boss3Defeated: "تم هزيمة التنين!", sys: "تجاوز النظام...", bypass: "جاري التجاوز...", admin: "تم منح حق المسؤول.", tbc: "يتبع...", cat: "تلك كانت قطة", kid: "لقد صدمك طفل لول", err1: "خطأ في الاتصال", fall: "سقطت!", wall: "اصطدمت بجدار!", eaten: "أكلك شيتوس!" },
     it: { play: "GIOCA", shop: "NEGOZIO", achieve: "RISULTATI", friends: "AMICI", lead: "CLASSIFICA", ai: "CHAT AI", redeem: "RISCATTA", high: "Punteggio Max", food: "Cibo Secco", trophies: "Trofei", games: "Giochi", welcome: "BENVENUTO A<br>FLYING SHETOS", understand: "CAPISCO", chooseMode: "Scegli Modalità", story: "MODALITÀ STORIA", endless: "MODALITÀ INFINITA", pvp: "MODALITÀ PVP", settings: "IMPOSTAZIONI",
-    comingSoon: "IN ARRIVO", comingSoonDesc: "Disponibile in un futuro aggiornamento.", storyDesc: "L'avventura classica.<br>Segreti & Boss.", endlessDesc: "Corsa infinita.<br>La velocità aumenta per sempre.<br><b style='color:white;'>Classifica attivata</b>", pvpDesc: "Battaglia di punteggi!<br>Online.", trophiesLabel: "Trofei:", back: "INDIETRO", selectOpponent: "Seleziona Avversario", online: "ONLINE", onlineDesc: "Abbinati con<br>persone reali.", snowMode: "MODALITÀ PALLE DI NEVE", snowModeDesc: "Battaglia online a palle di neve!<br>Amico o rivale casuale.", snowBtn: "NEVE", round: "ROUND", you: "TU", opponent: "AVVERSARIO", target: "Obiettivo: Non schiantarti!",
+    comingSoon: "IN ARRIVO", comingSoonDesc: "Disponibile in un futuro aggiornamento.", storyDesc: "L'avventura classica.<br>Segreti & Boss.", endlessDesc: "Corsa infinita.<br>La velocità aumenta per sempre.<br><b style='color:white;'>Classifica attivata</b>", pvpDesc: "Battaglia di punteggi!<br>Online.", trophiesLabel: "Trofei:", back: "INDIETRO", selectOpponent: "Seleziona Avversario", online: "ONLINE", onlineDesc: "Abbinati con<br>persone reali.", snowMode: "MODALITÀ PALLE DI NEVE", snowModeDesc: "Schiva e lancia online!<br>Chi colpisce 5 volte vince.", snowBtn: "NEVE", snowTarget: "Chi colpisce 5 volte vince il round!", santaPower: "Regalo di Natale (Slitta / Filtro)", witchPower: "Magia della Strega (Scopa / Pipistrelli)", fnfMode: "DUELLO FNF", fnfModeDesc: "Duello ritmico online!<br>Tocca le corsie, spingi la barra!", fnfTarget: "Spingi la barra dalla tua parte!", round: "ROUND", you: "TU", opponent: "AVVERSARIO", target: "Obiettivo: Non schiantarti!",
     music: "MUSICA", musicVol: "VOLUME MUSICA", sfx: "SFX", sfxVol: "VOLUME SFX", woof: "WOOF", xmasMode: "NATALE", language: "LINGUA", resume: "RIPRENDI", quitToMenu: "ESCI AL MENU",
     shopTitle: "Negozio", dryFood: "Cibo Secco:", theLab: "IL LABORATORIO", skins: "SKIN", trails: "SCIE",
     sellItem: "VENDI OGGETTO", areYouSure: "Sei sicuro?", yes: "SÌ", no: "NO",
@@ -1433,19 +1457,17 @@
              activeInviteDocId = null; activeInviteMatchId = null;
          }
 
-         window.challengeFriend = async function(friendID, friendName, snow) {
-             playClickSound(); snowballMode = !!snow; closeAllModals(); if(!db || !currentUser) return;
+         window.challengeFriend = async function(friendID, friendName, mode) {
+             playClickSound(); snowballMode = (mode === 'snowball' || mode === true); fnfMode = (mode === 'fnf'); closeAllModals(); if(!db || !currentUser) return;
              mainMenuMusic.pause(); mainMenuMusic.currentTime = 0; document.getElementById('landing-page').style.display = 'none'; 
-             let loadScr = document.createElement('div'); loadScr.id = "temp-online-loader"; loadScr.style.position = "absolute"; loadScr.style.top=0; loadScr.style.left=0; loadScr.style.width="100%"; loadScr.style.height="100%"; loadScr.style.background="black"; loadScr.style.color="white"; loadScr.style.display="flex"; loadScr.style.flexDirection="column"; loadScr.style.justifyContent="center"; loadScr.style.alignItems="center"; loadScr.style.fontFamily="'Press Start 2P'"; 
-             loadScr.innerHTML = `<div style="margin-bottom:20px;">${getLangText('waitingFor')} ${friendName.toUpperCase()}...${snowballMode ? ' ❄' : ''}</div><div class="loader-spinner" style="width:40px;height:40px;border:4px solid white;border-top:4px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;"></div><button onclick="cancelMatchSearch()" class="btn-yellow" style="padding:10px 20px;font-family:'Press Start 2P';cursor:pointer;">${getLangText('cancel')}</button><style>@keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}</style>`; 
-             document.getElementById('game-container').appendChild(loadScr);
+             showMatchLoader(getLangText('waitingFor') + ' ' + friendName.toUpperCase() + '...' + (snowballMode ? ' ❄' : (fnfMode ? ' 🎵' : '')));
              
              let createdMatchID = null;
              // A token so cancelMatchSearch() can abort a challenge that is still being
              // created: the CANCEL button now works even while the match doc is in flight.
              const myToken = ++challengeCancelToken;
              try {
-                 const newMatch = await db.collection('matches').add({ hostId: currentUser.uid, hostName: currentUser.displayName || "Player", status: 'waiting_for_friend', guestId: friendID, mode: snowballMode ? 'snowball' : 'normal', hostScore: 0, guestScore: 0, hostStatus: 'alive', guestStatus: 'alive', round: 1, hostWins: 0, guestWins: 0, hostSeen: Date.now(), timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                 const newMatch = await db.collection('matches').add({ hostId: currentUser.uid, hostName: currentUser.displayName || "Player", status: 'waiting_for_friend', guestId: friendID, mode: fnfMode ? 'fnf' : (snowballMode ? 'snowball' : 'normal'), hostScore: 0, guestScore: 0, hostStatus: 'alive', guestStatus: 'alive', round: 1, hostWins: 0, guestWins: 0, hostSeen: Date.now(), timestamp: firebase.firestore.FieldValue.serverTimestamp() });
                  if (myToken !== challengeCancelToken) { try { await newMatch.delete(); } catch (e2) {} return; }   // canceled while creating
                  createdMatchID = newMatch.id;
                  activeMatchID = newMatch.id; myOnlineRole = 'host';
@@ -1588,7 +1610,8 @@
                              <button class="chat-btn" onclick="openFriendChat('${uid}', '${safeName}')">${getLangText('chat')}</button>
                              <button class="chat-btn" style="background:#8e44ad;" onclick="donateToFriend('${uid}', '${safeName}')">${getLangText('donate')}</button>
                              <button class="chat-btn" style="background:#e67e22;" onclick="challengeFriend('${uid}', '${safeName}')">${getLangText('challenge')}</button>
-                             <button class="chat-btn" style="background:#4fc3f7; color:#000;" title="${getLangText('snowMode')}" onclick="challengeFriend('${uid}', '${safeName}', true)">❄ ${getLangText('challenge')}</button>
+                             <button class="chat-btn" style="background:#4fc3f7; color:#000;" title="${getLangText('snowMode')}" onclick="challengeFriend('${uid}', '${safeName}', 'snowball')">❄ ${getLangText('challenge')}</button>
+                             <button class="chat-btn" style="background:#7b2ff7;" title="${getLangText('fnfMode')}" onclick="challengeFriend('${uid}', '${safeName}', 'fnf')">🎵 ${getLangText('challenge')}</button>
                          </div>
                      </div>`;
                  }
@@ -1694,7 +1717,7 @@ window.triggerPvpTrashTalk = async function() {
          window.askShetosAboutItem = function(itemName) { playClickSound(); closeAllModals(); document.getElementById('chatModal').style.display = 'block'; const askText = `what do you think about the ${itemName}?`; const input = document.getElementById('chatInput'); input.value = askText; sendMessage(); }
          
          let labUnlocked = false; try { labUnlocked = localStorage.getItem('flappyLabUnlocked') === 'true'; } catch(e) {}
-         let customStats = { lives: 0, dashes: 0, bombs: 0, shrinks: 0, widens: 0, magnet: false, sherlock: false, hrbreak: false, arthur: false, visualSkin: 'default' };
+         let customStats = { lives: 0, dashes: 0, bombs: 0, shrinks: 0, widens: 0, magnet: false, sherlock: false, hrbreak: false, arthur: false, santa: false, witch: false, visualSkin: 'default' };
          let customTrailColors = { base: '#ffffff', shield: '#00ccff', damage: '#ff3333', potion: '#ff00ff', slow: '#ffffff', food: '#ffd700' };
          try { let cStat = JSON.parse(localStorage.getItem('flappyCustomStats')); if(cStat) customStats = {...customStats, ...cStat}; } catch(e) {}
          try { let cTrail = JSON.parse(localStorage.getItem('flappyCustomTrail')); if(cTrail) customTrailColors = {...customTrailColors, ...cTrail}; } catch(e) {}
@@ -1714,6 +1737,8 @@ window.triggerPvpTrashTalk = async function() {
              document.getElementById('lab-tog-sherlock').checked = customStats.sherlock || false;
              document.getElementById('lab-tog-hr').checked = customStats.hrbreak || false;
              document.getElementById('lab-tog-arthur').checked = customStats.arthur || false;
+             document.getElementById('lab-tog-santa').checked = customStats.santa || false;
+             document.getElementById('lab-tog-witch').checked = customStats.witch || false;
              
              const allSkinKeys = Object.keys(SKINS).filter(k => k !== 'custom');
              let tempIndex = allSkinKeys.indexOf(customStats.visualSkin);
@@ -1733,7 +1758,7 @@ window.triggerPvpTrashTalk = async function() {
              playClickSound(); 
              if (checked) {
                  let activeCount = 0;
-                 ['magnet', 'sherlock', 'hrbreak', 'arthur'].forEach(k => {
+                 ['magnet', 'sherlock', 'hrbreak', 'arthur', 'santa', 'witch'].forEach(k => {
                      if (customStats[k]) activeCount++;
                  });
                  if (activeCount >= 3) {
@@ -1742,6 +1767,8 @@ window.triggerPvpTrashTalk = async function() {
                      if(settingName === 'sherlock') elId = 'lab-tog-sherlock';
                      if(settingName === 'hrbreak') elId = 'lab-tog-hr';
                      if(settingName === 'arthur') elId = 'lab-tog-arthur';
+                     if(settingName === 'santa') elId = 'lab-tog-santa';
+                     if(settingName === 'witch') elId = 'lab-tog-witch';
                      document.getElementById(elId).checked = false;
                      showCheatFeedback(getLangText("maxToggles"));
                      return;
@@ -2412,7 +2439,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          // One button (GIFT / press E), two possible gifts rolled 50/50 on every use,
          // both sharing a single 30s cooldown that starts when the gift effect ends.
          window.triggerSantaPower = function() {
-             if (currentSkinKey !== 'santa' || santaCooldown > 0 || isSleighActive || isNiceFilterActive || isPaused || (game_mode !== 'running' && game_mode !== 'boss')) return;
+             if (!((currentSkinKey === 'santa') || (currentSkinKey === 'custom' && customStats.santa)) || santaCooldown > 0 || isSleighActive || isNiceFilterActive || isPaused || (game_mode !== 'running' && game_mode !== 'boss')) return;
              playClickSound();
              if (Math.random() < 0.5) {
                  // --- SLEIGH BLITZ: 7s of invincible, fast, pipe-smashing magnet flight ---
@@ -2498,7 +2525,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          // One button (MAGIC / press F), 30s cooldown that starts when the power ends.
          // The ZONE decides the effect: before THE SUNSET -> Broom Boost, SUNSET or later -> Bats.
          window.triggerWitchPower = function() {
-             if (currentSkinKey !== 'witch' || witchCooldown > 0 || isBroomActive || isBatsActive || isPaused || (game_mode !== 'running' && game_mode !== 'boss')) return;
+             if (!((currentSkinKey === 'witch') || (currentSkinKey === 'custom' && customStats.witch)) || witchCooldown > 0 || isBroomActive || isBatsActive || isPaused || (game_mode !== 'running' && game_mode !== 'boss')) return;
              playClickSound();
              if (currentBGIndex >= SUNSET_AREA) {
                  activateBatsProtection();
@@ -2597,8 +2624,8 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
                  document.getElementById('sherlock-btn').style.display = (currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && customStats.sherlock)) ? 'flex' : 'none'; 
                  document.getElementById('hrbreak-btn').style.display = (currentSkinKey === 'employed' || (currentSkinKey === 'custom' && customStats.hrbreak)) ? 'flex' : 'none'; 
                 document.getElementById('arthur-btn').style.display = (currentSkinKey === 'arthur' || (currentSkinKey === 'custom' && customStats.arthur)) ? 'flex' : 'none'; 
-                document.getElementById('santa-btn').style.display = (currentSkinKey === 'santa') ? 'flex' : 'none'; 
-                document.getElementById('witch-btn').style.display = (currentSkinKey === 'witch') ? 'flex' : 'none'; 
+                document.getElementById('santa-btn').style.display = (currentSkinKey === 'santa' || (currentSkinKey === 'custom' && customStats.santa)) ? 'flex' : 'none'; 
+                document.getElementById('witch-btn').style.display = (currentSkinKey === 'witch' || (currentSkinKey === 'custom' && customStats.witch)) ? 'flex' : 'none'; 
                 document.getElementById('snowball-btn').style.display = (game_mode === 'online_match' && snowballMode) ? 'flex' : 'none'; 
                 
                 if (sherlockCooldown <= 0 && !isSherlockActive && document.getElementById('sherlock-btn').style.display !== 'none') document.getElementById('sherlock-btn').innerText = getLangText("predictBtn");
@@ -2836,19 +2863,22 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
 let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let shetosBotVelocityY = 0; let activeFriendChatID = null; let friendChatListener = null;
 
          // ======================= SNOWBALL PVP MODE (ONLINE) =======================
-         // An online_match with snowballs: you race a FRIEND or a RANDOM rival through the
-         // same score battle, but you can pelt each other. Your throw is synced through the
-         // match doc (hostSnow/guestSnow), so the opponent sees it fly in from their ghost
-         // and has a moment to dodge. A hit leaves the receiver SNOWED: weak flaps for ~1.75s.
-         // 3 ammo, one recharges every 4s. Rounds/trophies work exactly like normal online.
+         // An online_match snowball DUEL: no pipes at all, just two flyers, falling snow,
+         // and snowballs. You flap to dodge incoming balls while landing your own on the
+         // rival, who is drawn on the RIGHT side of the screen facing you (your throws are
+         // synced through the match doc: hostSnow/guestSnow, hits via hostTaken/guestTaken).
+         // A hit leaves the receiver SNOWED (weak flaps ~1.75s) and scores ONE point for
+         // the thrower. First to 5 hits wins the round; match is best of 3, like normal online.
          let snowballMode = false;
          let snowballs = [];          // {x, y, vx, vy, fromBot} - fromBot = incoming from the opponent
-         const SNOWBALL_MAX_AMMO = 3, SNOWBALL_RECHARGE = 4 * FPS;
+         const SNOWBALL_MAX_AMMO = 3, SNOWBALL_RECHARGE = 3 * FPS, SNOW_HITS_TO_WIN = 5;
          let snowballAmmo = SNOWBALL_MAX_AMMO, snowballRecharge = 0;
          let playerSnowed = 0;
          let snowMatchFlakes = [];
          let snowThrowSeq = 0, enemySnowSeq = -1, pendingSnowThrow = null;
-         function resetSnowballState() { snowballs = []; snowballAmmo = SNOWBALL_MAX_AMMO; snowballRecharge = 0; playerSnowed = 0; snowMatchFlakes = []; snowThrowSeq = 0; enemySnowSeq = -1; pendingSnowThrow = null; }
+         let snowHitsTaken = 0, snowEnemyTaken = 0;   // hits I've taken (= rival's score) and hits the rival took (= my score)
+         function snowballRivalX() { return CANVAS_WIDTH - 130; }   // the rival holds the right side of the screen
+         function resetSnowballState() { snowballs = []; snowballAmmo = SNOWBALL_MAX_AMMO; snowballRecharge = 0; playerSnowed = 0; snowMatchFlakes = []; snowThrowSeq = 0; enemySnowSeq = -1; pendingSnowThrow = null; snowHitsTaken = 0; snowEnemyTaken = 0; }
          window.throwSnowball = function() {
              if (game_mode !== 'online_match' || !snowballMode || isPaused || myHasCrashed || enemyHasCrashed || window.roundEnding || isRoundStarting) return;
              if (snowballAmmo <= 0) return;
@@ -2888,7 +2918,9 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
                  if (s.x < -40 || s.x > CANVAS_WIDTH + 40 || s.y < -40 || s.y > CANVAS_HEIGHT + 40) { snowballs.splice(i, 1); continue; }
                  if (s.fromBot) {
                      if (!myHasCrashed && Math.hypot(s.x - (bird.x + 20), s.y - (bird.y + 20)) < 26) {
-                         snowballs.splice(i, 1); playerSnowed = 70; triggerFlash('rgba(255,255,255,0.6)');
+                         snowballs.splice(i, 1); playerSnowed = 70; snowHitsTaken++;   // the rival scores the hit
+                         onlineDirty = true; flushOnlineSync(true);                    // tell them immediately
+                         triggerFlash('rgba(255,255,255,0.6)');
                          if (!sfxMuted) { damageSound.currentTime = 0; damageSound.play().catch(e => {}); }
                      }
                  } else if (Math.hypot(s.x - (enemyGhostRenderX + 20), s.y - (enemyGhostRenderY + 20)) < 26) {
@@ -2896,7 +2928,7 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
                  }
              }
              // ---- draw: light match snowfall, projectiles, frost vignette ----
-             if (!snowMatchFlakes.length) { for (let i = 0; i < 36; i++) snowMatchFlakes.push({ x: Math.random() * CANVAS_WIDTH, y: Math.random() * CANVAS_HEIGHT, r: 1 + Math.random() * 2, s: 0.4 + Math.random() }); }
+             if (!snowMatchFlakes.length) { for (let i = 0; i < 48; i++) snowMatchFlakes.push({ x: Math.random() * CANVAS_WIDTH, y: Math.random() * CANVAS_HEIGHT, r: 1 + Math.random() * 2, s: 0.4 + Math.random() }); }
              ctx.save();
              ctx.fillStyle = '#ffffff';
              for (let i = 0; i < snowMatchFlakes.length; i++) { const f = snowMatchFlakes[i]; f.y += f.s; f.x += Math.sin(f.y * 0.03) * 0.4; if (f.y > CANVAS_HEIGHT) { f.y = -4; f.x = Math.random() * CANVAS_WIDTH; } ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill(); }
@@ -2906,15 +2938,145 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
              const sb = document.getElementById('snowball-btn');
              if (sb && sb.style.display !== 'none') sb.innerText = getLangText('snowBtn') + ' x' + snowballAmmo + (snowballAmmo < SNOWBALL_MAX_AMMO ? ' (' + Math.ceil(snowballRecharge / FPS) + 's)' : '');
          }
+
+         // ======================= FNF BATTLE MODE (ONLINE) =======================
+         // A Friday-Night-Funkin'-style rhythm duel on the normal online-match rails
+         // (friend invite or random rival, best of 3, trophies). No pipes, no bird
+         // physics: both players get the SAME seeded chart (seed = match id + round,
+         // so both clients generate identical notes) and tap the 4 lanes in time.
+         // Good hits push the tug-of-war bar toward the rival, misses push it back;
+         // shove the bar to the rival's edge (net 20 hits) to take the round.
+         let fnfMode = false;
+         const FNF_LANES = 4, FNF_BPM = 132, FNF_SCROLL = 0.35, FNF_WINDOW = 130, FNF_GHOST_WINDOW = 250, FNF_BAR_STEP = 2.5, FNF_WIN_NET = 20;
+         const FNF_LANE_COLORS = ['#c864ff', '#00c8ff', '#32ff64', '#ff5050'];
+         const FNF_LANE_ARROWS = ['\u2190', '\u2193', '\u2191', '\u2192'];
+         let fnfNotes = []; let fnfChartStart = 0; let fnfHits = 0; let fnfMisses = 0; let fnfCombo = 0; let fnfBestCombo = 0;
+         let fnfEnemyHits = 0; let fnfEnemyMisses = 0;
+         let fnfLaneFx = [0, 0, 0, 0]; let fnfJudgeFx = null; let fnfHitFx = [];
+         function fnfSeed() { let h = 12345; const id = activeMatchID || 'local'; for (let i = 0; i < id.length; i++) { h = (h * 31 + id.charCodeAt(i)) | 0; } return (h ^ (online_round * 7919)) >>> 0; }
+         function fnfGenerateChart(seed) {   // mulberry32 PRNG: same seed -> identical chart on both clients
+             let a = seed >>> 0;
+             const rnd = function() { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+             const beat = 60000 / FNF_BPM;
+             const notes = [];
+             let tCur = 3000; let lane = 1;
+             for (let i = 0; i < 240; i++) {
+                 const r = rnd();
+                 let step = beat;
+                 if (r < 0.18) step = beat * 0.5; else if (r > 0.9) step = beat * 2;
+                 tCur += step;
+                 let next = Math.floor(rnd() * FNF_LANES);
+                 if (next === lane) next = (next + 1 + Math.floor(rnd() * (FNF_LANES - 1))) % FNF_LANES;
+                 lane = next;
+                 notes.push({ t: Math.round(tCur), lane: lane, hit: false, missed: false });
+             }
+             return notes;
+         }
+         function fnfBarMine() { return Math.max(0, Math.min(100, 50 + ((fnfHits - fnfMisses) - (fnfEnemyHits - fnfEnemyMisses)) * FNF_BAR_STEP)); }
+         function resetFNFState() { fnfNotes = fnfGenerateChart(fnfSeed()); fnfChartStart = 0; fnfHits = 0; fnfMisses = 0; fnfCombo = 0; fnfBestCombo = 0; fnfEnemyHits = 0; fnfEnemyMisses = 0; fnfLaneFx = [0, 0, 0, 0]; fnfJudgeFx = null; fnfHitFx = []; }
+         window.startFnfMode = function() { startOnlineMode('fnf'); };
+         function fnfTap(lane) {
+             if (!fnfMode || game_mode !== 'online_match' || isPaused || isRoundStarting || myHasCrashed || !fnfChartStart) return;
+             fnfLaneFx[lane] = 8;
+             const now = performance.now() - fnfChartStart;
+             let best = -1, bestDt = 1e9;
+             for (let i = 0; i < fnfNotes.length; i++) {
+                 const n = fnfNotes[i];
+                 if (n.t - now > FNF_GHOST_WINDOW) break;   // chart is time-sorted: nothing later can be in range
+                 if (n.hit || n.missed || n.lane !== lane) continue;
+                 const dt = Math.abs(n.t - now);
+                 if (dt < bestDt) { bestDt = dt; best = i; }
+             }
+             if (best >= 0 && bestDt <= FNF_WINDOW) {
+                 fnfNotes[best].hit = true; fnfHits++; fnfCombo++; if (fnfCombo > fnfBestCombo) fnfBestCombo = fnfCombo;
+                 fnfJudgeFx = { txt: bestDt <= 55 ? 'SICK!' : 'GOOD', col: bestDt <= 55 ? '#ffe14f' : '#32ff64', t: 40 };
+                 fnfHitFx.push({ lane: lane, t: 18 });
+                 playClickSound();
+                 onlineDirty = true;
+             } else if (best < 0 || bestDt > FNF_GHOST_WINDOW) {
+                 fnfMisses++; fnfCombo = 0; fnfJudgeFx = { txt: 'MISS', col: '#ff5050', t: 40 };   // flailing at nothing
+                 if (!sfxMuted) { damageSound.currentTime = 0; damageSound.play().catch(e => {}); }
+                 onlineDirty = true;
+             }
+         }
+         function updateFNFBattle() {
+             if (game_mode !== 'online_match' || !fnfMode) return;
+             if (!fnfChartStart && !isRoundStarting) fnfChartStart = performance.now();
+             const now = fnfChartStart ? performance.now() - fnfChartStart : -1e9;
+             for (let i = 0; i < fnfNotes.length; i++) {   // notes that sailed past the window un-hit are misses
+                 const n = fnfNotes[i];
+                 if (n.t - now > 1000) break;
+                 if (!n.hit && !n.missed && now - n.t > FNF_WINDOW) { n.missed = true; fnfMisses++; fnfCombo = 0; fnfJudgeFx = { txt: 'MISS', col: '#ff5050', t: 40 }; onlineDirty = true; }
+             }
+             for (let i = 0; i < FNF_LANES; i++) if (fnfLaneFx[i] > 0) fnfLaneFx[i]--;
+             if (fnfJudgeFx && --fnfJudgeFx.t <= 0) fnfJudgeFx = null;
+             for (let i = fnfHitFx.length - 1; i >= 0; i--) if (--fnfHitFx[i].t <= 0) fnfHitFx.splice(i, 1);
+             if (fnfNotes.length && now > fnfNotes[fnfNotes.length - 1].t + 2500 && !window.roundEnding) {   // chart ran out: most clean hits takes it
+                 window.roundEnding = true;
+                 const myNet = fnfHits - fnfMisses, theirNet = fnfEnemyHits - fnfEnemyMisses;
+                 if (myNet > theirNet) resolveRound('win'); else if (myNet < theirNet) resolveRound('loss'); else resolveRound('draw');
+             }
+             checkRoundResult();
+             drawFNFBattle(now);
+         }
+         function drawFNFBattle(now) {
+             const W = CANVAS_WIDTH, H = CANVAS_HEIGHT;
+             const g = ctx.createLinearGradient(0, 0, 0, H);   // stage lights
+             g.addColorStop(0, '#1a0b2e'); g.addColorStop(0.6, '#2b1055'); g.addColorStop(1, '#12082a');
+             ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+             const beatMs = 60000 / FNF_BPM;
+             const bounce = Math.abs(Math.sin((now / beatMs) * Math.PI));
+             const laneW = W / FNF_LANES, hitY = H - 70;
+             for (let i = 0; i < FNF_LANES; i++) {   // lane strips + receptor arrows
+                 ctx.fillStyle = 'rgba(255,255,255,0.04)'; ctx.fillRect(i * laneW + 2, 150, laneW - 4, H - 150);
+                 ctx.save();
+                 ctx.globalAlpha = fnfLaneFx[i] > 0 ? 1 : 0.35;
+                 ctx.fillStyle = FNF_LANE_COLORS[i];
+                 ctx.shadowColor = FNF_LANE_COLORS[i]; ctx.shadowBlur = fnfLaneFx[i] > 0 ? 16 : 0;
+                 ctx.font = '26px "Press Start 2P", cursive'; ctx.textAlign = 'center';
+                 ctx.fillText(FNF_LANE_ARROWS[i], i * laneW + laneW / 2, hitY + 10);
+                 ctx.restore();
+             }
+             for (let i = 0; i < fnfNotes.length; i++) {   // falling notes
+                 const n = fnfNotes[i];
+                 if (n.hit || n.missed) continue;
+                 const y = hitY - (n.t - now) * FNF_SCROLL;
+                 if (y < 140 || y > H + 40) continue;
+                 ctx.save();
+                 ctx.fillStyle = FNF_LANE_COLORS[n.lane]; ctx.shadowColor = FNF_LANE_COLORS[n.lane]; ctx.shadowBlur = 10;
+                 ctx.font = '24px "Press Start 2P", cursive'; ctx.textAlign = 'center';
+                 ctx.fillText(FNF_LANE_ARROWS[n.lane], n.lane * laneW + laneW / 2, y);
+                 ctx.restore();
+             }
+             for (let i = 0; i < fnfHitFx.length; i++) {   // hit bursts on the receptor
+                 const fx = fnfHitFx[i];
+                 ctx.save(); ctx.globalAlpha = fx.t / 18; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3;
+                 ctx.beginPath(); ctx.arc(fx.lane * laneW + laneW / 2, hitY, 30 - fx.t, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+             }
+             // tug-of-war bar: green (me) pushes from the right, red (rival) from the left
+             const barW = W - 40, barX = 20, barY = 16, mine = fnfBarMine();
+             ctx.fillStyle = '#ff5050'; ctx.fillRect(barX, barY, barW, 14);
+             ctx.fillStyle = '#32ff64'; ctx.fillRect(barX + barW * (1 - mine / 100), barY, barW * mine / 100, 14);
+             ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.strokeRect(barX, barY, barW, 14);
+             ctx.fillStyle = 'white'; ctx.beginPath(); ctx.arc(barX + barW * (1 - mine / 100), barY + 7, 9, 0, Math.PI * 2); ctx.fill();
+             // performers: rival top-left facing me, me top-right facing the rival, both bobbing on the beat
+             if (PLAYER_IMG.complete && PLAYER_IMG.naturalWidth) { ctx.save(); ctx.translate(70, 96 - bounce * 8); ctx.rotate(Math.sin((now / beatMs) * Math.PI) * 0.05); ctx.drawImage(PLAYER_IMG, -45, -33, 90, 66); ctx.restore(); }
+             const mImg = bird.MyImg;
+             if (mImg && mImg.complete && mImg.naturalWidth) { ctx.save(); ctx.translate(W - 70, 96 - bounce * 8); ctx.scale(-1, 1); ctx.rotate(Math.sin((now / beatMs) * Math.PI) * 0.05); ctx.drawImage(mImg, -45, -33, 90, 66); ctx.restore(); }
+             ctx.fillStyle = 'white'; ctx.font = '8px Arial'; ctx.textAlign = 'center';
+             ctx.fillText(opponentName, 70, 142); ctx.fillText(getLangText('you'), W - 70, 142);
+             if (fnfJudgeFx) { ctx.save(); ctx.globalAlpha = Math.min(1, fnfJudgeFx.t / 20); ctx.fillStyle = fnfJudgeFx.col; ctx.font = '16px "Press Start 2P"'; ctx.textAlign = 'center'; ctx.fillText(fnfJudgeFx.txt, W / 2, hitY - 66); ctx.restore(); }
+             if (fnfCombo > 1) { ctx.fillStyle = 'white'; ctx.font = '12px "Press Start 2P"'; ctx.textAlign = 'center'; ctx.fillText(fnfCombo + ' COMBO', W / 2, hitY - 40); }
+         }
          window.openPvpSubMenu = function() { document.getElementById('mode-main-menu').style.display = 'none'; document.getElementById('pvp-sub-menu').style.display = 'flex'; }
          window.backToMainMenu = function() { document.getElementById('pvp-sub-menu').style.display = 'none'; document.getElementById('mode-main-menu').style.display = 'flex'; }
          window.startStoryMode = function() { closeAllModals(); mainMenuMusic.pause(); mainMenuMusic.currentTime = 0; game_mode = 'running'; isEndless = false; reset_game(); document.getElementById('settings-btn').style.display = 'block'; myCanvas.style.filter = "none"; if (!musicMuted) { bgMusic.currentTime = 0; bgMusic.play().catch(e => console.log(e)); } if(backgroundImages[0] && backgroundImages[0].complete) ctx.drawImage(backgroundImages[0], 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); transitionText = getAreaName(0); transitionType = "normal"; transitionDuration = 70; transitionTimer = 70; previousBGIndex = 0; }
-         window.startShetosMode = function() { closeAllModals(); snowballMode = false; mainMenuMusic.pause(); mainMenuMusic.currentTime = 0; game_mode = 'pvp_shetos'; reset_game(); shetosBotY = CANVAS_HEIGHT / 2; shetosBotScore = 0; shetosBotAlive = true; shetosBotVelocityY = 0; shetosPvpScore = 0; shetosPvpBubbleText = ""; opponentName = "SHETOS AI"; enemyWins = 0; myWins = 0; online_round = 1; document.getElementById('online-ui').style.display = 'block'; updateOnlineUI(); if(!musicMuted) { bgMusic.currentTime = 0; bgMusic.play().catch(e=>{}); } document.getElementById('settings-btn').style.display = 'block'; updateAbilityButtons(); triggerPvpTrashTalk(); }
+         window.startShetosMode = function() { closeAllModals(); snowballMode = false; fnfMode = false; mainMenuMusic.pause(); mainMenuMusic.currentTime = 0; game_mode = 'pvp_shetos'; reset_game(); shetosBotY = CANVAS_HEIGHT / 2; shetosBotScore = 0; shetosBotAlive = true; shetosBotVelocityY = 0; shetosPvpScore = 0; shetosPvpBubbleText = ""; opponentName = "SHETOS AI"; enemyWins = 0; myWins = 0; online_round = 1; document.getElementById('online-ui').style.display = 'block'; updateOnlineUI(); if(!musicMuted) { bgMusic.currentTime = 0; bgMusic.play().catch(e=>{}); } document.getElementById('settings-btn').style.display = 'block'; updateAbilityButtons(); triggerPvpTrashTalk(); }
 
          // Snowball mode is ONLINE: matchmake with a random rival (friend challenges carry
          // the mode in their match doc - see challengeFriend). startOnlineMode(true) does
          // the login/db checks, so this is safe to call straight from the menu card.
-         window.startSnowballMode = function() { startOnlineMode(true); };
+         window.startSnowballMode = function() { startOnlineMode('snowball'); };
 
          function updateShetosBot() { if (game_mode !== 'pvp_shetos') return; if (!shetosBotAlive) { shetosBotVelocityY += 0.6; shetosBotY += shetosBotVelocityY; } else { let targetY = CANVAS_HEIGHT / 2; let closestDist = 9999; let nextPipe = null; for(let p of pipes) { if(p.x + p.MyImg.width > bird.x && !p.flipV && (p.x < closestDist)) { closestDist = p.x; nextPipe = p; } } if (nextPipe) { let gapCenter = nextPipe.y + nextPipe.MyImg.height + (isWidenActive? 140 : 70); targetY = gapCenter; } let diff = targetY - shetosBotY; shetosBotY += diff * 0.18; } ctx.save(); ctx.globalAlpha = shetosBotAlive ? 0.9 : 0.5; ctx.translate(bird.x + 20, shetosBotY + 20); if (!shetosBotAlive) { ctx.rotate((Math.min(shetosBotVelocityY * 5, 90) * Math.PI) / 180); } ctx.drawImage(PLAYER_IMG, -20, -20, 40, 40); ctx.restore(); if (shetosBotAlive && shetosPvpBubbleTimer > 0 && shetosPvpBubbleText) { ctx.save(); ctx.font = '10px "Press Start 2P", cursive'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(shetosPvpBubbleText, bird.x + 20, shetosBotY - 15); ctx.restore(); shetosPvpBubbleTimer--; } }
 
@@ -2989,9 +3151,32 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
              showCheatFeedback(getLangText("opponentDisconnected"));
              setTimeout(function() { triggerGameOver("VICTORY! +" + trophyChange + " 🏆"); document.getElementById('online-ui').style.display = 'none'; }, 1000);
          }
-         function listenToActiveMatch() { unsubscribeMatch = db.collection('matches').doc(activeMatchID).onSnapshot((snap) => { const data = snap.data(); if (!data) { if (game_mode === 'online_match') { handleOpponentLeft(); } else { const deadLoader = document.getElementById('temp-online-loader'); if (deadLoader) deadLoader.remove(); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; } return; } /* only REMOTE updates count as opponent presence (our own writes must not) */ if (!snap.metadata.hasPendingWrites) opponentLastSeen = Date.now(); if (myOnlineRole === 'host') { opponentName = data.guestName || "Opponent"; if (data.guestY !== undefined) enemyGhostY = data.guestY; if (data.guestScore !== undefined) enemyGhostScore = data.guestScore; online_score_enemy = data.guestScore || 0; enemyCurrentVisibleScore = online_score_enemy; enemyWins = data.guestWins || 0; myWins = data.hostWins || 0; enemyHasCrashed = data.guestStatus === 'crashed'; if (snowballMode && data.guestSnow && data.guestSnow.r === online_round && data.guestSnow.seq !== enemySnowSeq) { enemySnowSeq = data.guestSnow.seq; spawnEnemySnowball(data.guestSnow); } } else { opponentName = data.hostName || "Opponent"; if (data.hostY !== undefined) enemyGhostY = data.hostY; if (data.hostScore !== undefined) enemyGhostScore = data.hostScore; online_score_enemy = data.hostScore || 0; enemyCurrentVisibleScore = online_score_enemy; enemyWins = data.hostWins || 0; myWins = data.guestWins || 0; enemyHasCrashed = data.hostStatus === 'crashed'; if (snowballMode && data.hostSnow && data.hostSnow.r === online_round && data.hostSnow.seq !== enemySnowSeq) { enemySnowSeq = data.hostSnow.seq; spawnEnemySnowball(data.hostSnow); } } if (data.status === 'declined') { const dl = document.getElementById('temp-online-loader'); if (dl) dl.remove(); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } db.collection('matches').doc(activeMatchID).delete().catch(() => {}); activeMatchID = null; myOnlineRole = null; showCheatFeedback(getLangText("challengeDeclined")); quitToMenu(); return; } if (data.status === 'starting' && document.getElementById('temp-online-loader')) { document.getElementById('temp-online-loader').remove(); trophyProcessed = false; snowballMode = (data.mode === 'snowball'); startGameLoopOnline(); } if ((data.hostWins || 0) >= 2 || (data.guestWins || 0) >= 2) { endMatchLogic(data); return; } if (data.status === 'ended') { if (game_mode === 'online_match') { handleOpponentLeft(); } else { if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; const staleLoader = document.getElementById('temp-online-loader'); if (staleLoader) staleLoader.remove(); } return; } if (data.round > online_round) { online_round = data.round; resetOnlineRound(); triggerFlash("white"); } if (game_mode === 'online_match') { try { checkRoundResult(); } catch (e) { console.log(e); } } }, (err) => console.error("Match listener error:", err)); }
+         function listenToActiveMatch() { unsubscribeMatch = db.collection('matches').doc(activeMatchID).onSnapshot((snap) => { const data = snap.data(); if (!data) { if (game_mode === 'online_match') { handleOpponentLeft(); } else { const deadLoader = document.getElementById('temp-online-loader'); if (deadLoader) deadLoader.remove(); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; } return; } /* only REMOTE updates count as opponent presence (our own writes must not) */ if (!snap.metadata.hasPendingWrites) opponentLastSeen = Date.now(); if (myOnlineRole === 'host') { opponentName = data.guestName || "Opponent"; if (data.guestY !== undefined) enemyGhostY = data.guestY; if (data.guestScore !== undefined) enemyGhostScore = data.guestScore; online_score_enemy = data.guestScore || 0; enemyCurrentVisibleScore = online_score_enemy; enemyWins = data.guestWins || 0; myWins = data.hostWins || 0; enemyHasCrashed = data.guestStatus === 'crashed'; if (fnfMode && data.guestFnf) { fnfEnemyHits = data.guestFnf.h || 0; fnfEnemyMisses = data.guestFnf.m || 0; } if (snowballMode) { snowEnemyTaken = data.guestTaken || 0; if (data.guestSnow && data.guestSnow.r === online_round && data.guestSnow.seq !== enemySnowSeq) { enemySnowSeq = data.guestSnow.seq; spawnEnemySnowball(data.guestSnow); } } } else { opponentName = data.hostName || "Opponent"; if (data.hostY !== undefined) enemyGhostY = data.hostY; if (data.hostScore !== undefined) enemyGhostScore = data.hostScore; online_score_enemy = data.hostScore || 0; enemyCurrentVisibleScore = online_score_enemy; enemyWins = data.hostWins || 0; myWins = data.guestWins || 0; enemyHasCrashed = data.hostStatus === 'crashed'; if (fnfMode && data.hostFnf) { fnfEnemyHits = data.hostFnf.h || 0; fnfEnemyMisses = data.hostFnf.m || 0; } if (snowballMode) { snowEnemyTaken = data.hostTaken || 0; if (data.hostSnow && data.hostSnow.r === online_round && data.hostSnow.seq !== enemySnowSeq) { enemySnowSeq = data.hostSnow.seq; spawnEnemySnowball(data.hostSnow); } } } if (data.status === 'declined') { const dl = document.getElementById('temp-online-loader'); if (dl) dl.remove(); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } db.collection('matches').doc(activeMatchID).delete().catch(() => {}); activeMatchID = null; myOnlineRole = null; showCheatFeedback(getLangText("challengeDeclined")); quitToMenu(); return; } if (data.status === 'starting' && document.getElementById('temp-online-loader')) { document.getElementById('temp-online-loader').remove(); trophyProcessed = false; snowballMode = (data.mode === 'snowball'); fnfMode = (data.mode === 'fnf'); startGameLoopOnline(); } if ((data.hostWins || 0) >= 2 || (data.guestWins || 0) >= 2) { endMatchLogic(data); return; } if (data.status === 'ended') { if (game_mode === 'online_match') { handleOpponentLeft(); } else { if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; const staleLoader = document.getElementById('temp-online-loader'); if (staleLoader) staleLoader.remove(); } return; } if (data.round > online_round) { online_round = data.round; resetOnlineRound(); triggerFlash("white"); } if (game_mode === 'online_match') { try { checkRoundResult(); } catch (e) { console.log(e); } } }, (err) => console.error("Match listener error:", err)); }
          
-         window.startOnlineMode = async function(snow) { snowballMode = !!snow; if (!auth || !currentUser) return showGameMessage("You must login to play Online!"); if (!db) return showGameMessage("Database offline!"); closeAllModals(); mainMenuMusic.pause(); mainMenuMusic.currentTime = 0; document.getElementById('landing-page').style.display = 'none'; let loadScr = document.createElement('div'); loadScr.id = "temp-online-loader"; loadScr.style.position = "absolute"; loadScr.style.top=0; loadScr.style.left=0; loadScr.style.width="100%"; loadScr.style.height="100%"; loadScr.style.background="black"; loadScr.style.color="white"; loadScr.style.display="flex"; loadScr.style.flexDirection="column"; loadScr.style.justifyContent="center"; loadScr.style.alignItems="center"; loadScr.style.fontFamily="'Press Start 2P'"; loadScr.innerHTML = `<div style="margin-bottom:20px;">${getLangText('searchingOpponent')}${snowballMode ? ' ❄' : ''}</div><div class="loader-spinner" style="width:40px;height:40px;border:4px solid white;border-top:4px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;"></div><button onclick="cancelMatchSearch()" class="btn-yellow" style="padding:10px 20px;font-family:'Press Start 2P';cursor:pointer;">${getLangText('cancel')}</button><style>@keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}</style>`; document.getElementById('game-container').appendChild(loadScr);
+         // The shared "looking for a rival" screen: animated sky, falling emblems that match
+         // the mode, a bobbing Shetos, pulsing dots, a mode chip and a random fun tip.
+         window.showMatchLoader = function(mainText) {
+             const old = document.getElementById('temp-online-loader'); if (old && old.remove) old.remove();
+             const emojis = fnfMode ? ['🎵', '🎶', '✨'] : (snowballMode ? ['❄', '❄', '✨'] : ['⭐', '✨', '🏆']);
+             let flakes = '';
+             for (let i = 0; i < 22; i++) {
+                 const left = (i * 41 + 13) % 100, dur = 4 + (i % 5), delay = (i % 7) * 0.7;
+                 flakes += `<span class="loader-flake" style="left:${left}%; animation-duration:${dur}s; animation-delay:-${delay}s;">${emojis[i % emojis.length]}</span>`;
+             }
+             const badge = fnfMode ? '🎵 ' + getLangText('fnfMode') : (snowballMode ? '❄ ' + getLangText('snowMode') : getLangText('online') + ' · 🏆 ' + onlineTrophies);
+             const tip = SPLASH_TEXTS[Math.floor(Math.random() * SPLASH_TEXTS.length)];
+             const loadScr = document.createElement('div');
+             loadScr.id = 'temp-online-loader';
+             loadScr.innerHTML = `<div class="loader-flakes">${flakes}</div>` +
+                 `<img src="player.png" class="loader-hero" alt="">` +
+                 `<div class="loader-shadow"></div>` +
+                 `<div class="loader-title">${mainText}<span class="loader-dots"><span>.</span><span>.</span><span>.</span></span></div>` +
+                 `<div class="loader-chip">${badge}</div>` +
+                 `<div class="loader-tip">${tip}</div>` +
+                 `<button onclick="cancelMatchSearch()" class="btn-yellow loader-cancel">${getLangText('cancel')}</button>`;
+             document.getElementById('game-container').appendChild(loadScr);
+         };
+         window.startOnlineMode = async function(mode) { snowballMode = (mode === 'snowball' || mode === true); fnfMode = (mode === 'fnf'); if (!auth || !currentUser) return showGameMessage("You must login to play Online!"); if (!db) return showGameMessage("Database offline!"); closeAllModals(); mainMenuMusic.pause(); mainMenuMusic.currentTime = 0; document.getElementById('landing-page').style.display = 'none'; showMatchLoader(getLangText('searchingOpponent') + (snowballMode ? ' ❄' : (fnfMode ? ' 🎵' : '')));
              try {
                 // Look for a match to join. We fetch a few candidates, skip stale/dead ones,
                 // and claim one atomically with a transaction so two guests can never pile
@@ -2999,10 +3184,11 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
                 const openMatches = await db.collection('matches').where('status', '==', 'searching').limit(5).get();
                 if (!document.getElementById('temp-online-loader')) return;
                 let joined = false;
+                const lobbyMode = fnfMode ? 'fnf' : (snowballMode ? 'snowball' : 'normal');
                 for (const matchDoc of openMatches.docs) {
                     const mData = matchDoc.data();
                     if (!mData) continue;
-                    if ((mData.mode || 'normal') !== (snowballMode ? 'snowball' : 'normal')) continue;   // snowball searchers only join snowball lobbies (and vice versa)
+                    if ((mData.mode || 'normal') !== lobbyMode) continue;   // each mode only joins its own lobbies
                     if (mData.hostId === currentUser.uid) { matchDoc.ref.delete().catch(() => {}); continue; } // our own leftover match
                     const ageMs = mData.timestamp ? (Date.now() - mData.timestamp.toMillis()) : 60000;
                     if (ageMs > 60000) { matchDoc.ref.delete().catch(() => {}); continue; } // stale host is gone
@@ -3016,14 +3202,14 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
                         activeMatchID = matchDoc.id; myOnlineRole = 'guest'; joined = true; break;
                     } catch (err) { /* someone else grabbed it — try the next candidate */ }
                 }
-                if (!joined) { const newMatch = await db.collection('matches').add({ hostId: currentUser.uid, hostName: currentUser.displayName || "Player", status: 'searching', mode: snowballMode ? 'snowball' : 'normal', hostScore: 0, guestScore: 0, hostStatus: 'alive', guestStatus: 'alive', round: 1, hostWins: 0, guestWins: 0, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); activeMatchID = newMatch.id; myOnlineRole = 'host'; }
+                if (!joined) { const newMatch = await db.collection('matches').add({ hostId: currentUser.uid, hostName: currentUser.displayName || "Player", status: 'searching', mode: fnfMode ? 'fnf' : (snowballMode ? 'snowball' : 'normal'), hostScore: 0, guestScore: 0, hostStatus: 'alive', guestStatus: 'alive', round: 1, hostWins: 0, guestWins: 0, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); activeMatchID = newMatch.id; myOnlineRole = 'host'; }
                 listenToActiveMatch();
             } catch(e) { console.error("Matchmaking error:", e); const loader = document.getElementById('temp-online-loader'); if(loader) loader.remove(); showGameMessage("Matchmaking failed. Try again."); quitToMenu(); } }
 
          function startGameLoopOnline() { game_mode = 'online_match'; reset_game(); online_score_player = 0; online_score_enemy = 0; online_round = 1; myWins = 0; enemyWins = 0; opponentLastSeen = Date.now(); lastOnlineFlush = 0; onlineDirty = true; onlineSyncAccum = 0; resetOnlineRound(); document.getElementById('online-ui').style.display = 'block'; updateOnlineUI(true); document.getElementById('settings-btn').style.display = 'block'; if (!musicMuted) { bgMusic.currentTime = 0; bgMusic.play().catch(e => console.log(e)); } }
          let onlineUICache = {};
          function setOnlineUIText(id, text) { text = String(text); if (onlineUICache[id] === text) return; onlineUICache[id] = text; const el = document.getElementById(id); if (el) el.innerText = text; }
-         function updateOnlineUI(force) { if (force) onlineUICache = {}; setOnlineUIText('p-name', getLangText("you") + " (" + myWins + ")"); setOnlineUIText('e-name', opponentName + " (" + enemyWins + ")"); setOnlineUIText('p-score', currentScore); if (game_mode === 'pvp_shetos') { setOnlineUIText('e-score', shetosBotScore); } else { setOnlineUIText('e-score', enemyHasCrashed ? online_score_enemy + " (X)" : online_score_enemy); } setOnlineUIText('online-round-text', getLangText("round") + " " + online_round + " / 3"); }
+         function updateOnlineUI(force) { if (force) onlineUICache = {}; setOnlineUIText('p-name', getLangText("you") + " (" + myWins + ")"); setOnlineUIText('e-name', opponentName + " (" + enemyWins + ")"); if (fnfMode && game_mode === 'online_match') { setOnlineUIText('p-score', '🎵 ' + fnfHits); setOnlineUIText('e-score', '🎵 ' + fnfEnemyHits); setOnlineUIText('online-target-text', getLangText('fnfTarget')); } else if (snowballMode && game_mode === 'online_match') { setOnlineUIText('p-score', '❄ ' + snowEnemyTaken); setOnlineUIText('e-score', '❄ ' + snowHitsTaken); setOnlineUIText('online-target-text', getLangText('snowTarget')); } else { setOnlineUIText('p-score', currentScore); if (game_mode === 'pvp_shetos') { setOnlineUIText('e-score', shetosBotScore); } else { setOnlineUIText('e-score', enemyHasCrashed ? online_score_enemy + " (X)" : online_score_enemy); } setOnlineUIText('online-target-text', getLangText('target')); } setOnlineUIText('online-round-text', getLangText("round") + " " + online_round + " / 3"); }
          // One coalesced Firestore write for position + score + status, instead of separate
          // writes for each. Sent at most ~5x/sec while flying, plus a 1.5s heartbeat so the
          // opponent can tell we're still connected (even while crashed/waiting).
@@ -3040,6 +3226,12 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
              if (snowballMode && pendingSnowThrow) {   // piggyback the throw event on the same write
                  if (myOnlineRole === 'host') upd.hostSnow = pendingSnowThrow; else upd.guestSnow = pendingSnowThrow;
                  pendingSnowThrow = null;
+             }
+             if (snowballMode) {   // hits taken = the opponent's score, mirrored on both clients
+                 if (myOnlineRole === 'host') upd.hostTaken = snowHitsTaken; else upd.guestTaken = snowHitsTaken;
+             }
+             if (fnfMode) {   // rhythm duel: only the running hit/miss counts travel
+                 if (myOnlineRole === 'host') upd.hostFnf = { h: fnfHits, m: fnfMisses }; else upd.guestFnf = { h: fnfHits, m: fnfMisses };
              }
              db.collection('matches').doc(activeMatchID).update(upd).catch(e => { onlineDirty = true; });
          }
@@ -3061,9 +3253,9 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
                  triggerGameOver(msg); 
              } 
          }
-         function resetOnlineRound() { opponentLastSeen = Date.now(); pipes = []; bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; bird.velocity_x = 0; currentScore = 0; lastPipeY = 250; pipe_speed = -2; speedMultiplier = 1; pipe_spawn_timer = 0; onlineStartTimer = 3; isRoundStarting = true; myHasCrashed = false; enemyHasCrashed = false; window.roundEnding = false; enemyGhostY = CANVAS_HEIGHT / 2; enemyGhostRenderY = bird.y; enemyGhostRenderX = bird.x; onlineDirty = true; if(game_mode === 'pvp_shetos') { shetosBotY = CANVAS_HEIGHT/2; shetosBotScore = 0; shetosBotAlive = true; shetosBotVelocityY = 0; } if (snowballMode) resetSnowballState(); if(activeMatchID && game_mode === 'online_match') { flushOnlineSync(true); } updateOnlineUI(); flashTimer = 0; }
-         function checkRoundResult() { if (game_mode === 'pvp_shetos') { if (currentScore > shetosBotScore && !shetosBotAlive) resolveRound('win'); else if (shetosBotScore > currentScore && myHasCrashed) resolveRound('loss'); else if (!shetosBotAlive && myHasCrashed && shetosBotScore === currentScore) resolveRound('draw'); return; } if (!myHasCrashed) { if (enemyHasCrashed && currentScore > online_score_enemy) { resolveRound('win'); } return; } if (enemyHasCrashed) { if (currentScore > online_score_enemy) resolveRound('win'); else if (currentScore < online_score_enemy) resolveRound('loss'); else resolveRound('draw'); } }
-         function resolveRound(result) { if (game_mode === 'pvp_shetos') { let newMyWins = myWins; let newEnemyWins = enemyWins; if (result === 'win') newMyWins++; else if (result === 'loss') newEnemyWins++; myWins = newMyWins; enemyWins = newEnemyWins; online_round++; if (myWins >= 2 || enemyWins >= 2) { let iWon = (myWins >= 2); let trophyChange = iWon ? 10 : -5; onlineTrophies += trophyChange; localStorage.setItem('flappyTrophies', onlineTrophies); saveUserData(); setTimeout(() => { let msg = iWon ? `VICTORY! +${trophyChange} 🏆` : `DEFEAT... ${trophyChange} 🏆`; triggerGameOver(msg); document.getElementById('online-ui').style.display = 'none'; }, 1000); } else { resetOnlineRound(); triggerFlash("white"); } return; } if (myOnlineRole !== 'host') return; if (!activeMatchID) return; let newHostWins = myWins; let newGuestWins = enemyWins; if (currentScore > online_score_enemy) newHostWins = myWins + 1; else if (online_score_enemy > currentScore) newGuestWins = enemyWins + 1; myWins = newHostWins; enemyWins = newGuestWins; updateOnlineUI();
+         function resetOnlineRound() { opponentLastSeen = Date.now(); pipes = []; bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; bird.velocity_x = 0; currentScore = 0; lastPipeY = 250; pipe_speed = -2; speedMultiplier = 1; pipe_spawn_timer = 0; onlineStartTimer = 3; isRoundStarting = true; myHasCrashed = false; enemyHasCrashed = false; window.roundEnding = false; enemyGhostY = CANVAS_HEIGHT / 2; enemyGhostRenderY = bird.y; enemyGhostRenderX = (game_mode === 'online_match' && snowballMode) ? snowballRivalX() : bird.x; onlineDirty = true; if(game_mode === 'pvp_shetos') { shetosBotY = CANVAS_HEIGHT/2; shetosBotScore = 0; shetosBotAlive = true; shetosBotVelocityY = 0; } if (snowballMode) resetSnowballState(); if (fnfMode) resetFNFState(); if(activeMatchID && game_mode === 'online_match') { flushOnlineSync(true); } updateOnlineUI(); flashTimer = 0; }
+         function checkRoundResult() { if (fnfMode && game_mode === 'online_match') { if (window.roundEnding) return; const b = fnfBarMine(); if (b >= 100) { window.roundEnding = true; resolveRound('win'); } else if (b <= 0) { window.roundEnding = true; resolveRound('loss'); } return; } if (snowballMode && game_mode === 'online_match') { if (window.roundEnding) return; if (snowEnemyTaken >= SNOW_HITS_TO_WIN) { window.roundEnding = true; resolveRound('win'); } else if (snowHitsTaken >= SNOW_HITS_TO_WIN) { window.roundEnding = true; resolveRound('loss'); } return; } if (game_mode === 'pvp_shetos') { if (currentScore > shetosBotScore && !shetosBotAlive) resolveRound('win'); else if (shetosBotScore > currentScore && myHasCrashed) resolveRound('loss'); else if (!shetosBotAlive && myHasCrashed && shetosBotScore === currentScore) resolveRound('draw'); return; } if (!myHasCrashed) { if (enemyHasCrashed && currentScore > online_score_enemy) { resolveRound('win'); } return; } if (enemyHasCrashed) { if (currentScore > online_score_enemy) resolveRound('win'); else if (currentScore < online_score_enemy) resolveRound('loss'); else resolveRound('draw'); } }
+         function resolveRound(result) { if (game_mode === 'pvp_shetos') { let newMyWins = myWins; let newEnemyWins = enemyWins; if (result === 'win') newMyWins++; else if (result === 'loss') newEnemyWins++; myWins = newMyWins; enemyWins = newEnemyWins; online_round++; if (myWins >= 2 || enemyWins >= 2) { let iWon = (myWins >= 2); let trophyChange = iWon ? 10 : -5; onlineTrophies += trophyChange; localStorage.setItem('flappyTrophies', onlineTrophies); saveUserData(); setTimeout(() => { let msg = iWon ? `VICTORY! +${trophyChange} 🏆` : `DEFEAT... ${trophyChange} 🏆`; triggerGameOver(msg); document.getElementById('online-ui').style.display = 'none'; }, 1000); } else { resetOnlineRound(); triggerFlash("white"); } return; } if (myOnlineRole !== 'host') return; if (!activeMatchID) return; let newHostWins = myWins; let newGuestWins = enemyWins; if (fnfMode) { const myNet = fnfHits - fnfMisses, theirNet = fnfEnemyHits - fnfEnemyMisses; if (myNet - theirNet >= FNF_WIN_NET) newHostWins = myWins + 1; else if (theirNet - myNet >= FNF_WIN_NET) newGuestWins = enemyWins + 1; } else if (snowballMode) { if (snowEnemyTaken >= SNOW_HITS_TO_WIN) newHostWins = myWins + 1; else if (snowHitsTaken >= SNOW_HITS_TO_WIN) newGuestWins = enemyWins + 1; } else if (currentScore > online_score_enemy) newHostWins = myWins + 1; else if (online_score_enemy > currentScore) newGuestWins = enemyWins + 1; myWins = newHostWins; enemyWins = newGuestWins; updateOnlineUI();
              if (myWins >= 2 || enemyWins >= 2) { endMatchLogic({ hostWins: myWins, guestWins: enemyWins }); return; }
              online_round++; db.collection('matches').doc(activeMatchID).update({ round: online_round, hostWins: myWins, guestWins: enemyWins, hostStatus: 'alive', guestStatus: 'alive', hostScore: 0, guestScore: 0 }); resetOnlineRound(); triggerFlash("white"); }
          function endMatchLogic(data) { if (trophyProcessed) return; trophyProcessed = true; let amIHost = (myOnlineRole === 'host'); let hostWon = ((data.hostWins || 0) >= 2); let iWon = (amIHost && hostWon) || (!amIHost && !hostWon); let trophyChange = iWon ? 25 : -15; if (!iWon && onlineTrophies < 15) trophyChange = -onlineTrophies; onlineTrophies += trophyChange; localStorage.setItem('flappyTrophies', onlineTrophies); saveUserData(); const finishedMatchID = activeMatchID; if (amIHost && finishedMatchID) { db.collection('matches').doc(finishedMatchID).update({ status: 'ended', hostWins: data.hostWins || 0, guestWins: data.guestWins || 0 }).catch(e => console.log(e)); setTimeout(() => { db.collection('matches').doc(finishedMatchID).delete().catch(e => console.log(e)); }, 10000); } if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } setTimeout(() => { let msg = iWon ? `VICTORY! +${trophyChange} 🏆` : `DEFEAT... ${trophyChange} 🏆`; triggerGameOver(msg); document.getElementById('online-ui').style.display = 'none'; activeMatchID = null; }, 1000); }
@@ -3132,7 +3324,7 @@ window.playClickSound = function() {
                  
                  if (isPaused && game_mode !== 'online_match' && game_mode !== 'pvp_shetos') return; if (!ctx) return;
                  
-                 if ((game_mode === 'online_match' || game_mode === 'pvp_shetos') && isRoundStarting) { if (backgroundImages[currentBGIndex] && backgroundImages[currentBGIndex].complete) { ctx.drawImage(backgroundImages[currentBGIndex], 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); } else { ctx.fillStyle = "#222"; ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT); } bird.Do_Frame_Things(); for(let i=0; i<pipes.length; i++) { let p = pipes[i]; p.Do_Frame_Things(); } if (game_mode === 'pvp_shetos') { ctx.save(); ctx.globalAlpha = 0.7; ctx.drawImage(PLAYER_IMG, bird.x, shetosBotY, 40, 40); ctx.restore(); } else if (activeMatchID && !enemyHasCrashed) { enemyGhostRenderY += (enemyGhostY - enemyGhostRenderY) * 0.25; enemyGhostRenderX += (bird.x - enemyGhostRenderX) * 0.15; ctx.save(); ctx.globalAlpha = 0.4; let ghostW = bird.MyImg.width || 50; let ghostH = bird.MyImg.height || 50; ghostW = birdHitW(); ghostH = birdHitH(); ctx.drawImage(bird.MyImg, enemyGhostRenderX, enemyGhostRenderY, ghostW, ghostH); ctx.restore(); } ctx.font = 'bold 80px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.lineWidth = 4; ctx.strokeStyle="black"; let displayText = Math.ceil(onlineStartTimer); if(displayText <= 0) displayText = getLangText("go"); ctx.strokeText(displayText, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); ctx.fillText(displayText, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); onlineStartTimer -= (1/FPS); if (onlineStartTimer <= -0.5) { isRoundStarting = false; roundStartTime = Date.now(); } { onlineSyncAccum += (1000 / FPS); if (onlineSyncAccum >= 200) { onlineSyncAccum = 0; flushOnlineSync(onlineDirty || (Date.now() - lastOnlineFlush) >= 1500); } } return; }
+                 if ((game_mode === 'online_match' || game_mode === 'pvp_shetos') && isRoundStarting) { if (backgroundImages[currentBGIndex] && backgroundImages[currentBGIndex].complete) { ctx.drawImage(backgroundImages[currentBGIndex], 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); } else { ctx.fillStyle = "#222"; ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT); } if (fnfMode && game_mode === 'online_match') { drawFNFBattle(-1e9); ctx.font = 'bold 80px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.lineWidth = 4; ctx.strokeStyle = "black"; let fnfCount = Math.ceil(onlineStartTimer); if (fnfCount <= 0) fnfCount = getLangText("go"); ctx.strokeText(fnfCount, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); ctx.fillText(fnfCount, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); onlineStartTimer -= (1/FPS); if (onlineStartTimer <= -0.5) { isRoundStarting = false; roundStartTime = Date.now(); } return; } bird.Do_Frame_Things(); for(let i=0; i<pipes.length; i++) { let p = pipes[i]; p.Do_Frame_Things(); } if (game_mode === 'pvp_shetos') { ctx.save(); ctx.globalAlpha = 0.7; ctx.drawImage(PLAYER_IMG, bird.x, shetosBotY, 40, 40); ctx.restore(); } else if (activeMatchID && !enemyHasCrashed) { enemyGhostRenderY += (enemyGhostY - enemyGhostRenderY) * 0.25; enemyGhostRenderX += ((snowballMode ? snowballRivalX() : bird.x) - enemyGhostRenderX) * 0.15; ctx.save(); ctx.globalAlpha = 0.4; let ghostW = bird.MyImg.width || 50; let ghostH = bird.MyImg.height || 50; ghostW = birdHitW(); ghostH = birdHitH(); ctx.drawImage(bird.MyImg, enemyGhostRenderX, enemyGhostRenderY, ghostW, ghostH); ctx.restore(); } ctx.font = 'bold 80px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.lineWidth = 4; ctx.strokeStyle="black"; let displayText = Math.ceil(onlineStartTimer); if(displayText <= 0) displayText = getLangText("go"); ctx.strokeText(displayText, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); ctx.fillText(displayText, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); onlineStartTimer -= (1/FPS); if (onlineStartTimer <= -0.5) { isRoundStarting = false; roundStartTime = Date.now(); } { onlineSyncAccum += (1000 / FPS); if (onlineSyncAccum >= 200) { onlineSyncAccum = 0; flushOnlineSync(onlineDirty || (Date.now() - lastOnlineFlush) >= 1500); } } return; }
                  
                  if (!isPaused) { 
                      if (isShieldActive) { shieldTimer--; if (shieldTimer <= 0) deactivateShield(); } 
@@ -3281,7 +3473,7 @@ window.playClickSound = function() {
 
                      case 'online_match':
                          { let syncNow = Date.now(); onlineSyncAccum += (1000 / FPS); if (onlineSyncAccum >= 200) { onlineSyncAccum = 0; flushOnlineSync(onlineDirty || (syncNow - lastOnlineFlush) >= 1500); } if (activeMatchID && opponentLastSeen > 0 && !isRoundStarting && !trophyProcessed && (syncNow - opponentLastSeen) > ONLINE_TIMEOUT_MS) { handleOpponentLeft(); } }
-                         if (!myHasCrashed) { time_game_last_running = new Date(); bottom_bar_offset += pipe_speed * speedMultiplier; for (var i = 0; i < pipes.length; i++) { pipes[i].Do_Frame_Things(); } pipe_spawn_timer += (1000 / FPS) * speedMultiplier; if (pipe_spawn_timer > currentSpawnInterval) { let gap_size = isWidenActive ? 280 : 140; let safe_area = CANVAS_HEIGHT - gap_size - 50; if(safe_area < 50) safe_area = 50; let top_of_gap = Math.floor(Math.random() * (safe_area - 50)) + 50; add_pipe(CANVAS_WIDTH, top_of_gap, gap_size); pipe_spawn_timer = 0; } make_bird_slow_and_fall(); check_for_end_game(); check_for_score_increase(); [pipes, shields, stars, potions, slowPotions].forEach(arr => { for (let i = arr.length - 1; i >= 0; i--) { if (arr[i].x < -100) arr.splice(i, 1); else if (arr !== pipes) arr[i].Do_Frame_Things(); } }); onlineDirty = true; if(!enemyHasCrashed) { let ghostTargetX = bird.x + ((online_score_enemy - currentScore) * 60); if (ghostTargetX < 20) ghostTargetX = 20; if (ghostTargetX > CANVAS_WIDTH - 80) ghostTargetX = CANVAS_WIDTH - 80; enemyGhostRenderY += (enemyGhostY - enemyGhostRenderY) * 0.25; enemyGhostRenderX += (ghostTargetX - enemyGhostRenderX) * 0.15; ctx.save(); ctx.globalAlpha = 0.5; let ghostW = 50; let ghostH = 50; ghostW = birdHitW(); ghostH = birdHitH(); ctx.drawImage(bird.MyImg, enemyGhostRenderX, enemyGhostRenderY, ghostW, ghostH); ctx.fillStyle = "white"; ctx.font = "10px Arial"; ctx.textAlign="center"; ctx.fillText(opponentName, enemyGhostRenderX + (ghostW/2), enemyGhostRenderY - 5); ctx.restore(); } } else { ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); ctx.font = "20px 'Press Start 2P'"; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(getLangText("waitingOpponent"), CANVAS_WIDTH/2, CANVAS_HEIGHT/2); } updateSnowballs(); updateOnlineUI(); break;
+                         if (!myHasCrashed) { if (fnfMode) { time_game_last_running = new Date(); updateFNFBattle(); updateOnlineUI(); break; } time_game_last_running = new Date(); bottom_bar_offset += pipe_speed * speedMultiplier; for (var i = 0; i < pipes.length; i++) { pipes[i].Do_Frame_Things(); } pipe_spawn_timer += (1000 / FPS) * speedMultiplier; if (!snowballMode && pipe_spawn_timer > currentSpawnInterval) { let gap_size = isWidenActive ? 280 : 140; let safe_area = CANVAS_HEIGHT - gap_size - 50; if(safe_area < 50) safe_area = 50; let top_of_gap = Math.floor(Math.random() * (safe_area - 50)) + 50; add_pipe(CANVAS_WIDTH, top_of_gap, gap_size); pipe_spawn_timer = 0; } make_bird_slow_and_fall(); if (snowballMode) { if (bird.y > CANVAS_HEIGHT - 14) { bird.y = CANVAS_HEIGHT - 14; if (bird.velocity_y > 0) bird.velocity_y = 0; } if (bird.y < 6) { bird.y = 6; if (bird.velocity_y < 0) bird.velocity_y = 0; } } else { check_for_end_game(); } check_for_score_increase(); [pipes, shields, stars, potions, slowPotions].forEach(arr => { for (let i = arr.length - 1; i >= 0; i--) { if (arr[i].x < -100) arr.splice(i, 1); else if (arr !== pipes) arr[i].Do_Frame_Things(); } }); onlineDirty = true; if(!enemyHasCrashed) { let ghostTargetX = snowballMode ? snowballRivalX() : bird.x + ((online_score_enemy - currentScore) * 60); if (!snowballMode) { if (ghostTargetX < 20) ghostTargetX = 20; if (ghostTargetX > CANVAS_WIDTH - 80) ghostTargetX = CANVAS_WIDTH - 80; } enemyGhostRenderY += (enemyGhostY - enemyGhostRenderY) * 0.25; enemyGhostRenderX += (ghostTargetX - enemyGhostRenderX) * 0.15; let ghostW = birdHitW(); let ghostH = birdHitH(); if (snowballMode) { ctx.save(); ctx.globalAlpha = 0.95; ctx.translate(enemyGhostRenderX + ghostW, enemyGhostRenderY); ctx.scale(-1, 1); ctx.drawImage(bird.MyImg, 0, 0, ghostW, ghostH); ctx.restore(); ctx.save(); ctx.fillStyle = "white"; ctx.font = "10px Arial"; ctx.textAlign = "center"; ctx.fillText(opponentName, enemyGhostRenderX + (ghostW/2), enemyGhostRenderY - 6); ctx.restore(); } else { ctx.save(); ctx.globalAlpha = 0.5; ctx.drawImage(bird.MyImg, enemyGhostRenderX, enemyGhostRenderY, ghostW, ghostH); ctx.fillStyle = "white"; ctx.font = "10px Arial"; ctx.textAlign="center"; ctx.fillText(opponentName, enemyGhostRenderX + (ghostW/2), enemyGhostRenderY - 5); ctx.restore(); } } } else { ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); ctx.font = "20px 'Press Start 2P'"; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(getLangText("waitingOpponent"), CANVAS_WIDTH/2, CANVAS_HEIGHT/2); } updateSnowballs(); updateOnlineUI(); break;
                          
                      case 'terminal_ending':
                          ctx.fillStyle = "black"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -3439,6 +3631,8 @@ window.playClickSound = function() {
              case 'prestart': game_mode = 'running'; break;
              case 'running': case 'boss': case 'online_match': case 'pvp_shetos':
                  if (game_mode === 'online_match' && myHasCrashed) return; if (game_mode === 'pvp_shetos' && myHasCrashed) return;
+                // FNF duel: taps play the lanes - which lane is decided by where on the screen you tap.
+                if (game_mode === 'online_match' && fnfMode) { if (MyEvent.type === 'touchstart' && MyEvent.cancelable) MyEvent.preventDefault(); fnfTap(Math.min(FNF_LANES - 1, Math.max(0, Math.floor(clickX / (CANVAS_WIDTH / FNF_LANES))))); return; }
                 // tap/space to skip to the next line of a boss monologue (the timer also runs out on its own).
                 // The FIRST line is protected for 3 seconds, so mashing to flap right when
                 // the fight starts can no longer skip the opening dialogue by accident.
