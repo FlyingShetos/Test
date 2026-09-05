@@ -29,7 +29,7 @@ function makeEl(tag) {
   const el = {
     tagName: tag || 'DIV', children: [], dataset: {},
     style: new Proxy({}, { get: (t, p) => (p in t ? t[p] : ''), set: (t, p, v) => { t[p] = v; return true; } }),
-    classList: { add() {}, remove() {}, contains: () => false, toggle() {} },
+    classList: (() => { const set = new Set(); return { add: c => set.add(c), remove: c => set.delete(c), contains: c => set.has(c), toggle: (c, f) => { f = f === undefined ? !set.has(c) : !!f; f ? set.add(c) : set.delete(c); return f; } }; })(),
     setAttribute() {}, getAttribute: () => null, removeAttribute() {},
     appendChild(c) { this.children.push(c); return c; }, removeChild() {}, insertBefore() {},
     addEventListener() {}, removeEventListener() {}, dispatchEvent() {},
@@ -224,12 +224,20 @@ try {
   stepFrames(10);
   const glideV = run('bird.velocity_y');
   check('broom eases sharp falls into a steady glide', glideV > 0 && glideV <= 2.4, 'vy=' + glideV.toFixed(2));
+  const steadyV = run('bird.velocity_y');
   run(`flapBird();`);
+  stepFrames(3);   // the flap starts a rise pulse: the glide easing swoops up over a few frames
   const flapV = run('bird.velocity_y');
-  check('broom flap is a smooth nudge, not a sharp jump', flapV > -3.21 && flapV < 0, 'vy=' + flapV.toFixed(2));
+  check('broom flap swoops upward smoothly, not a sharp jump', flapV > -4.4 && flapV < steadyV - 1.5, 'vy=' + flapV.toFixed(2));
+  check('witch leans into the glide', run('bird.angle') < 0, 'angle=' + run('bird.angle').toFixed(1));
   stepFrames(30);
   const glideV2 = run('bird.velocity_y');
   check('glide settles back toward steady sink', glideV2 > flapV && glideV2 <= 2.4, 'vy=' + glideV2.toFixed(2));
+  run(`pipes.length = 0; bird.y = 200;`);
+  const yClimb0 = run('bird.y');
+  run(`flapBird();`); stepFrames(7); run(`flapBird();`); stepFrames(7); run(`flapBird();`); stepFrames(7); run(`flapBird();`); stepFrames(7);
+  const yClimb1 = run('bird.y');
+  check('broom actually climbs with repeated flaps', yClimb1 < yClimb0 - 40, 'dy=' + (yClimb1 - yClimb0).toFixed(1));
   check('normal flap still sharp without broom', run(`isBroomActive = false; bird.velocity_y = 5; flapBird(); const v = bird.velocity_y; isBroomActive = true; v`) === run('jump_amount'));
   run(`isBroomActive = true; broomTimer = 1;`);
   stepFrames(2);
@@ -306,6 +314,19 @@ try {
   run(`xmasFrame(1100);`);
   check('xmas fx sleeps when menu is closed', run('xmasFlakes.map(f => f.y).join(",")') === frozen);
   run(`document.getElementById('landing-page').style.display = 'flex';`);
+
+  // ============ CHRISTMAS MODE TOGGLE (remembered forever) ============
+  check('christmas settings toggle is wired', run(`typeof toggleXmasMode === 'function' && SETTINGS_KEYS.xmasOn === 'flappyXmasOn' && !!document.getElementById('xmas-toggle')`));
+  run(`toggleXmasMode(false);`);
+  check('toggle off: xmas disabled + saved forever', run(`xmasMode === false && localStorage.getItem('flappyXmasOn') === '0'`));
+  check('toggle off: landing loses christmas background', elements['landing-page'].classList.contains('no-xmas'));
+  check('toggle off: settings checkbox syncs', elements['xmas-toggle'].checked === false);
+  run(`xmasFlakes = [{ x: 10, y: 20, r: 2, s: 1, d: 0, o: 1 }]; xmasFrame(2000);`);
+  check('toggle off: snow overlay frozen', run('xmasFlakes[0].y') === 20);
+  run(`toggleXmasMode(true);`);
+  check('toggle on: re-enabled + persisted', run(`xmasMode === true && localStorage.getItem('flappyXmasOn') === '1'`) && !elements['landing-page'].classList.contains('no-xmas') && elements['xmas-toggle'].checked === true);
+  run(`xmasFrame(2100);`);
+  check('toggle on: snow falls again', run('xmasFlakes[0].y') > 20);
 } catch (e) {
   check('runtime simulation', false, e.stack.split('\n').slice(0, 4).join(' | '));
 }
