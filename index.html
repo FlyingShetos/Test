@@ -39,6 +39,7 @@
         /* Christmas overlay: falling snow, ground snow and twinkling string lights.
            Fixed to the viewport, above the menu content, never steals taps. */
         #xmas-fx { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 55; }
+        #landing-page.no-xmas { background: #041820; }   /* Christmas mode off: plain night sky */
         #landing-page h1 { font-family: 'Pacifico', cursive; font-size: clamp(28px, 6vw, 50px); color: #f1c40f; margin: 0 0 6px 0; text-shadow: 2px 2px #e67e22; text-align: center; line-height: 1.2; }
         
         .title-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; max-width: 100%; flex-shrink: 0; }
@@ -349,6 +350,13 @@
                      <span data-i18n="woof">WOOF</span>
                      <label class="switch">
                          <input type="checkbox" id="woof-toggle" checked onchange="playClickSound(); toggleWoofSwitch(this.checked)">
+                         <span class="slider"></span>
+                     </label>
+                 </div>
+                 <div class="toggle-row">
+                     <span data-i18n="xmasMode">CHRISTMAS</span>
+                     <label class="switch">
+                         <input type="checkbox" id="xmas-toggle" checked onchange="playClickSound(); toggleXmasMode(this.checked)">
                          <span class="slider"></span>
                      </label>
                  </div>
@@ -804,7 +812,7 @@
          const TRANSLATIONS = {
     en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", understand: "I UNDERSTAND", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS",
     comingSoon: "COMING SOON", comingSoonDesc: "Available in a future update.", storyDesc: "The classic adventure.<br>Secrets & Bosses.", endlessDesc: "Infinite run.<br>Speed increases forever.<br><b style='color:white;'>Leaderboard Enabled</b>", pvpDesc: "Score Battle!<br>Online.", trophiesLabel: "Trophies:", back: "BACK", selectOpponent: "Select Opponent", online: "ONLINE", onlineDesc: "Matchmake with<br>Real Humans.", round: "ROUND", you: "YOU", opponent: "OPPONENT", target: "Target: Don't Crash!",
-    music: "MUSIC", musicVol: "MUSIC VOL", sfx: "SFX", sfxVol: "SFX VOL", woof: "WOOF", language: "LANGUAGE", resume: "RESUME", quitToMenu: "QUIT TO MENU",
+    music: "MUSIC", musicVol: "MUSIC VOL", sfx: "SFX", sfxVol: "SFX VOL", woof: "WOOF", xmasMode: "CHRISTMAS", language: "LANGUAGE", resume: "RESUME", quitToMenu: "QUIT TO MENU",
     shopTitle: "Shop", dryFood: "Dry Food:", theLab: "THE LAB", skins: "SKINS", trails: "TRAILS",
     sellItem: "SELL ITEM", areYouSure: "Are you sure?", yes: "YES", no: "NO",
     friend: "Friend", typeMessage: "Type a message...", acceptChallenge: "Do you accept the challenge?", accept: "ACCEPT", decline: "DECLINE",
@@ -820,7 +828,7 @@
     b1_1: "oh, here you are", b1_2: "I was waiting for you", b2_1: "you are getting out of control", b2_2: "you werent supposed to come HERE", b2_3: "Its too late to go back now....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "So, we will not talk about how a dog is flying?", b3_2: "Why am i even asking that's not even my thoughts, It's the game developer who's typing all this nonsense.", b3_3: "I guess he thought it would be funny to make me question why a dog is flying.", b3_4: "Let's start the fight i guess.", boss3Defeated: "DRAGON DEFEATED!", sys: "System Override...", bypass: "Bypassing...", admin: "Administrator Granted.", tbc: "To Be Continued...", cat: "THAT WAS A CAT", kid: "you got clipped by a kid lmao", err1: "Connection Error", fall: "Fell down!", wall: "Hit a wall!", eaten: "EATEN BY SHETOS!" },
     de: { play: "SPIELEN", shop: "GESCHÄFT", achieve: "ERFOLGE", friends: "FREUNDE", lead: "BESTEN", ai: "KI CHAT", redeem: "EINLÖSEN", high: "Höchstpunktzahl", food: "Trockenfutter", trophies: "Trophäen", games: "Spiele", welcome: "WILLKOMMEN BEI<br>FLYING SHETOS", understand: "ICH VERSTEHE", chooseMode: "Modus wählen", story: "GESCHICHTSMODUS", endless: "ENDLOSMODUS", pvp: "PVP-MODUS", settings: "EINSTELLUNGEN",
     comingSoon: "BALD VERFÜGBAR", comingSoonDesc: "In einem zukünftigen Update verfügbar.", storyDesc: "Das klassische Abenteuer.<br>Geheimnisse & Bosse.", endlessDesc: "Endloser Lauf.<br>Die Geschwindigkeit steigt für immer.<br><b style='color:white;'>Bestenliste aktiviert</b>", pvpDesc: "Punkte-Battle!<br>Online.", trophiesLabel: "Trophäen:", back: "ZURÜCK", selectOpponent: "Gegner wählen", online: "ONLINE", onlineDesc: "Spiele gegen<br>echte Menschen.", round: "RUNDE", you: "DU", opponent: "GEGNER", target: "Ziel: Nicht abstürzen!",
-    music: "MUSIK", musicVol: "MUSIK LAUTST.", sfx: "SFX", sfxVol: "SFX LAUTST.", woof: "WUFF", language: "SPRACHE", resume: "FORTSETZEN", quitToMenu: "ZUM MENÜ",
+    music: "MUSIK", musicVol: "MUSIK LAUTST.", sfx: "SFX", sfxVol: "SFX LAUTST.", woof: "WUFF", xmasMode: "WEIHNACHTEN", language: "SPRACHE", resume: "FORTSETZEN", quitToMenu: "ZUM MENÜ",
     shopTitle: "Geschäft", dryFood: "Trockenfutter:", theLab: "DAS LABOR", skins: "SKINS", trails: "SPUREN",
     sellItem: "ARTIKEL VERKAUFEN", areYouSure: "Bist du sicher?", yes: "JA", no: "NEIN",
     friend: "Freund", typeMessage: "Nachricht eingeben...", acceptChallenge: "Nimmst du die Herausforderung an?", accept: "ANNEHMEN", decline: "ABLEHNEN",
@@ -834,7 +842,7 @@
     b1_1: "oh, da bist du ja", b1_2: "ich habe auf dich gewartet", b2_1: "du gerätst außer kontrolle", b2_2: "du solltest nicht HIERHER kommen", b2_3: "es ist zu spät um umzukehren....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "Also, wir reden nicht darueber, wie ein Hund fliegt?", b3_2: "Warum frage ich ueberhaupt? Das sind nicht mal meine Gedanken, der Spieleentwickler tippt hier den ganzen Unsinn.", b3_3: "Ich glaube, er dachte, es waere lustig, mich fragen zu lassen, warum ein Hund fliegt.", b3_4: "Dann fangen wir wohl besser an zu kaempfen.", boss3Defeated: "DRACHE BESIEGT!", sys: "Systemüberschreibung...", bypass: "Umgehung...", admin: "Administrator gewährt.", tbc: "Fortsetzung folgt...", cat: "DAS WAR EINE KATZE", kid: "du wurdest von einem kind erwischt lmao", err1: "Verbindungsfehler", fall: "Heruntergefallen!", wall: "Wand getroffen!", eaten: "VON SHETOS GEFRESSEN!" },
     ar: { play: "العب", shop: "المتجر", achieve: "إنجازات", friends: "أصدقاء", lead: "المتصدرين", ai: "محادثة ذكاء", redeem: "استرداد", high: "أعلى نتيجة", food: "طعام جاف", trophies: "الجوائز", games: "الألعاب", welcome: "مرحباً بكم في<br>فلاينج شيتوس", understand: "أنا أفهم", chooseMode: "اختر الوضع", story: "وضع القصة", endless: "وضع لا نهاية له", pvp: "وضع لاعب ضد لاعب", settings: "الإعدادات",
     comingSoon: "قريباً", comingSoonDesc: "متاح في تحديث مستقبلي.", storyDesc: "المغامرة الكلاسيكية.<br>أسرار وزعماء.", endlessDesc: "جري لا نهائي.<br>السرعة تزداد إلى الأبد.<br><b style='color:white;'>لوحة المتصدرين مفعّلة</b>", pvpDesc: "معركة النقاط!<br>أونلاين.", trophiesLabel: "الجوائز:", back: "رجوع", selectOpponent: "اختر الخصم", online: "أونلاين", onlineDesc: "طابق مع<br>بشر حقيقيين.", round: "الجولة", you: "أنت", opponent: "الخصم", target: "الهدف: لا تصطدم!",
-    music: "الموسيقى", musicVol: "حجم الموسيقى", sfx: "المؤثرات", sfxVol: "حجم المؤثرات", woof: "ووف", language: "اللغة", resume: "استئناف", quitToMenu: "العودة إلى القائمة",
+    music: "الموسيقى", musicVol: "حجم الموسيقى", sfx: "المؤثرات", sfxVol: "حجم المؤثرات", woof: "ووف", xmasMode: "عيد الميلاد", language: "اللغة", resume: "استئناف", quitToMenu: "العودة إلى القائمة",
     shopTitle: "المتجر", dryFood: "الطعام الجاف:", theLab: "المختبر", skins: "الأشكال", trails: "الأثر",
     sellItem: "بيع العنصر", areYouSure: "هل أنت متأكد؟", yes: "نعم", no: "لا",
     friend: "صديق", typeMessage: "اكتب رسالة...", acceptChallenge: "هل تقبل التحدي؟", accept: "قبول", decline: "رفض",
@@ -848,7 +856,7 @@
     b1_1: "أوه، ها أنت ذا", b1_2: "كنت في انتظارك", b2_1: "أنت تخرج عن السيطرة", b2_2: "لم يكن من المفترض أن تأتي إلى هنا", b2_3: "لقد فات الأوان للتراجع....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "طيب، مش هنتكلم إزاي كلب بيطير؟", b3_2: "ليه بسأل أصلًا؟ دي مش أفكاري، ده مطور اللعبة اللي بيكتب كل الهبل ده.", b3_3: "أكيد افتكر إنه مضحك يخليني أسأل ليه كلب بيطير.", b3_4: "خلينا نبدأ القتال يعني.", boss3Defeated: "تم هزيمة التنين!", sys: "تجاوز النظام...", bypass: "جاري التجاوز...", admin: "تم منح حق المسؤول.", tbc: "يتبع...", cat: "تلك كانت قطة", kid: "لقد صدمك طفل لول", err1: "خطأ في الاتصال", fall: "سقطت!", wall: "اصطدمت بجدار!", eaten: "أكلك شيتوس!" },
     it: { play: "GIOCA", shop: "NEGOZIO", achieve: "RISULTATI", friends: "AMICI", lead: "CLASSIFICA", ai: "CHAT AI", redeem: "RISCATTA", high: "Punteggio Max", food: "Cibo Secco", trophies: "Trofei", games: "Giochi", welcome: "BENVENUTO A<br>FLYING SHETOS", understand: "CAPISCO", chooseMode: "Scegli Modalità", story: "MODALITÀ STORIA", endless: "MODALITÀ INFINITA", pvp: "MODALITÀ PVP", settings: "IMPOSTAZIONI",
     comingSoon: "IN ARRIVO", comingSoonDesc: "Disponibile in un futuro aggiornamento.", storyDesc: "L'avventura classica.<br>Segreti & Boss.", endlessDesc: "Corsa infinita.<br>La velocità aumenta per sempre.<br><b style='color:white;'>Classifica attivata</b>", pvpDesc: "Battaglia di punteggi!<br>Online.", trophiesLabel: "Trofei:", back: "INDIETRO", selectOpponent: "Seleziona Avversario", online: "ONLINE", onlineDesc: "Abbinati con<br>persone reali.", round: "ROUND", you: "TU", opponent: "AVVERSARIO", target: "Obiettivo: Non schiantarti!",
-    music: "MUSICA", musicVol: "VOLUME MUSICA", sfx: "SFX", sfxVol: "VOLUME SFX", woof: "WOOF", language: "LINGUA", resume: "RIPRENDI", quitToMenu: "ESCI AL MENU",
+    music: "MUSICA", musicVol: "VOLUME MUSICA", sfx: "SFX", sfxVol: "VOLUME SFX", woof: "WOOF", xmasMode: "NATALE", language: "LINGUA", resume: "RIPRENDI", quitToMenu: "ESCI AL MENU",
     shopTitle: "Negozio", dryFood: "Cibo Secco:", theLab: "IL LABORATORIO", skins: "SKIN", trails: "SCIE",
     sellItem: "VENDI OGGETTO", areYouSure: "Sei sicuro?", yes: "SÌ", no: "NO",
     friend: "Amico", typeMessage: "Scrivi un messaggio...", acceptChallenge: "Accetti la sfida?", accept: "ACCETTA", decline: "RIFIUTA",
@@ -892,6 +900,7 @@
             const mt = document.getElementById('music-toggle'); if (mt) mt.checked = !musicMuted;
             const st = document.getElementById('sfx-toggle'); if (st) st.checked = !sfxMuted;
             const wt = document.getElementById('woof-toggle'); if (wt) wt.checked = !woofMuted;
+            if (typeof applyXmasMode === 'function') applyXmasMode();   // syncs the Christmas toggle + landing background
             if (typeof applyMusicVolumes === 'function') applyMusicVolumes();
             if (typeof window.updateSFXVolume === 'function') window.updateSFXVolume(masterSFXVol);
             applyLanguage();
@@ -1047,9 +1056,13 @@
          let pipePairCounter = 0;                     // groups top+bottom pipe of one obstacle into a pair
          // --- WITCH SHETOS: zone-decided power (before SUNSET = broom glide, SUNSET+ = bats), 30s cooldown after the power ends ---
          let witchCooldown = 0;
-         let isBroomActive = false; let broomTimer = 0;
+         let isBroomActive = false; let broomTimer = 0; let broomFlapPulse = 0;
          let isBatsActive = false; let batsTimer = 0; let witchBats = []; let witchBlockCd = 0;
-         const BROOM_GLIDE_FALL = 1.2; const BROOM_MAX_FALL = 2.4; const BROOM_MAX_RISE = 3.2;
+         // Broom glide feel: a flap starts a short "rise pulse" that eases the velocity into a
+         // smooth upward swoop, then the broom settles back into a gentle steady sink. Responsive
+         // enough to climb hard, but never the old sharp flap-fall snapping.
+         const BROOM_SINK = 0.9; const BROOM_RISE_TARGET = -4.4; const BROOM_RISE_EASE = 0.3; const BROOM_SINK_EASE = 0.12;
+         const BROOM_MAX_FALL = 2.4; const BROOM_FLAP_PULSE = 10;
          const SUNSET_AREA = 2;                       // "The SUNSET" is area index 2 (bg3); bats unlock from here on
 
          try {
@@ -1206,8 +1219,9 @@
                  sfxVol: masterSFXVol,
                  musicOn: musicMuted ? '0' : '1',
                  sfxOn: sfxMuted ? '0' : '1',
-                 woofOn: woofMuted ? '0' : '1',
-                 dnd: dndMode ? 'true' : 'false'
+                woofOn: woofMuted ? '0' : '1',
+                xmasOn: xmasMode ? '1' : '0',
+                dnd: dndMode ? 'true' : 'false'
              };
          }
          let settingsPushTimer = null;
@@ -1231,6 +1245,7 @@
                  if (s.musicOn !== undefined) { musicMuted = String(s.musicOn) === '0'; saveSetting(SETTINGS_KEYS.musicOn, musicMuted ? '0' : '1'); }
                  if (s.sfxOn !== undefined) { sfxMuted = String(s.sfxOn) === '0'; saveSetting(SETTINGS_KEYS.sfxOn, sfxMuted ? '0' : '1'); }
                  if (s.woofOn !== undefined) { woofMuted = String(s.woofOn) === '0'; saveSetting(SETTINGS_KEYS.woofOn, woofMuted ? '0' : '1'); }
+                if (s.xmasOn !== undefined) { xmasMode = String(s.xmasOn) !== '0'; saveSetting(SETTINGS_KEYS.xmasOn, xmasMode ? '1' : '0'); applyXmasMode(); }
                  if (s.dnd !== undefined) { dndMode = String(s.dnd) === 'true'; try { localStorage.setItem('flappyDND', dndMode ? 'true' : 'false'); } catch(e) {} }
                  if (typeof applySavedSettings === 'function') applySavedSettings();
                  if (typeof applyDNDUI === 'function') applyDNDUI();
@@ -1759,7 +1774,21 @@ window.triggerPvpTrashTalk = async function() {
          // Language, volumes and the mute switches used to reset to defaults on every
          // visit. They are now read back here (before any Audio object is built, so the
          // saved volume is the one they are created with) and re-saved on every change.
-         const SETTINGS_KEYS = { lang: 'flappyLang', musicVol: 'flappyMusicVol', sfxVol: 'flappySfxVol', musicOn: 'flappyMusicOn', sfxOn: 'flappySfxOn', woofOn: 'flappyWoofOn' };
+         const SETTINGS_KEYS = { lang: 'flappyLang', musicVol: 'flappyMusicVol', sfxVol: 'flappySfxVol', musicOn: 'flappyMusicOn', sfxOn: 'flappySfxOn', woofOn: 'flappyWoofOn', xmasOn: 'flappyXmasOn' };
+         // Christmas mode (main-menu snow, lights & snowy ground) is a remembered-forever
+         // setting, on by default. Declared here so applySavedSettings can sync it at boot.
+         let xmasMode = loadSetting(SETTINGS_KEYS.xmasOn, '1') !== '0';
+         function applyXmasMode() {
+             const land = document.getElementById('landing-page');
+             if (land) land.classList.toggle('no-xmas', !xmasMode);   // plain night background when off
+             const t = document.getElementById('xmas-toggle'); if (t) t.checked = !!xmasMode;
+         }
+         window.toggleXmasMode = function(isChecked) {
+             xmasMode = !!isChecked;
+             saveSetting(SETTINGS_KEYS.xmasOn, xmasMode ? '1' : '0');
+             applyXmasMode();
+             pushSettingsToCloud();
+         };
          function loadSetting(key, fallback) { try { const v = localStorage.getItem(key); return (v === null) ? fallback : v; } catch (e) { return fallback; } }
          function saveSetting(key, value) { try { localStorage.setItem(key, value); } catch (e) { } }
          function loadVolSetting(key, fallback) { const v = parseFloat(loadSetting(key, NaN)); return isNaN(v) ? fallback : Math.min(1, Math.max(0, v)); }
@@ -2069,11 +2098,12 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
 
          function make_bird_slow_and_fall() { 
              bird.x = CANVAS_WIDTH / 3; bird.velocity_x = 0;
-             if (isBroomActive) {   // Witch's Broom Boost: smooth steady glide, no sharp flap-falls
-                 bird.velocity_y += (BROOM_GLIDE_FALL - bird.velocity_y) * 0.10;
+             if (isBroomActive) {   // Witch's Broom Boost: smooth swooping glide, no sharp flap-falls
+                 if (broomFlapPulse > 0) { broomFlapPulse--; bird.velocity_y += (BROOM_RISE_TARGET - bird.velocity_y) * BROOM_RISE_EASE; }
+                 else { bird.velocity_y += (BROOM_SINK - bird.velocity_y) * BROOM_SINK_EASE; }
                  if (bird.velocity_y > BROOM_MAX_FALL) bird.velocity_y = BROOM_MAX_FALL;
-                 if (bird.velocity_y < -BROOM_MAX_RISE) bird.velocity_y = -BROOM_MAX_RISE;
-                 bird.angle = 0;
+                 if (bird.velocity_y < BROOM_RISE_TARGET) bird.velocity_y = BROOM_RISE_TARGET;
+                 bird.angle = Math.max(-14, Math.min(16, bird.velocity_y * 3));   // lean into the glide
                  return;
              }
              let current_accel = acceleration; let current_max = max_fall_speed; current_accel = Math.abs(current_accel); current_max = Math.abs(current_max); if (bird.velocity_y < current_max) { bird.velocity_y += current_accel; } if (bird.velocity_y > current_max) { bird.velocity_y = current_max; } bird.angle = 0; 
@@ -2464,16 +2494,17 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
                  activateBatsProtection();
              } else {
                  // --- WITCH'S BROOM BOOST: 12s of smooth, steady gliding ---
-                 isBroomActive = true; broomTimer = 12 * FPS;
+                 isBroomActive = true; broomTimer = 12 * FPS; broomFlapPulse = 0; bird.angle = 0;
                  if (!sfxMuted) { dashSound.currentTime = 0; dashSound.play().catch(e => console.warn(e)); }
                  triggerFlash("rgba(156, 39, 176, 0.30)");
                  showCheatFeedback(getLangText("broomMsg"));
              }
          };
 
-         // Flapping while on the broom nudges the glide instead of snapping the velocity.
+         // Flapping while on the broom starts a rise pulse: the glide easing swoops the witch
+         // upward smoothly (and she actually climbs), instead of snapping the velocity.
          function flapBird() {
-             if (isBroomActive) { bird.velocity_y = Math.max(bird.velocity_y - 2.6, -BROOM_MAX_RISE); }
+             if (isBroomActive) { broomFlapPulse = BROOM_FLAP_PULSE; }
              else { bird.velocity_y = jump_amount; }
          }
 
@@ -2978,7 +3009,7 @@ window.playClickSound = function() {
              isHrBreakActive = false; hrBreakCooldown = 0; hrBreakTimer = 0;
              isArthurActive = false; arthurCooldown = 0; arthurTimer = 0;
             isSleighActive = false; sleighTimer = 0; isNiceFilterActive = false; niceFilterTimer = 0; nicePipeQuota = 0; santaCooldown = 0;
-            isBroomActive = false; broomTimer = 0; isBatsActive = false; batsTimer = 0; witchBats = []; witchBlockCd = 0; witchCooldown = 0;
+            isBroomActive = false; broomTimer = 0; broomFlapPulse = 0; isBatsActive = false; batsTimer = 0; witchBats = []; witchBlockCd = 0; witchCooldown = 0;
              
              if (currentSkinKey === 'custom') { currentLives = customStats.lives || 0; wallDestroyCharges = customStats.bombs || 0; dashCharges = customStats.dashes || 0; shrinkCharges = customStats.shrinks || 0; widenCharges = customStats.widens || 0; } else { if (currentSkinKey === 'black' || currentSkinKey === 'tough' || currentSkinKey === 'sherlock') currentLives = (currentSkinKey === 'sherlock' ? 1 : INITIAL_LIVES); else currentLives = 0; wallDestroyCharges = (currentSkinKey === 'yellow' || currentSkinKey === 'black') ? MAX_DESTROY_CHARGES : 0; dashCharges = (currentSkinKey === 'doordash' || currentSkinKey === 'black') ? 4 : 0; shrinkCharges = (currentSkinKey === 'luigi' || currentSkinKey === 'black') ? 4 : 0; widenCharges = (currentSkinKey === 'heisenbark' || currentSkinKey === 'black') ? 4 : 0; }
              updateAbilityButtons(); lastPipeY = 250; add_pipe(CANVAS_WIDTH, 100, 140); deactivateShield(true); voidMusic.pause(); voidMusic.currentTime = 0; connectorMusic.pause(); connectorMusic.currentTime = 0; boss1Music.pause(); boss1Music.currentTime = 0; boss2Music.pause(); boss2Music.currentTime = 0;
@@ -3076,7 +3107,7 @@ window.playClickSound = function() {
                     if (isBroomActive) { 
                         broomTimer--; 
                         if (document.getElementById('witch-btn').style.display !== 'none') document.getElementById('witch-btn').innerText = getLangText("active"); 
-                        if (broomTimer <= 0) { isBroomActive = false; witchCooldown = 30 * FPS; } 
+                        if (broomTimer <= 0) { isBroomActive = false; broomFlapPulse = 0; bird.angle = 0; witchCooldown = 30 * FPS; } 
                     }
                     if (isBatsActive) { 
                         batsTimer--; 
@@ -3580,8 +3611,13 @@ window.playClickSound = function() {
          function xmasFrame(now) {
              requestAnimationFrame(xmasFrame);
              const cv = document.getElementById('xmas-fx'); const land = document.getElementById('landing-page');
-             if (!cv || !land) return;
-             if (land.style.display === 'none') { xmasLast = 0; return; }   // menu closed: sleep
+            if (!cv || !land) return;
+            if (!xmasMode) {   // Christmas mode off: wipe the overlay and don't animate
+                const cx0 = cv.getContext('2d'); if (cx0) cx0.clearRect(0, 0, cv.width, cv.height);
+                xmasLast = 0;
+                return;
+            }
+            if (land.style.display === 'none') { xmasLast = 0; return; }   // menu closed: sleep
              if (!xmasFlakes.length) initXmasFlakes();
              const w = window.innerWidth, h = window.innerHeight;
              if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
