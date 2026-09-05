@@ -310,36 +310,32 @@ try {
   run(`reset_game(); game_mode = 'running';`);
   check('reset clears the fade timer', run('broomFadeTimer === 0'));
 
-  // ================= SNOWBALL PVP MODE =================
-  run(`startSnowballMode();`);
-  check('snowball mode starts as a pvp battle vs SNOWBOT', run(`game_mode === 'pvp_shetos' && snowballMode === true && opponentName.indexOf('SNOWBOT') === 0`), run('opponentName'));
-  check('snowball button visible with full ammo', elements['snowball-btn'].style.display === 'flex' && run('snowballAmmo') === 3, elements['snowball-btn'].innerText);
-  run(`myHasCrashed = false; isRoundStarting = false; window.roundEnding = false; pipes.length = 0; shetosBotAlive = true; snowballBotTimer = 1000; snowballBotAim = 0; snowballs.length = 0;`);
-  run(`bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; shetosBotY = bird.y + 100; shetosBotVelocityY = 0; shetosBotStun = 0;`);
+  // ================= RED.PNG REMOVED =================
+  check('red.png no longer referenced anywhere', run(`typeof bottom_bar === 'undefined' && ASSETS_TO_LOAD.indexOf('red.png') === -1 && ASSETS_TO_LOAD.indexOf('wall.png') >= 0`));
+
+  // ================= SNOWBALL PVP MODE (ONLINE) =================
+  run(`snowballMode = false; startSnowballMode();`);   // harness has no auth/db: the flag flips, matchmaking politely bails
+  check('snowball mode is online, not vs a bot', run(`snowballMode === true && typeof botHitsPipe === 'undefined' && typeof shetosBotStun === 'undefined'`), run('game_mode'));
+  run(`game_mode = 'online_match'; snowballMode = true; reset_game(); game_mode = 'online_match'; resetSnowballState();`);
+  run(`myHasCrashed = false; enemyHasCrashed = false; isRoundStarting = false; window.roundEnding = false; online_round = 1; pipes.length = 0;`);
+  run(`bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; enemyGhostRenderX = bird.x + 40; enemyGhostRenderY = bird.y - 45; enemyGhostY = enemyGhostRenderY; updateAbilityButtons();`);
+  check('snow button visible in online snowball match', elements['snowball-btn'].style.display === 'flex' && run('snowballAmmo') === 3, elements['snowball-btn'].innerText);
   run(`throwSnowball();`);
-  check('throwing spends one ammo and spawns a player snowball', run(`snowballAmmo === 2 && snowballs.length === 1 && snowballs[0].fromBot === false`));
-  stepFrames(16);
-  check('homing snowball stuns the rival bot', run('shetosBotStun > 0'), 'stun=' + run('shetosBotStun') + ' balls=' + run('snowballs.length'));
-  run(`shetosBotStun = 0; snowballs.length = 0; snowballBotTimer = 1; snowballBotAim = 0;`);
-  stepFrames(1);
-  check('bot telegraphs its throw before releasing', run('snowballBotAim') === 32, run('snowballBotAim'));
-  run(`bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; shetosBotY = bird.y + 60;`);
-  stepFrames(32);
-  check('bot releases its snowball after the telegraph', run(`snowballs.some(s => s.fromBot)`), run('snowballs.length'));
-  run(`snowballs.length = 0; bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; snowballs.push({ x: bird.x + 20, y: bird.y - 15, vx: 0, vy: 5, fromBot: true });`);
-  stepFrames(6);
-  check('bot snowball hit snows the player', run('playerSnowed > 0'), 'snowed=' + run('playerSnowed'));
+  check('throw spends ammo, launches ball, queues sync payload', run(`snowballAmmo === 2 && snowballs.length === 1 && snowballs[0].fromBot === false && pendingSnowThrow && pendingSnowThrow.seq === 1 && pendingSnowThrow.r === 1`));
+  stepFrames(15);
+  check('own snowball homes to the rival ghost and bursts', run('snowballs.length') === 0, run('snowballs.length'));
+  run(`bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; enemyGhostRenderY = bird.y - 30; spawnEnemySnowball({ seq: 1, y: bird.y - 30, vy: 0, r: 1 });`);
+  stepFrames(8);
+  check('incoming opponent snowball snows me', run('playerSnowed > 0'), 'snowed=' + run('playerSnowed'));
   run(`bird.velocity_y = 0; flapBird();`);
   check('snowed flaps are weak', run('bird.velocity_y') > run('jump_amount') * 0.75 && run('bird.velocity_y') < run('jump_amount') * 0.4, 'vy=' + run('bird.velocity_y').toFixed(2));
-  run(`snowballs.length = 0; playerSnowed = 0; shetosBotAlive = true; shetosBotStun = 80; pipes.length = 0;`);
-  run(`add_pipe(bird.x - 10, 120, 140); shetosBotY = pipes[0].y - 100; shetosBotVelocityY = 0;`);
-  stepFrames(1);
-  check('stunned bot smashes into a pipe and is eliminated', run('shetosBotAlive') === false, 'alive=' + run('shetosBotAlive'));
-  run(`snowballAmmo = 1; snowballRecharge = 2; myHasCrashed = false; pipes.length = 0;`);
+  run(`snowballAmmo = 1; snowballRecharge = 2;`);
   stepFrames(3);
   check('ammo recharges over time', run('snowballAmmo') === 2, run('snowballAmmo'));
+  run(`snowballMode = false; updateAbilityButtons();`);
+  check('plain online match has no snowball button', elements['snowball-btn'].style.display === 'none');
   run(`startShetosMode();`);
-  check('plain Shetos AI battle has no snowballs', run(`snowballMode === false && game_mode === 'pvp_shetos'`) && elements['snowball-btn'].style.display === 'none');
+  check('Shetos AI battle stays snowball-free', run(`snowballMode === false && game_mode === 'pvp_shetos'`) && elements['snowball-btn'].style.display === 'none');
   run(`game_mode = 'running'; reset_game(); game_mode = 'running'; currentSkinKey = 'witch';`);
 
   // ================= MOBILE-ONLY: NO KEYBOARD CONTROLS =================
