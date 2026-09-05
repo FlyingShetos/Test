@@ -290,6 +290,58 @@ try {
   }
   check('2000-frame witch stress run across zones: no crash', true);
 
+  // ================= BROOM COUNTDOWN + SOFT LANDING =================
+  run(`reset_game(); game_mode = 'running'; currentSkinKey = 'witch'; updateAbilityButtons(); witchCooldown = 0; currentBGIndex = 0;`);
+  run(`triggerWitchPower();`);
+  stepFrames(2);
+  check('broom countdown shows on the witch button', /\d+s/.test(elements['witch-btn'].innerText), elements['witch-btn'].innerText);
+  run(`broomTimer = 2 * FPS;`);
+  stepFrames(2);
+  check('final 3 seconds warn on the button', /!/.test(elements['witch-btn'].innerText), elements['witch-btn'].innerText);
+  run(`broomTimer = 1;`);
+  stepFrames(2);
+  check('broom expiry starts the soft-landing fade', run('isBroomActive') === false && run('broomFadeTimer') > 0, 'fade=' + run('broomFadeTimer'));
+  run(`bird.velocity_y = 0;`);
+  stepFrames(5);
+  const fadeV = run('bird.velocity_y');
+  check('fade eases gravity back instead of instant free-fall', fadeV > 0 && fadeV <= Math.min(3.4, 5 * Math.abs(run('acceleration')) * 0.35 + 0.01), 'vy=' + fadeV.toFixed(2));
+  run(`flapBird();`);
+  check('player keeps full flap control during the fade', run('bird.velocity_y === jump_amount'));
+  run(`reset_game(); game_mode = 'running';`);
+  check('reset clears the fade timer', run('broomFadeTimer === 0'));
+
+  // ================= SNOWBALL PVP MODE =================
+  run(`startSnowballMode();`);
+  check('snowball mode starts as a pvp battle vs SNOWBOT', run(`game_mode === 'pvp_shetos' && snowballMode === true && opponentName.indexOf('SNOWBOT') === 0`), run('opponentName'));
+  check('snowball button visible with full ammo', elements['snowball-btn'].style.display === 'flex' && run('snowballAmmo') === 3, elements['snowball-btn'].innerText);
+  run(`myHasCrashed = false; isRoundStarting = false; window.roundEnding = false; pipes.length = 0; shetosBotAlive = true; snowballBotTimer = 1000; snowballBotAim = 0; snowballs.length = 0;`);
+  run(`bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; shetosBotY = bird.y + 100; shetosBotVelocityY = 0; shetosBotStun = 0;`);
+  run(`throwSnowball();`);
+  check('throwing spends one ammo and spawns a player snowball', run(`snowballAmmo === 2 && snowballs.length === 1 && snowballs[0].fromBot === false`));
+  stepFrames(16);
+  check('homing snowball stuns the rival bot', run('shetosBotStun > 0'), 'stun=' + run('shetosBotStun') + ' balls=' + run('snowballs.length'));
+  run(`shetosBotStun = 0; snowballs.length = 0; snowballBotTimer = 1; snowballBotAim = 0;`);
+  stepFrames(1);
+  check('bot telegraphs its throw before releasing', run('snowballBotAim') === 32, run('snowballBotAim'));
+  run(`bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; shetosBotY = bird.y + 60;`);
+  stepFrames(32);
+  check('bot releases its snowball after the telegraph', run(`snowballs.some(s => s.fromBot)`), run('snowballs.length'));
+  run(`snowballs.length = 0; bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; snowballs.push({ x: bird.x + 20, y: bird.y - 15, vx: 0, vy: 5, fromBot: true });`);
+  stepFrames(6);
+  check('bot snowball hit snows the player', run('playerSnowed > 0'), 'snowed=' + run('playerSnowed'));
+  run(`bird.velocity_y = 0; flapBird();`);
+  check('snowed flaps are weak', run('bird.velocity_y') > run('jump_amount') * 0.75 && run('bird.velocity_y') < run('jump_amount') * 0.4, 'vy=' + run('bird.velocity_y').toFixed(2));
+  run(`snowballs.length = 0; playerSnowed = 0; shetosBotAlive = true; shetosBotStun = 80; pipes.length = 0;`);
+  run(`add_pipe(bird.x - 10, 120, 140); shetosBotY = pipes[0].y - 100; shetosBotVelocityY = 0;`);
+  stepFrames(1);
+  check('stunned bot smashes into a pipe and is eliminated', run('shetosBotAlive') === false, 'alive=' + run('shetosBotAlive'));
+  run(`snowballAmmo = 1; snowballRecharge = 2; myHasCrashed = false; pipes.length = 0;`);
+  stepFrames(3);
+  check('ammo recharges over time', run('snowballAmmo') === 2, run('snowballAmmo'));
+  run(`startShetosMode();`);
+  check('plain Shetos AI battle has no snowballs', run(`snowballMode === false && game_mode === 'pvp_shetos'`) && elements['snowball-btn'].style.display === 'none');
+  run(`game_mode = 'running'; reset_game(); game_mode = 'running'; currentSkinKey = 'witch';`);
+
   // ================= MOBILE-ONLY: NO KEYBOARD CONTROLS =================
   check('no character info mentions keyboard keys', run(`Object.values(SKINS).every(s => !/Press [A-Z]\\)|Right Click|Shift|keyboard/i.test(s.desc))`));
   run(`game_mode = 'running'; isBroomActive = false; isSleighActive = false; bird.velocity_y = 0;`);
