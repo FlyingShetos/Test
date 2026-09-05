@@ -78,6 +78,7 @@
         #arthur-btn { background: rgba(139, 69, 19, 0.7); }
         #santa-btn { background: rgba(192, 25, 35, 0.8); }
         #witch-btn { background: rgba(106, 27, 154, 0.8); }
+        #snowball-btn { background: rgba(30, 144, 255, 0.75); }
         
         #delete-boss-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 30px; background: red; z-index: 40; display: none; padding: 20px; border: 5px solid white; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.1); } 100% { transform: translate(-50%, -50%) scale(1); } }
@@ -270,6 +271,7 @@
             <button id="arthur-btn" data-i18n="deadEyeBtn" class="game-action-btn" onclick="triggerArthur()">DEAD EYE</button>
             <button id="santa-btn" data-i18n="santaBtn" class="game-action-btn" onclick="triggerSantaPower()">GIFT</button>
             <button id="witch-btn" data-i18n="witchBtn" class="game-action-btn" onclick="triggerWitchPower()">MAGIC</button>
+            <button id="snowball-btn" class="game-action-btn" onclick="throwSnowball()">SNOW x3</button>
         </div>
 
          <div id="cheat-feedback">CODE REDEEMED!</div>
@@ -298,9 +300,9 @@
                      <h3 style="color:white;" data-i18n="online">ONLINE</h3>
                      <div class="mode-desc" style="color:#ccc;" data-i18n-html="onlineDesc">Matchmake with<br>Real Humans.</div>
                  </div>
-                 <div class="mode-card" style="background:linear-gradient(#f1c40f, #f39c12); opacity:0.6; cursor:not-allowed;">
-                     <h3 style="color:black;" data-i18n="comingSoon">COMING SOON</h3>
-                     <div class="mode-desc" style="color:#222; font-weight:bold;" data-i18n-html="comingSoonDesc">Available in a future update.</div>
+                 <div class="mode-card" style="background:linear-gradient(#bfe6ff, #4fc3f7);" onclick="startSnowballMode()">
+                     <h3 style="color:black;" data-i18n="snowMode">SNOWBALL MODE</h3>
+                     <div class="mode-desc" style="color:#222; font-weight:bold;" data-i18n-html="snowModeDesc">Online snowball fight!<br>Friend or random rival.</div>
                  </div>
                  <button class="enter-btn secondary-btn" style="margin-top:10px; width:100px; font-size:14px;" onclick="backToMainMenu()" data-i18n="back">BACK</button>
              </div>
@@ -811,7 +813,7 @@
 
          const TRANSLATIONS = {
     en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", understand: "I UNDERSTAND", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS",
-    comingSoon: "COMING SOON", comingSoonDesc: "Available in a future update.", storyDesc: "The classic adventure.<br>Secrets & Bosses.", endlessDesc: "Infinite run.<br>Speed increases forever.<br><b style='color:white;'>Leaderboard Enabled</b>", pvpDesc: "Score Battle!<br>Online.", trophiesLabel: "Trophies:", back: "BACK", selectOpponent: "Select Opponent", online: "ONLINE", onlineDesc: "Matchmake with<br>Real Humans.", round: "ROUND", you: "YOU", opponent: "OPPONENT", target: "Target: Don't Crash!",
+    comingSoon: "COMING SOON", comingSoonDesc: "Available in a future update.", storyDesc: "The classic adventure.<br>Secrets & Bosses.", endlessDesc: "Infinite run.<br>Speed increases forever.<br><b style='color:white;'>Leaderboard Enabled</b>", pvpDesc: "Score Battle!<br>Online.", trophiesLabel: "Trophies:", back: "BACK", selectOpponent: "Select Opponent", online: "ONLINE", onlineDesc: "Matchmake with<br>Real Humans.", snowMode: "SNOWBALL MODE", snowModeDesc: "Online snowball fight!<br>Friend or random rival.", snowBtn: "SNOW", round: "ROUND", you: "YOU", opponent: "OPPONENT", target: "Target: Don't Crash!",
     music: "MUSIC", musicVol: "MUSIC VOL", sfx: "SFX", sfxVol: "SFX VOL", woof: "WOOF", xmasMode: "CHRISTMAS", language: "LANGUAGE", resume: "RESUME", quitToMenu: "QUIT TO MENU",
     shopTitle: "Shop", dryFood: "Dry Food:", theLab: "THE LAB", skins: "SKINS", trails: "TRAILS",
     sellItem: "SELL ITEM", areYouSure: "Are you sure?", yes: "YES", no: "NO",
@@ -827,7 +829,7 @@
     shopEquipped: "EQUIPPED", shopEquip: "EQUIP", shopBuy: "BUY", shopSell: "SELL", achReward: "Reward:", none: "None",
     b1_1: "oh, here you are", b1_2: "I was waiting for you", b2_1: "you are getting out of control", b2_2: "you werent supposed to come HERE", b2_3: "Its too late to go back now....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "So, we will not talk about how a dog is flying?", b3_2: "Why am i even asking that's not even my thoughts, It's the game developer who's typing all this nonsense.", b3_3: "I guess he thought it would be funny to make me question why a dog is flying.", b3_4: "Let's start the fight i guess.", boss3Defeated: "DRAGON DEFEATED!", sys: "System Override...", bypass: "Bypassing...", admin: "Administrator Granted.", tbc: "To Be Continued...", cat: "THAT WAS A CAT", kid: "you got clipped by a kid lmao", err1: "Connection Error", fall: "Fell down!", wall: "Hit a wall!", eaten: "EATEN BY SHETOS!" },
     de: { play: "SPIELEN", shop: "GESCHÄFT", achieve: "ERFOLGE", friends: "FREUNDE", lead: "BESTEN", ai: "KI CHAT", redeem: "EINLÖSEN", high: "Höchstpunktzahl", food: "Trockenfutter", trophies: "Trophäen", games: "Spiele", welcome: "WILLKOMMEN BEI<br>FLYING SHETOS", understand: "ICH VERSTEHE", chooseMode: "Modus wählen", story: "GESCHICHTSMODUS", endless: "ENDLOSMODUS", pvp: "PVP-MODUS", settings: "EINSTELLUNGEN",
-    comingSoon: "BALD VERFÜGBAR", comingSoonDesc: "In einem zukünftigen Update verfügbar.", storyDesc: "Das klassische Abenteuer.<br>Geheimnisse & Bosse.", endlessDesc: "Endloser Lauf.<br>Die Geschwindigkeit steigt für immer.<br><b style='color:white;'>Bestenliste aktiviert</b>", pvpDesc: "Punkte-Battle!<br>Online.", trophiesLabel: "Trophäen:", back: "ZURÜCK", selectOpponent: "Gegner wählen", online: "ONLINE", onlineDesc: "Spiele gegen<br>echte Menschen.", round: "RUNDE", you: "DU", opponent: "GEGNER", target: "Ziel: Nicht abstürzen!",
+    comingSoon: "BALD VERFÜGBAR", comingSoonDesc: "In einem zukünftigen Update verfügbar.", storyDesc: "Das klassische Abenteuer.<br>Geheimnisse & Bosse.", endlessDesc: "Endloser Lauf.<br>Die Geschwindigkeit steigt für immer.<br><b style='color:white;'>Bestenliste aktiviert</b>", pvpDesc: "Punkte-Battle!<br>Online.", trophiesLabel: "Trophäen:", back: "ZURÜCK", selectOpponent: "Gegner wählen", online: "ONLINE", onlineDesc: "Spiele gegen<br>echte Menschen.", snowMode: "SCHNEEBALL-MODUS", snowModeDesc: "Online-Schneeballschlacht!<br>Freund oder Zufallsgegner.", snowBtn: "SCHNEE", round: "RUNDE", you: "DU", opponent: "GEGNER", target: "Ziel: Nicht abstürzen!",
     music: "MUSIK", musicVol: "MUSIK LAUTST.", sfx: "SFX", sfxVol: "SFX LAUTST.", woof: "WUFF", xmasMode: "WEIHNACHTEN", language: "SPRACHE", resume: "FORTSETZEN", quitToMenu: "ZUM MENÜ",
     shopTitle: "Geschäft", dryFood: "Trockenfutter:", theLab: "DAS LABOR", skins: "SKINS", trails: "SPUREN",
     sellItem: "ARTIKEL VERKAUFEN", areYouSure: "Bist du sicher?", yes: "JA", no: "NEIN",
@@ -841,7 +843,7 @@
     shopEquipped: "AUSGERÜSTET", shopEquip: "AUSRÜSTEN", shopBuy: "KAUFEN", shopSell: "VERKAUFEN", achReward: "Belohnung:", none: "Keine",
     b1_1: "oh, da bist du ja", b1_2: "ich habe auf dich gewartet", b2_1: "du gerätst außer kontrolle", b2_2: "du solltest nicht HIERHER kommen", b2_3: "es ist zu spät um umzukehren....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "Also, wir reden nicht darueber, wie ein Hund fliegt?", b3_2: "Warum frage ich ueberhaupt? Das sind nicht mal meine Gedanken, der Spieleentwickler tippt hier den ganzen Unsinn.", b3_3: "Ich glaube, er dachte, es waere lustig, mich fragen zu lassen, warum ein Hund fliegt.", b3_4: "Dann fangen wir wohl besser an zu kaempfen.", boss3Defeated: "DRACHE BESIEGT!", sys: "Systemüberschreibung...", bypass: "Umgehung...", admin: "Administrator gewährt.", tbc: "Fortsetzung folgt...", cat: "DAS WAR EINE KATZE", kid: "du wurdest von einem kind erwischt lmao", err1: "Verbindungsfehler", fall: "Heruntergefallen!", wall: "Wand getroffen!", eaten: "VON SHETOS GEFRESSEN!" },
     ar: { play: "العب", shop: "المتجر", achieve: "إنجازات", friends: "أصدقاء", lead: "المتصدرين", ai: "محادثة ذكاء", redeem: "استرداد", high: "أعلى نتيجة", food: "طعام جاف", trophies: "الجوائز", games: "الألعاب", welcome: "مرحباً بكم في<br>فلاينج شيتوس", understand: "أنا أفهم", chooseMode: "اختر الوضع", story: "وضع القصة", endless: "وضع لا نهاية له", pvp: "وضع لاعب ضد لاعب", settings: "الإعدادات",
-    comingSoon: "قريباً", comingSoonDesc: "متاح في تحديث مستقبلي.", storyDesc: "المغامرة الكلاسيكية.<br>أسرار وزعماء.", endlessDesc: "جري لا نهائي.<br>السرعة تزداد إلى الأبد.<br><b style='color:white;'>لوحة المتصدرين مفعّلة</b>", pvpDesc: "معركة النقاط!<br>أونلاين.", trophiesLabel: "الجوائز:", back: "رجوع", selectOpponent: "اختر الخصم", online: "أونلاين", onlineDesc: "طابق مع<br>بشر حقيقيين.", round: "الجولة", you: "أنت", opponent: "الخصم", target: "الهدف: لا تصطدم!",
+    comingSoon: "قريباً", comingSoonDesc: "متاح في تحديث مستقبلي.", storyDesc: "المغامرة الكلاسيكية.<br>أسرار وزعماء.", endlessDesc: "جري لا نهائي.<br>السرعة تزداد إلى الأبد.<br><b style='color:white;'>لوحة المتصدرين مفعّلة</b>", pvpDesc: "معركة النقاط!<br>أونلاين.", trophiesLabel: "الجوائز:", back: "رجوع", selectOpponent: "اختر الخصم", online: "أونلاين", onlineDesc: "طابق مع<br>بشر حقيقيين.", snowMode: "وضع كرة الثلج", snowModeDesc: "معركة كرات ثلج أونلاين!<br>مع صديق أو خصم عشوائي.", snowBtn: "ثلج", round: "الجولة", you: "أنت", opponent: "الخصم", target: "الهدف: لا تصطدم!",
     music: "الموسيقى", musicVol: "حجم الموسيقى", sfx: "المؤثرات", sfxVol: "حجم المؤثرات", woof: "ووف", xmasMode: "عيد الميلاد", language: "اللغة", resume: "استئناف", quitToMenu: "العودة إلى القائمة",
     shopTitle: "المتجر", dryFood: "الطعام الجاف:", theLab: "المختبر", skins: "الأشكال", trails: "الأثر",
     sellItem: "بيع العنصر", areYouSure: "هل أنت متأكد؟", yes: "نعم", no: "لا",
@@ -855,7 +857,7 @@
     shopEquipped: "مُجهَّز", shopEquip: "تجهيز", shopBuy: "شراء", shopSell: "بيع", achReward: "المكافأة:", none: "لا شيء",
     b1_1: "أوه، ها أنت ذا", b1_2: "كنت في انتظارك", b2_1: "أنت تخرج عن السيطرة", b2_2: "لم يكن من المفترض أن تأتي إلى هنا", b2_3: "لقد فات الأوان للتراجع....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "طيب، مش هنتكلم إزاي كلب بيطير؟", b3_2: "ليه بسأل أصلًا؟ دي مش أفكاري، ده مطور اللعبة اللي بيكتب كل الهبل ده.", b3_3: "أكيد افتكر إنه مضحك يخليني أسأل ليه كلب بيطير.", b3_4: "خلينا نبدأ القتال يعني.", boss3Defeated: "تم هزيمة التنين!", sys: "تجاوز النظام...", bypass: "جاري التجاوز...", admin: "تم منح حق المسؤول.", tbc: "يتبع...", cat: "تلك كانت قطة", kid: "لقد صدمك طفل لول", err1: "خطأ في الاتصال", fall: "سقطت!", wall: "اصطدمت بجدار!", eaten: "أكلك شيتوس!" },
     it: { play: "GIOCA", shop: "NEGOZIO", achieve: "RISULTATI", friends: "AMICI", lead: "CLASSIFICA", ai: "CHAT AI", redeem: "RISCATTA", high: "Punteggio Max", food: "Cibo Secco", trophies: "Trofei", games: "Giochi", welcome: "BENVENUTO A<br>FLYING SHETOS", understand: "CAPISCO", chooseMode: "Scegli Modalità", story: "MODALITÀ STORIA", endless: "MODALITÀ INFINITA", pvp: "MODALITÀ PVP", settings: "IMPOSTAZIONI",
-    comingSoon: "IN ARRIVO", comingSoonDesc: "Disponibile in un futuro aggiornamento.", storyDesc: "L'avventura classica.<br>Segreti & Boss.", endlessDesc: "Corsa infinita.<br>La velocità aumenta per sempre.<br><b style='color:white;'>Classifica attivata</b>", pvpDesc: "Battaglia di punteggi!<br>Online.", trophiesLabel: "Trofei:", back: "INDIETRO", selectOpponent: "Seleziona Avversario", online: "ONLINE", onlineDesc: "Abbinati con<br>persone reali.", round: "ROUND", you: "TU", opponent: "AVVERSARIO", target: "Obiettivo: Non schiantarti!",
+    comingSoon: "IN ARRIVO", comingSoonDesc: "Disponibile in un futuro aggiornamento.", storyDesc: "L'avventura classica.<br>Segreti & Boss.", endlessDesc: "Corsa infinita.<br>La velocità aumenta per sempre.<br><b style='color:white;'>Classifica attivata</b>", pvpDesc: "Battaglia di punteggi!<br>Online.", trophiesLabel: "Trofei:", back: "INDIETRO", selectOpponent: "Seleziona Avversario", online: "ONLINE", onlineDesc: "Abbinati con<br>persone reali.", snowMode: "MODALITÀ PALLE DI NEVE", snowModeDesc: "Battaglia online a palle di neve!<br>Amico o rivale casuale.", snowBtn: "NEVE", round: "ROUND", you: "TU", opponent: "AVVERSARIO", target: "Obiettivo: Non schiantarti!",
     music: "MUSICA", musicVol: "VOLUME MUSICA", sfx: "SFX", sfxVol: "VOLUME SFX", woof: "WOOF", xmasMode: "NATALE", language: "LINGUA", resume: "RIPRENDI", quitToMenu: "ESCI AL MENU",
     shopTitle: "Negozio", dryFood: "Cibo Secco:", theLab: "IL LABORATORIO", skins: "SKIN", trails: "SCIE",
     sellItem: "VENDI OGGETTO", areYouSure: "Sei sicuro?", yes: "SÌ", no: "NO",
@@ -964,7 +966,7 @@
          const ASSETS_TO_LOAD = [
              'boss.png', 'boss_2.png', 'player.png', 'chocolate.png', 'shield.png', 'player_shielded.png',
              'potion.png', 'slow_potion.png', 'dryfood.png', 'doordash_cheetos.png', 'luigi_shetos.png', 'heisen_bark.png', 
-             'red.png', 'wall.png',
+             'wall.png',
             'sherlock.png', 'employed.png', 'arthur.png', 'santa_shetos.png', 'witch_shetos.png', 
             'big_player.png', 'big_player_rich.png', 'big_employed.png', 'big_doordash_cheetos.png', 'big_arthur.png',
             'big_luigi_shetos.png', 'big_sherlock.png', 'big_heisen_bark.png', 'big_player_yellow.png', 'big_player_black.png',
@@ -1056,7 +1058,7 @@
          let pipePairCounter = 0;                     // groups top+bottom pipe of one obstacle into a pair
          // --- WITCH SHETOS: zone-decided power (before SUNSET = broom glide, SUNSET+ = bats), 30s cooldown after the power ends ---
          let witchCooldown = 0;
-         let isBroomActive = false; let broomTimer = 0; let broomFlapPulse = 0;
+         let isBroomActive = false; let broomTimer = 0; let broomFlapPulse = 0; let broomFadeTimer = 0;
          let isBatsActive = false; let batsTimer = 0; let witchBats = []; let witchBlockCd = 0;
          // Broom glide feel: a flap starts a short "rise pulse" that eases the velocity into a
          // smooth upward swoop, then the broom settles back into a gentle steady sink. Responsive
@@ -1431,11 +1433,11 @@
              activeInviteDocId = null; activeInviteMatchId = null;
          }
 
-         window.challengeFriend = async function(friendID, friendName) {
-             playClickSound(); closeAllModals(); if(!db || !currentUser) return;
+         window.challengeFriend = async function(friendID, friendName, snow) {
+             playClickSound(); snowballMode = !!snow; closeAllModals(); if(!db || !currentUser) return;
              mainMenuMusic.pause(); mainMenuMusic.currentTime = 0; document.getElementById('landing-page').style.display = 'none'; 
              let loadScr = document.createElement('div'); loadScr.id = "temp-online-loader"; loadScr.style.position = "absolute"; loadScr.style.top=0; loadScr.style.left=0; loadScr.style.width="100%"; loadScr.style.height="100%"; loadScr.style.background="black"; loadScr.style.color="white"; loadScr.style.display="flex"; loadScr.style.flexDirection="column"; loadScr.style.justifyContent="center"; loadScr.style.alignItems="center"; loadScr.style.fontFamily="'Press Start 2P'"; 
-             loadScr.innerHTML = `<div style="margin-bottom:20px;">${getLangText('waitingFor')} ${friendName.toUpperCase()}...</div><div class="loader-spinner" style="width:40px;height:40px;border:4px solid white;border-top:4px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;"></div><button onclick="cancelMatchSearch()" class="btn-yellow" style="padding:10px 20px;font-family:'Press Start 2P';cursor:pointer;">${getLangText('cancel')}</button><style>@keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}</style>`; 
+             loadScr.innerHTML = `<div style="margin-bottom:20px;">${getLangText('waitingFor')} ${friendName.toUpperCase()}...${snowballMode ? ' ❄' : ''}</div><div class="loader-spinner" style="width:40px;height:40px;border:4px solid white;border-top:4px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;"></div><button onclick="cancelMatchSearch()" class="btn-yellow" style="padding:10px 20px;font-family:'Press Start 2P';cursor:pointer;">${getLangText('cancel')}</button><style>@keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}</style>`; 
              document.getElementById('game-container').appendChild(loadScr);
              
              let createdMatchID = null;
@@ -1443,7 +1445,7 @@
              // created: the CANCEL button now works even while the match doc is in flight.
              const myToken = ++challengeCancelToken;
              try {
-                 const newMatch = await db.collection('matches').add({ hostId: currentUser.uid, hostName: currentUser.displayName || "Player", status: 'waiting_for_friend', guestId: friendID, hostScore: 0, guestScore: 0, hostStatus: 'alive', guestStatus: 'alive', round: 1, hostWins: 0, guestWins: 0, hostSeen: Date.now(), timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                 const newMatch = await db.collection('matches').add({ hostId: currentUser.uid, hostName: currentUser.displayName || "Player", status: 'waiting_for_friend', guestId: friendID, mode: snowballMode ? 'snowball' : 'normal', hostScore: 0, guestScore: 0, hostStatus: 'alive', guestStatus: 'alive', round: 1, hostWins: 0, guestWins: 0, hostSeen: Date.now(), timestamp: firebase.firestore.FieldValue.serverTimestamp() });
                  if (myToken !== challengeCancelToken) { try { await newMatch.delete(); } catch (e2) {} return; }   // canceled while creating
                  createdMatchID = newMatch.id;
                  activeMatchID = newMatch.id; myOnlineRole = 'host';
@@ -1586,6 +1588,7 @@
                              <button class="chat-btn" onclick="openFriendChat('${uid}', '${safeName}')">${getLangText('chat')}</button>
                              <button class="chat-btn" style="background:#8e44ad;" onclick="donateToFriend('${uid}', '${safeName}')">${getLangText('donate')}</button>
                              <button class="chat-btn" style="background:#e67e22;" onclick="challengeFriend('${uid}', '${safeName}')">${getLangText('challenge')}</button>
+                             <button class="chat-btn" style="background:#4fc3f7; color:#000;" title="${getLangText('snowMode')}" onclick="challengeFriend('${uid}', '${safeName}', true)">❄ ${getLangText('challenge')}</button>
                          </div>
                      </div>`;
                  }
@@ -1766,7 +1769,7 @@ window.triggerPvpTrashTalk = async function() {
          let CANVAS_HEIGHT = 480;
 
          var game_mode = 'waiting_for_website'; var myCanvas, ctx; var gameInterval = null; var FPS = 40; let isPaused = false; let voidUIErrorTimer = 0; 
-         const BOSS_IMG = new Image(); BOSS_IMG.src = 'boss.png'; const BOSS2_IMG = new Image(); BOSS2_IMG.src = 'boss_2.png'; const PLAYER_IMG = new Image(); PLAYER_IMG.src = 'player.png'; const CHOCO_IMG = new Image(); CHOCO_IMG.src = 'chocolate.png'; const SHIELD_IMG = new Image(); SHIELD_IMG.src = 'shield.png'; const SHIELDED_BIRD_IMG = new Image(); SHIELDED_BIRD_IMG.src = 'player_shielded.png'; const POTION_IMG = new Image(); POTION_IMG.src = 'potion.png'; const SLOW_POTION_IMG = new Image(); SLOW_POTION_IMG.src = 'slow_potion.png'; const STAR_IMG = new Image(); STAR_IMG.src = 'dryfood.png'; const DOORDASH_IMG = new Image(); DOORDASH_IMG.src = 'doordash_cheetos.png'; var bottom_bar = new Image(); bottom_bar.src = 'red.png'; var pipe_piece = new Image(); pipe_piece.src = 'wall.png'; const DRAGON_IMG = new Image(); DRAGON_IMG.src = 'dragon.png'; const DRAGON_MAD_IMG = new Image(); DRAGON_MAD_IMG.src = 'dragon_mad.png'; const DRAGON_DIZZY_IMG = new Image(); DRAGON_DIZZY_IMG.src = 'dragon_dizzy.png'; const DRAGON_SHOOT_IMG = new Image(); DRAGON_SHOOT_IMG.src = 'dragon_shoot.png'; const DRAGON_AWKWARD_IMG = new Image(); DRAGON_AWKWARD_IMG.src = 'dragon_awkward.png'; const DRAGON_ANNOYED_IMG = new Image(); DRAGON_ANNOYED_IMG.src = 'dragon_annoyed.png'; const DRAGON_DEADPAN_IMG = new Image(); DRAGON_DEADPAN_IMG.src = 'dragon_deadpan.png'; const DRAGON_SMUG_IMG = new Image(); DRAGON_SMUG_IMG.src = 'dragon_smug.png';
+         const BOSS_IMG = new Image(); BOSS_IMG.src = 'boss.png'; const BOSS2_IMG = new Image(); BOSS2_IMG.src = 'boss_2.png'; const PLAYER_IMG = new Image(); PLAYER_IMG.src = 'player.png'; const CHOCO_IMG = new Image(); CHOCO_IMG.src = 'chocolate.png'; const SHIELD_IMG = new Image(); SHIELD_IMG.src = 'shield.png'; const SHIELDED_BIRD_IMG = new Image(); SHIELDED_BIRD_IMG.src = 'player_shielded.png'; const POTION_IMG = new Image(); POTION_IMG.src = 'potion.png'; const SLOW_POTION_IMG = new Image(); SLOW_POTION_IMG.src = 'slow_potion.png'; const STAR_IMG = new Image(); STAR_IMG.src = 'dryfood.png'; const DOORDASH_IMG = new Image(); DOORDASH_IMG.src = 'doordash_cheetos.png'; var pipe_piece = new Image(); pipe_piece.src = 'wall.png'; const DRAGON_IMG = new Image(); DRAGON_IMG.src = 'dragon.png'; const DRAGON_MAD_IMG = new Image(); DRAGON_MAD_IMG.src = 'dragon_mad.png'; const DRAGON_DIZZY_IMG = new Image(); DRAGON_DIZZY_IMG.src = 'dragon_dizzy.png'; const DRAGON_SHOOT_IMG = new Image(); DRAGON_SHOOT_IMG.src = 'dragon_shoot.png'; const DRAGON_AWKWARD_IMG = new Image(); DRAGON_AWKWARD_IMG.src = 'dragon_awkward.png'; const DRAGON_ANNOYED_IMG = new Image(); DRAGON_ANNOYED_IMG.src = 'dragon_annoyed.png'; const DRAGON_DEADPAN_IMG = new Image(); DRAGON_DEADPAN_IMG.src = 'dragon_deadpan.png'; const DRAGON_SMUG_IMG = new Image(); DRAGON_SMUG_IMG.src = 'dragon_smug.png';
          const backgroundImages = []; for (let i = 1; i <= 5; i++) { let img = new Image(); img.src = `bg${i}.png`; backgroundImages.push(img); }
 
          let masterMusicVol = 0.3; let masterSFXVol = 0.5;
@@ -1901,7 +1904,7 @@ window.triggerPvpTrashTalk = async function() {
          }
          window.addEventListener('click', () => { if(mainMenuMusic.paused && !musicMuted && game_mode === 'waiting_for_website') { mainMenuMusic.play().catch(e => console.log("Music auto-started")); } }, {once: true});
 
-         let boss = { x: 9999, y: 100, width: 150, height: 150, stamina: 100, speedY: 2, movingIn: true, hitImg: BOSS_IMG }; let chocolates = []; let victoryTimer = 0; let deathMessage = "Game Over"; let bossIntroState = 0; let bossIntroTimer = 0; let bossIntroSkipLock = 0; let boss1Defeated = false; let isBoss2 = false; let isBoss3 = false; let dragonDefeated = false; let dragonHP = 100; let dragonPhase = 1; let dragonAtkState = 'idle'; let dragonAtkTimer = 0; let dragonCycle = 0; let dragonDashesDone = 0; let dragonDashVec = null; let dragonBodyCd = 0; let dragonDashSpeed = 13.5; let dragonMouthTimer = 0; let dragonDizzyDone = false; let dragonDizzyTimer = 0; let dragonDefeatTimer = 0; let dragonBob = 0; let dragonFire = []; let dragonTauntFx = []; const BOSS2_MAX_HITS = 5; let deleteBtnTimer = 0; let deleteBtnSpawnTimer = 0; let errorSigns = []; let errorSignCooldown = 0; 
+         let boss = { x: 9999, y: 100, width: 150, height: 150, stamina: 100, speedY: 2, movingIn: true, hitImg: BOSS_IMG }; let chocolates = []; let victoryTimer = 0; let deathMessage = "Game Over"; let bossIntroState = 0; let bossIntroTimer = 0; let bossIntroSkipLock = 0; let bossIntroSkipStamp = 0; let boss1Defeated = false; let isBoss2 = false; let isBoss3 = false; let dragonDefeated = false; let dragonHP = 100; let dragonPhase = 1; let dragonAtkState = 'idle'; let dragonAtkTimer = 0; let dragonCycle = 0; let dragonDashesDone = 0; let dragonDashVec = null; let dragonBodyCd = 0; let dragonDashSpeed = 13.5; let dragonMouthTimer = 0; let dragonDizzyDone = false; let dragonDizzyTimer = 0; let dragonDefeatTimer = 0; let dragonBob = 0; let dragonFire = []; let dragonTauntFx = []; const BOSS2_MAX_HITS = 5; let deleteBtnTimer = 0; let deleteBtnSpawnTimer = 0; let errorSigns = []; let errorSignCooldown = 0; 
          function getAreaName(i) { return getLangText("area" + i); } const GLITCH_TEXTS = ["thats not the reality", "404", "not found", "wake up", "null", "error"]; let currentBGIndex = 0; let previousBGIndex = 0; let transitionText = ""; let transitionTimer = 0; let transitionType = "normal"; let transitionDuration = 0; const NORMAL_TRANSITION_DURATION = 32; const GLITCH_TRANSITION_DURATION = 80; let flashColor = null; let flashTimer = 0; let levelReached = 1; let cheatBuffer = ""; let floatingTexts = []; 
          var jump_amount = -7; var max_fall_speed = +8; var acceleration = 0.6; const SUPER_JUMP_AMOUNT = -3.8; const SUPER_ACCELERATION = 0.18; const SUPER_MAX_FALL_SPEED = +3.5; const VOID_ACCEL = 0.35; const VOID_MAX_FALL = 6.0; const MAGNET_RADIUS = 300; const INITIAL_LIVES = 3; let currentLives = 0; const MAX_DESTROY_CHARGES = 5; let wallDestroyCharges = 0; const WALLS_TO_DESTROY = 2; let dashCharges = 0; let isDashActive = false; const DASH_DURATION = 68; let dashTimer = 0; let shrinkCharges = 0; let isShrunk = false; let shrinkTimer = 0; const SHRINK_DURATION = 160; let widenCharges = 0; let isWidenActive = false; let widenTimer = 0; const WIDEN_DURATION = 240; let heisenBlinkTimer = 0; let pipe_speed = -2; let currentSpawnInterval = 2500; let speedMultiplier = 1; let trailRedTimer = 0; let trailGoldTimer = 0;
          var time_game_last_running; var bottom_bar_offset = 0; var pipes = []; var pipe_spawn_timer = 0; let currentScore = 0; let lastPipeY = 250; let totalGamesPlayed = 0; try { totalGamesPlayed = parseInt(localStorage.getItem('flappyGamesPlayed')) || 0; } catch(e) {}
@@ -2103,9 +2106,16 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
                  else { bird.velocity_y += (BROOM_SINK - bird.velocity_y) * BROOM_SINK_EASE; }
                  if (bird.velocity_y > BROOM_MAX_FALL) bird.velocity_y = BROOM_MAX_FALL;
                  if (bird.velocity_y < BROOM_RISE_TARGET) bird.velocity_y = BROOM_RISE_TARGET;
-                 bird.angle = Math.max(-14, Math.min(16, bird.velocity_y * 3));   // lean into the glide
-                 return;
-             }
+                bird.angle = Math.max(-14, Math.min(16, bird.velocity_y * 3));   // lean into the glide
+                return;
+            }
+            if (broomFadeTimer > 0) {   // broom just ended: ease back into normal gravity over ~0.6s
+                broomFadeTimer--;       // instead of dropping like a stone the instant the glide stops
+                bird.velocity_y += Math.abs(acceleration) * 0.35;
+                if (bird.velocity_y > 3.4) bird.velocity_y = 3.4;
+                bird.angle = Math.min(30, Math.max(bird.angle, bird.velocity_y * 3));
+                return;
+            }
              let current_accel = acceleration; let current_max = max_fall_speed; current_accel = Math.abs(current_accel); current_max = Math.abs(current_max); if (bird.velocity_y < current_max) { bird.velocity_y += current_accel; } if (bird.velocity_y > current_max) { bird.velocity_y = current_max; } bird.angle = 0; 
          }
 
@@ -2139,7 +2149,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          window.togglePause = function() { playClickSound(); if (game_mode === 'waiting_for_website') { let menu = document.getElementById('pause-menu'); if(menu.style.display === 'flex') { menu.style.display = 'none'; } else { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'none'; } return; } if (game_mode === 'online_match' || game_mode === 'pvp_shetos') { let menu = document.getElementById('pause-menu'); if(menu.style.display === 'flex') { menu.style.display = 'none'; } else { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'block'; } return; } isPaused = !isPaused; let menu = document.getElementById('pause-menu'); if (isPaused) { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'block'; if (game_mode === 'running' || game_mode === 'boss') { bgMusic.pause(); voidMusic.pause(); breathingSound.pause(); boss1Music.pause(); boss2Music.pause(); connectorMusic.pause(); } } else { menu.style.display = 'none'; if (!musicMuted && (game_mode === 'running' || game_mode === 'boss')) { if (game_mode === 'boss') { if (!isBoss2) boss1Music.play().catch(e=>console.log(e)); else boss2Music.play().catch(e=>console.log(e)); } else { if (currentBGIndex === 4) voidMusic.play(); else if(connectorMusic.currentTime > 0 && !connectorMusic.ended) connectorMusic.play(); else bgMusic.play(); } } } }
          window.quitToMenu = function() { restoreActionBar(); document.getElementById('user-profile').style.display = 'block'; bgMusic.pause(); bgMusic.currentTime = 0; voidMusic.pause(); voidMusic.currentTime = 0; connectorMusic.pause(); connectorMusic.currentTime = 0; boss1Music.pause(); boss1Music.currentTime = 0; boss2Music.pause(); boss2Music.currentTime = 0; breathingSound.pause(); breathingSound.currentTime = 0; const loader = document.getElementById('temp-online-loader'); if(loader) loader.remove(); if (activeMatchID) { db.collection('matches').doc(activeMatchID).update({ status: 'ended' }).catch(e=>console.log(e)); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; } isPaused = false; document.getElementById('pause-menu').style.display = 'none'; document.getElementById('online-ui').style.display = 'none'; document.getElementById('settings-btn').style.display = 'block'; 
              myCanvas.width = CANVAS_WIDTH; myCanvas.height = CANVAS_HEIGHT; let container = document.getElementById('game-container'); container.classList.remove('portrait-shake'); myCanvas.style.filter = "none";
-             document.getElementById('landing-page').style.display = 'flex'; updateMenuStats(); game_mode = 'waiting_for_website'; reset_game(); document.getElementById('user-profile').style.display = 'block'; // boot lands on the main menu: login/logout visible document.getElementById('dash-btn').style.display = 'none'; document.getElementById('bomb-btn').style.display = 'none'; document.getElementById('shrink-btn').style.display = 'none'; document.getElementById('widen-btn').style.display = 'none'; document.getElementById('sherlock-btn').style.display = 'none'; document.getElementById('hrbreak-btn').style.display = 'none'; document.getElementById('arthur-btn').style.display = 'none'; document.getElementById('santa-btn').style.display = 'none'; document.getElementById('witch-btn').style.display = 'none';
+             document.getElementById('landing-page').style.display = 'flex'; updateMenuStats(); game_mode = 'waiting_for_website'; reset_game(); document.getElementById('user-profile').style.display = 'block'; // boot lands on the main menu: login/logout visible document.getElementById('dash-btn').style.display = 'none'; document.getElementById('bomb-btn').style.display = 'none'; document.getElementById('shrink-btn').style.display = 'none'; document.getElementById('widen-btn').style.display = 'none'; document.getElementById('sherlock-btn').style.display = 'none'; document.getElementById('hrbreak-btn').style.display = 'none'; document.getElementById('arthur-btn').style.display = 'none'; document.getElementById('santa-btn').style.display = 'none'; document.getElementById('witch-btn').style.display = 'none'; document.getElementById('snowball-btn').style.display = 'none';
              currentBGIndex = 0; ctx.fillStyle = "#041820"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); if(!musicMuted) mainMenuMusic.play().catch(e => console.log(e)); window.updateSplashText(); applyScale(); setTimeout(() => { try { showQueuedInvite(); } catch(e) {} }, 400); }
 
          window.openShopFromMenu = function() { 
@@ -2505,6 +2515,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
          // upward smoothly (and she actually climbs), instead of snapping the velocity.
          function flapBird() {
              if (isBroomActive) { broomFlapPulse = BROOM_FLAP_PULSE; }
+             else if (playerSnowed > 0) { bird.velocity_y = jump_amount * 0.55; }   // snowed in Snowball mode: weak, heavy flaps
              else { bird.velocity_y = jump_amount; }
          }
 
@@ -2588,6 +2599,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
                 document.getElementById('arthur-btn').style.display = (currentSkinKey === 'arthur' || (currentSkinKey === 'custom' && customStats.arthur)) ? 'flex' : 'none'; 
                 document.getElementById('santa-btn').style.display = (currentSkinKey === 'santa') ? 'flex' : 'none'; 
                 document.getElementById('witch-btn').style.display = (currentSkinKey === 'witch') ? 'flex' : 'none'; 
+                document.getElementById('snowball-btn').style.display = (game_mode === 'online_match' && snowballMode) ? 'flex' : 'none'; 
                 
                 if (sherlockCooldown <= 0 && !isSherlockActive && document.getElementById('sherlock-btn').style.display !== 'none') document.getElementById('sherlock-btn').innerText = getLangText("predictBtn");
                 if (hrBreakCooldown <= 0 && !isHrBreakActive && document.getElementById('hrbreak-btn').style.display !== 'none') document.getElementById('hrbreak-btn').innerText = getLangText("hrBreakBtn");
@@ -2822,10 +2834,87 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              if (bossIntroState >= 5) { let barX = CANVAS_WIDTH/2 - 50; let barY = 20; let barW = 100; let barH = 10; let hpPercent = 1; if (isBoss2) { hpPercent = Math.max(0, (BOSS2_MAX_HITS - boss2Hits) / BOSS2_MAX_HITS); } else if (isBoss3) { hpPercent = Math.max(0, dragonHP / 100); } else { hpPercent = Math.max(0, boss.stamina / 100); } ctx.fillStyle = "black"; ctx.fillRect(barX, barY, barW, barH); ctx.fillStyle = "#FF0000"; ctx.fillRect(barX, barY, barW * hpPercent, barH); ctx.strokeStyle = "white"; ctx.lineWidth = 2; ctx.strokeRect(barX, barY, barW, barH); }
          }
 let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let shetosBotVelocityY = 0; let activeFriendChatID = null; let friendChatListener = null;
+
+         // ======================= SNOWBALL PVP MODE (ONLINE) =======================
+         // An online_match with snowballs: you race a FRIEND or a RANDOM rival through the
+         // same score battle, but you can pelt each other. Your throw is synced through the
+         // match doc (hostSnow/guestSnow), so the opponent sees it fly in from their ghost
+         // and has a moment to dodge. A hit leaves the receiver SNOWED: weak flaps for ~1.75s.
+         // 3 ammo, one recharges every 4s. Rounds/trophies work exactly like normal online.
+         let snowballMode = false;
+         let snowballs = [];          // {x, y, vx, vy, fromBot} - fromBot = incoming from the opponent
+         const SNOWBALL_MAX_AMMO = 3, SNOWBALL_RECHARGE = 4 * FPS;
+         let snowballAmmo = SNOWBALL_MAX_AMMO, snowballRecharge = 0;
+         let playerSnowed = 0;
+         let snowMatchFlakes = [];
+         let snowThrowSeq = 0, enemySnowSeq = -1, pendingSnowThrow = null;
+         function resetSnowballState() { snowballs = []; snowballAmmo = SNOWBALL_MAX_AMMO; snowballRecharge = 0; playerSnowed = 0; snowMatchFlakes = []; snowThrowSeq = 0; enemySnowSeq = -1; pendingSnowThrow = null; }
+         window.throwSnowball = function() {
+             if (game_mode !== 'online_match' || !snowballMode || isPaused || myHasCrashed || enemyHasCrashed || window.roundEnding || isRoundStarting) return;
+             if (snowballAmmo <= 0) return;
+             snowballAmmo--;
+             if (snowballAmmo < SNOWBALL_MAX_AMMO && snowballRecharge <= 0) snowballRecharge = SNOWBALL_RECHARGE;
+             const sx = bird.x + 10, sy = bird.y + 10;
+             const tx = enemyGhostRenderX + 20, ty = enemyGhostRenderY + 20;
+             const d = Math.hypot(tx - sx, ty - sy) || 1;
+             snowballs.push({ x: sx, y: sy, vx: (tx - sx) / d * 4, vy: (ty - sy) / d * 4, fromBot: false });
+             snowThrowSeq++;
+             pendingSnowThrow = { seq: snowThrowSeq, y: Math.round(bird.y), vy: Math.round(bird.velocity_y * 10) / 10, r: online_round };   // rides along in the next match-doc write
+             onlineDirty = true;
+             flushOnlineSync(true);
+             playClickSound();
+         };
+         function spawnEnemySnowball(es) {   // called by the match listener when the opponent throws
+             if (myHasCrashed || window.roundEnding || isRoundStarting) return;
+             const sx = enemyGhostRenderX + 20, sy = enemyGhostRenderY + 20;
+             const tx = bird.x + 20, ty = bird.y + 20 + (es.vy || 0) * 8;   // lead the target a little
+             const d = Math.hypot(tx - sx, ty - sy) || 1;
+             snowballs.push({ x: sx, y: sy, vx: (tx - sx) / d * 5, vy: (ty - sy) / d * 5, fromBot: true });
+         }
+         function updateSnowballs() {
+             if (game_mode !== 'online_match' || !snowballMode) return;
+             if (snowballAmmo < SNOWBALL_MAX_AMMO) { snowballRecharge--; if (snowballRecharge <= 0) { snowballAmmo++; snowballRecharge = snowballAmmo < SNOWBALL_MAX_AMMO ? SNOWBALL_RECHARGE : 0; } }
+             if (playerSnowed > 0) playerSnowed--;
+             for (let i = snowballs.length - 1; i >= 0; i--) {
+                 const s = snowballs[i];
+                 if (!s.fromBot) {   // my snowball homes gently toward the rival's ghost
+                     const tx = enemyGhostRenderX + 20, ty = enemyGhostRenderY + 20;
+                     const d = Math.hypot(tx - s.x, ty - s.y) || 1;
+                     s.vx += (tx - s.x) / d * 0.5; s.vy += (ty - s.y) / d * 0.5;
+                     const sp = Math.hypot(s.vx, s.vy) || 1;
+                     if (sp > 6.5) { s.vx = s.vx / sp * 6.5; s.vy = s.vy / sp * 6.5; }
+                 }
+                 s.x += s.vx; s.y += s.vy;
+                 if (s.x < -40 || s.x > CANVAS_WIDTH + 40 || s.y < -40 || s.y > CANVAS_HEIGHT + 40) { snowballs.splice(i, 1); continue; }
+                 if (s.fromBot) {
+                     if (!myHasCrashed && Math.hypot(s.x - (bird.x + 20), s.y - (bird.y + 20)) < 26) {
+                         snowballs.splice(i, 1); playerSnowed = 70; triggerFlash('rgba(255,255,255,0.6)');
+                         if (!sfxMuted) { damageSound.currentTime = 0; damageSound.play().catch(e => {}); }
+                     }
+                 } else if (Math.hypot(s.x - (enemyGhostRenderX + 20), s.y - (enemyGhostRenderY + 20)) < 26) {
+                     snowballs.splice(i, 1); triggerFlash('rgba(191,230,255,0.3)');   // visual burst - the real "snowed" effect lands on the opponent's screen
+                 }
+             }
+             // ---- draw: light match snowfall, projectiles, frost vignette ----
+             if (!snowMatchFlakes.length) { for (let i = 0; i < 36; i++) snowMatchFlakes.push({ x: Math.random() * CANVAS_WIDTH, y: Math.random() * CANVAS_HEIGHT, r: 1 + Math.random() * 2, s: 0.4 + Math.random() }); }
+             ctx.save();
+             ctx.fillStyle = '#ffffff';
+             for (let i = 0; i < snowMatchFlakes.length; i++) { const f = snowMatchFlakes[i]; f.y += f.s; f.x += Math.sin(f.y * 0.03) * 0.4; if (f.y > CANVAS_HEIGHT) { f.y = -4; f.x = Math.random() * CANVAS_WIDTH; } ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill(); }
+             for (let i = 0; i < snowballs.length; i++) { const s = snowballs[i]; ctx.globalAlpha = 1; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(s.x, s.y, 7, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#9fd8ff'; ctx.lineWidth = 2; ctx.stroke(); ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.beginPath(); ctx.arc(s.x - s.vx, s.y - s.vy, 3, 0, Math.PI * 2); ctx.fill(); }
+             if (playerSnowed > 0) { ctx.globalAlpha = 0.18 * (playerSnowed / 70); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); }
+             ctx.restore();
+             const sb = document.getElementById('snowball-btn');
+             if (sb && sb.style.display !== 'none') sb.innerText = getLangText('snowBtn') + ' x' + snowballAmmo + (snowballAmmo < SNOWBALL_MAX_AMMO ? ' (' + Math.ceil(snowballRecharge / FPS) + 's)' : '');
+         }
          window.openPvpSubMenu = function() { document.getElementById('mode-main-menu').style.display = 'none'; document.getElementById('pvp-sub-menu').style.display = 'flex'; }
          window.backToMainMenu = function() { document.getElementById('pvp-sub-menu').style.display = 'none'; document.getElementById('mode-main-menu').style.display = 'flex'; }
          window.startStoryMode = function() { closeAllModals(); mainMenuMusic.pause(); mainMenuMusic.currentTime = 0; game_mode = 'running'; isEndless = false; reset_game(); document.getElementById('settings-btn').style.display = 'block'; myCanvas.style.filter = "none"; if (!musicMuted) { bgMusic.currentTime = 0; bgMusic.play().catch(e => console.log(e)); } if(backgroundImages[0] && backgroundImages[0].complete) ctx.drawImage(backgroundImages[0], 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); transitionText = getAreaName(0); transitionType = "normal"; transitionDuration = 70; transitionTimer = 70; previousBGIndex = 0; }
-         window.startShetosMode = function() { closeAllModals(); mainMenuMusic.pause(); mainMenuMusic.currentTime = 0; game_mode = 'pvp_shetos'; reset_game(); shetosBotY = CANVAS_HEIGHT / 2; shetosBotScore = 0; shetosBotAlive = true; shetosBotVelocityY = 0; shetosPvpScore = 0; shetosPvpBubbleText = ""; opponentName = "SHETOS AI"; enemyWins = 0; myWins = 0; online_round = 1; document.getElementById('online-ui').style.display = 'block'; updateOnlineUI(); if(!musicMuted) { bgMusic.currentTime = 0; bgMusic.play().catch(e=>{}); } document.getElementById('settings-btn').style.display = 'block'; triggerPvpTrashTalk(); }
+         window.startShetosMode = function() { closeAllModals(); snowballMode = false; mainMenuMusic.pause(); mainMenuMusic.currentTime = 0; game_mode = 'pvp_shetos'; reset_game(); shetosBotY = CANVAS_HEIGHT / 2; shetosBotScore = 0; shetosBotAlive = true; shetosBotVelocityY = 0; shetosPvpScore = 0; shetosPvpBubbleText = ""; opponentName = "SHETOS AI"; enemyWins = 0; myWins = 0; online_round = 1; document.getElementById('online-ui').style.display = 'block'; updateOnlineUI(); if(!musicMuted) { bgMusic.currentTime = 0; bgMusic.play().catch(e=>{}); } document.getElementById('settings-btn').style.display = 'block'; updateAbilityButtons(); triggerPvpTrashTalk(); }
+
+         // Snowball mode is ONLINE: matchmake with a random rival (friend challenges carry
+         // the mode in their match doc - see challengeFriend). startOnlineMode(true) does
+         // the login/db checks, so this is safe to call straight from the menu card.
+         window.startSnowballMode = function() { startOnlineMode(true); };
 
          function updateShetosBot() { if (game_mode !== 'pvp_shetos') return; if (!shetosBotAlive) { shetosBotVelocityY += 0.6; shetosBotY += shetosBotVelocityY; } else { let targetY = CANVAS_HEIGHT / 2; let closestDist = 9999; let nextPipe = null; for(let p of pipes) { if(p.x + p.MyImg.width > bird.x && !p.flipV && (p.x < closestDist)) { closestDist = p.x; nextPipe = p; } } if (nextPipe) { let gapCenter = nextPipe.y + nextPipe.MyImg.height + (isWidenActive? 140 : 70); targetY = gapCenter; } let diff = targetY - shetosBotY; shetosBotY += diff * 0.18; } ctx.save(); ctx.globalAlpha = shetosBotAlive ? 0.9 : 0.5; ctx.translate(bird.x + 20, shetosBotY + 20); if (!shetosBotAlive) { ctx.rotate((Math.min(shetosBotVelocityY * 5, 90) * Math.PI) / 180); } ctx.drawImage(PLAYER_IMG, -20, -20, 40, 40); ctx.restore(); if (shetosBotAlive && shetosPvpBubbleTimer > 0 && shetosPvpBubbleText) { ctx.save(); ctx.font = '10px "Press Start 2P", cursive'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(shetosPvpBubbleText, bird.x + 20, shetosBotY - 15); ctx.restore(); shetosPvpBubbleTimer--; } }
 
@@ -2900,9 +2989,9 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
              showCheatFeedback(getLangText("opponentDisconnected"));
              setTimeout(function() { triggerGameOver("VICTORY! +" + trophyChange + " 🏆"); document.getElementById('online-ui').style.display = 'none'; }, 1000);
          }
-         function listenToActiveMatch() { unsubscribeMatch = db.collection('matches').doc(activeMatchID).onSnapshot((snap) => { const data = snap.data(); if (!data) { if (game_mode === 'online_match') { handleOpponentLeft(); } else { const deadLoader = document.getElementById('temp-online-loader'); if (deadLoader) deadLoader.remove(); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; } return; } /* only REMOTE updates count as opponent presence (our own writes must not) */ if (!snap.metadata.hasPendingWrites) opponentLastSeen = Date.now(); if (myOnlineRole === 'host') { opponentName = data.guestName || "Opponent"; if (data.guestY !== undefined) enemyGhostY = data.guestY; if (data.guestScore !== undefined) enemyGhostScore = data.guestScore; online_score_enemy = data.guestScore || 0; enemyCurrentVisibleScore = online_score_enemy; enemyWins = data.guestWins || 0; myWins = data.hostWins || 0; enemyHasCrashed = data.guestStatus === 'crashed'; } else { opponentName = data.hostName || "Opponent"; if (data.hostY !== undefined) enemyGhostY = data.hostY; if (data.hostScore !== undefined) enemyGhostScore = data.hostScore; online_score_enemy = data.hostScore || 0; enemyCurrentVisibleScore = online_score_enemy; enemyWins = data.hostWins || 0; myWins = data.guestWins || 0; enemyHasCrashed = data.hostStatus === 'crashed'; } if (data.status === 'declined') { const dl = document.getElementById('temp-online-loader'); if (dl) dl.remove(); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } db.collection('matches').doc(activeMatchID).delete().catch(() => {}); activeMatchID = null; myOnlineRole = null; showCheatFeedback(getLangText("challengeDeclined")); quitToMenu(); return; } if (data.status === 'starting' && document.getElementById('temp-online-loader')) { document.getElementById('temp-online-loader').remove(); trophyProcessed = false; startGameLoopOnline(); } if ((data.hostWins || 0) >= 2 || (data.guestWins || 0) >= 2) { endMatchLogic(data); return; } if (data.status === 'ended') { if (game_mode === 'online_match') { handleOpponentLeft(); } else { if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; const staleLoader = document.getElementById('temp-online-loader'); if (staleLoader) staleLoader.remove(); } return; } if (data.round > online_round) { online_round = data.round; resetOnlineRound(); triggerFlash("white"); } if (game_mode === 'online_match') { try { checkRoundResult(); } catch (e) { console.log(e); } } }, (err) => console.error("Match listener error:", err)); }
+         function listenToActiveMatch() { unsubscribeMatch = db.collection('matches').doc(activeMatchID).onSnapshot((snap) => { const data = snap.data(); if (!data) { if (game_mode === 'online_match') { handleOpponentLeft(); } else { const deadLoader = document.getElementById('temp-online-loader'); if (deadLoader) deadLoader.remove(); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; } return; } /* only REMOTE updates count as opponent presence (our own writes must not) */ if (!snap.metadata.hasPendingWrites) opponentLastSeen = Date.now(); if (myOnlineRole === 'host') { opponentName = data.guestName || "Opponent"; if (data.guestY !== undefined) enemyGhostY = data.guestY; if (data.guestScore !== undefined) enemyGhostScore = data.guestScore; online_score_enemy = data.guestScore || 0; enemyCurrentVisibleScore = online_score_enemy; enemyWins = data.guestWins || 0; myWins = data.hostWins || 0; enemyHasCrashed = data.guestStatus === 'crashed'; if (snowballMode && data.guestSnow && data.guestSnow.r === online_round && data.guestSnow.seq !== enemySnowSeq) { enemySnowSeq = data.guestSnow.seq; spawnEnemySnowball(data.guestSnow); } } else { opponentName = data.hostName || "Opponent"; if (data.hostY !== undefined) enemyGhostY = data.hostY; if (data.hostScore !== undefined) enemyGhostScore = data.hostScore; online_score_enemy = data.hostScore || 0; enemyCurrentVisibleScore = online_score_enemy; enemyWins = data.hostWins || 0; myWins = data.guestWins || 0; enemyHasCrashed = data.hostStatus === 'crashed'; if (snowballMode && data.hostSnow && data.hostSnow.r === online_round && data.hostSnow.seq !== enemySnowSeq) { enemySnowSeq = data.hostSnow.seq; spawnEnemySnowball(data.hostSnow); } } if (data.status === 'declined') { const dl = document.getElementById('temp-online-loader'); if (dl) dl.remove(); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } db.collection('matches').doc(activeMatchID).delete().catch(() => {}); activeMatchID = null; myOnlineRole = null; showCheatFeedback(getLangText("challengeDeclined")); quitToMenu(); return; } if (data.status === 'starting' && document.getElementById('temp-online-loader')) { document.getElementById('temp-online-loader').remove(); trophyProcessed = false; snowballMode = (data.mode === 'snowball'); startGameLoopOnline(); } if ((data.hostWins || 0) >= 2 || (data.guestWins || 0) >= 2) { endMatchLogic(data); return; } if (data.status === 'ended') { if (game_mode === 'online_match') { handleOpponentLeft(); } else { if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; const staleLoader = document.getElementById('temp-online-loader'); if (staleLoader) staleLoader.remove(); } return; } if (data.round > online_round) { online_round = data.round; resetOnlineRound(); triggerFlash("white"); } if (game_mode === 'online_match') { try { checkRoundResult(); } catch (e) { console.log(e); } } }, (err) => console.error("Match listener error:", err)); }
          
-         window.startOnlineMode = async function() { if (!auth || !currentUser) return showGameMessage("You must login to play Online!"); if (!db) return showGameMessage("Database offline!"); closeAllModals(); mainMenuMusic.pause(); mainMenuMusic.currentTime = 0; document.getElementById('landing-page').style.display = 'none'; let loadScr = document.createElement('div'); loadScr.id = "temp-online-loader"; loadScr.style.position = "absolute"; loadScr.style.top=0; loadScr.style.left=0; loadScr.style.width="100%"; loadScr.style.height="100%"; loadScr.style.background="black"; loadScr.style.color="white"; loadScr.style.display="flex"; loadScr.style.flexDirection="column"; loadScr.style.justifyContent="center"; loadScr.style.alignItems="center"; loadScr.style.fontFamily="'Press Start 2P'"; loadScr.innerHTML = `<div style="margin-bottom:20px;">${getLangText('searchingOpponent')}</div><div class="loader-spinner" style="width:40px;height:40px;border:4px solid white;border-top:4px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;"></div><button onclick="cancelMatchSearch()" class="btn-yellow" style="padding:10px 20px;font-family:'Press Start 2P';cursor:pointer;">${getLangText('cancel')}</button><style>@keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}</style>`; document.getElementById('game-container').appendChild(loadScr);
+         window.startOnlineMode = async function(snow) { snowballMode = !!snow; if (!auth || !currentUser) return showGameMessage("You must login to play Online!"); if (!db) return showGameMessage("Database offline!"); closeAllModals(); mainMenuMusic.pause(); mainMenuMusic.currentTime = 0; document.getElementById('landing-page').style.display = 'none'; let loadScr = document.createElement('div'); loadScr.id = "temp-online-loader"; loadScr.style.position = "absolute"; loadScr.style.top=0; loadScr.style.left=0; loadScr.style.width="100%"; loadScr.style.height="100%"; loadScr.style.background="black"; loadScr.style.color="white"; loadScr.style.display="flex"; loadScr.style.flexDirection="column"; loadScr.style.justifyContent="center"; loadScr.style.alignItems="center"; loadScr.style.fontFamily="'Press Start 2P'"; loadScr.innerHTML = `<div style="margin-bottom:20px;">${getLangText('searchingOpponent')}${snowballMode ? ' ❄' : ''}</div><div class="loader-spinner" style="width:40px;height:40px;border:4px solid white;border-top:4px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;"></div><button onclick="cancelMatchSearch()" class="btn-yellow" style="padding:10px 20px;font-family:'Press Start 2P';cursor:pointer;">${getLangText('cancel')}</button><style>@keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}</style>`; document.getElementById('game-container').appendChild(loadScr);
              try {
                 // Look for a match to join. We fetch a few candidates, skip stale/dead ones,
                 // and claim one atomically with a transaction so two guests can never pile
@@ -2913,6 +3002,7 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
                 for (const matchDoc of openMatches.docs) {
                     const mData = matchDoc.data();
                     if (!mData) continue;
+                    if ((mData.mode || 'normal') !== (snowballMode ? 'snowball' : 'normal')) continue;   // snowball searchers only join snowball lobbies (and vice versa)
                     if (mData.hostId === currentUser.uid) { matchDoc.ref.delete().catch(() => {}); continue; } // our own leftover match
                     const ageMs = mData.timestamp ? (Date.now() - mData.timestamp.toMillis()) : 60000;
                     if (ageMs > 60000) { matchDoc.ref.delete().catch(() => {}); continue; } // stale host is gone
@@ -2926,7 +3016,7 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
                         activeMatchID = matchDoc.id; myOnlineRole = 'guest'; joined = true; break;
                     } catch (err) { /* someone else grabbed it — try the next candidate */ }
                 }
-                if (!joined) { const newMatch = await db.collection('matches').add({ hostId: currentUser.uid, hostName: currentUser.displayName || "Player", status: 'searching', hostScore: 0, guestScore: 0, hostStatus: 'alive', guestStatus: 'alive', round: 1, hostWins: 0, guestWins: 0, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); activeMatchID = newMatch.id; myOnlineRole = 'host'; }
+                if (!joined) { const newMatch = await db.collection('matches').add({ hostId: currentUser.uid, hostName: currentUser.displayName || "Player", status: 'searching', mode: snowballMode ? 'snowball' : 'normal', hostScore: 0, guestScore: 0, hostStatus: 'alive', guestStatus: 'alive', round: 1, hostWins: 0, guestWins: 0, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); activeMatchID = newMatch.id; myOnlineRole = 'host'; }
                 listenToActiveMatch();
             } catch(e) { console.error("Matchmaking error:", e); const loader = document.getElementById('temp-online-loader'); if(loader) loader.remove(); showGameMessage("Matchmaking failed. Try again."); quitToMenu(); } }
 
@@ -2947,6 +3037,10 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
              // opponent saw them go silent and "disconnected" them mid-match.
              if (myOnlineRole === 'host') { upd.hostY = Math.round(bird.y); upd.hostScore = currentScore; upd.hostStatus = myHasCrashed ? 'crashed' : 'alive'; upd.hostSeen = Date.now(); }
              else { upd.guestY = Math.round(bird.y); upd.guestScore = currentScore; upd.guestStatus = myHasCrashed ? 'crashed' : 'alive'; upd.guestSeen = Date.now(); }
+             if (snowballMode && pendingSnowThrow) {   // piggyback the throw event on the same write
+                 if (myOnlineRole === 'host') upd.hostSnow = pendingSnowThrow; else upd.guestSnow = pendingSnowThrow;
+                 pendingSnowThrow = null;
+             }
              db.collection('matches').doc(activeMatchID).update(upd).catch(e => { onlineDirty = true; });
          }
 
@@ -2967,7 +3061,7 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
                  triggerGameOver(msg); 
              } 
          }
-         function resetOnlineRound() { opponentLastSeen = Date.now(); pipes = []; bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; bird.velocity_x = 0; currentScore = 0; lastPipeY = 250; pipe_speed = -2; speedMultiplier = 1; pipe_spawn_timer = 0; onlineStartTimer = 3; isRoundStarting = true; myHasCrashed = false; enemyHasCrashed = false; window.roundEnding = false; enemyGhostY = CANVAS_HEIGHT / 2; enemyGhostRenderY = bird.y; enemyGhostRenderX = bird.x; onlineDirty = true; if(game_mode === 'pvp_shetos') { shetosBotY = CANVAS_HEIGHT/2; shetosBotScore = 0; shetosBotAlive = true; shetosBotVelocityY = 0; } if(activeMatchID && game_mode === 'online_match') { flushOnlineSync(true); } updateOnlineUI(); flashTimer = 0; }
+         function resetOnlineRound() { opponentLastSeen = Date.now(); pipes = []; bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; bird.velocity_x = 0; currentScore = 0; lastPipeY = 250; pipe_speed = -2; speedMultiplier = 1; pipe_spawn_timer = 0; onlineStartTimer = 3; isRoundStarting = true; myHasCrashed = false; enemyHasCrashed = false; window.roundEnding = false; enemyGhostY = CANVAS_HEIGHT / 2; enemyGhostRenderY = bird.y; enemyGhostRenderX = bird.x; onlineDirty = true; if(game_mode === 'pvp_shetos') { shetosBotY = CANVAS_HEIGHT/2; shetosBotScore = 0; shetosBotAlive = true; shetosBotVelocityY = 0; } if (snowballMode) resetSnowballState(); if(activeMatchID && game_mode === 'online_match') { flushOnlineSync(true); } updateOnlineUI(); flashTimer = 0; }
          function checkRoundResult() { if (game_mode === 'pvp_shetos') { if (currentScore > shetosBotScore && !shetosBotAlive) resolveRound('win'); else if (shetosBotScore > currentScore && myHasCrashed) resolveRound('loss'); else if (!shetosBotAlive && myHasCrashed && shetosBotScore === currentScore) resolveRound('draw'); return; } if (!myHasCrashed) { if (enemyHasCrashed && currentScore > online_score_enemy) { resolveRound('win'); } return; } if (enemyHasCrashed) { if (currentScore > online_score_enemy) resolveRound('win'); else if (currentScore < online_score_enemy) resolveRound('loss'); else resolveRound('draw'); } }
          function resolveRound(result) { if (game_mode === 'pvp_shetos') { let newMyWins = myWins; let newEnemyWins = enemyWins; if (result === 'win') newMyWins++; else if (result === 'loss') newEnemyWins++; myWins = newMyWins; enemyWins = newEnemyWins; online_round++; if (myWins >= 2 || enemyWins >= 2) { let iWon = (myWins >= 2); let trophyChange = iWon ? 10 : -5; onlineTrophies += trophyChange; localStorage.setItem('flappyTrophies', onlineTrophies); saveUserData(); setTimeout(() => { let msg = iWon ? `VICTORY! +${trophyChange} 🏆` : `DEFEAT... ${trophyChange} 🏆`; triggerGameOver(msg); document.getElementById('online-ui').style.display = 'none'; }, 1000); } else { resetOnlineRound(); triggerFlash("white"); } return; } if (myOnlineRole !== 'host') return; if (!activeMatchID) return; let newHostWins = myWins; let newGuestWins = enemyWins; if (currentScore > online_score_enemy) newHostWins = myWins + 1; else if (online_score_enemy > currentScore) newGuestWins = enemyWins + 1; myWins = newHostWins; enemyWins = newGuestWins; updateOnlineUI();
              if (myWins >= 2 || enemyWins >= 2) { endMatchLogic({ hostWins: myWins, guestWins: enemyWins }); return; }
@@ -3003,13 +3097,13 @@ window.playClickSound = function() {
              
              bird.x = CANVAS_WIDTH / 3; bird.y = CANVAS_HEIGHT / 2; bird.angle = 0; bird.velocity_y = 0; pipes = []; stars = []; shields = []; potions = []; slowPotions = []; errorSigns = []; trailHistory = [];  currentScore = 0; pipe_spawn_timer = 0; floatingTexts = []; myCanvas.style.filter = "none";
              
-             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; bossIntroState = 0; bossIntroTimer = 0; bossIntroSkipLock = 0; isBoss2 = false; boss2Hits = 0; isBoss3 = false; dragonDefeated = false; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 0; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; boss.width = 150; boss.height = 150; boss.speedY = 2; boss.hitImg = BOSS_IMG; boss1Music.playbackRate = 1; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; previousBGIndex = 0; transitionType = "normal"; transitionDuration = 0; transitionText = ""; transitionTimer = 0; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; restoreActionBar(); 
+             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; bossIntroState = 0; bossIntroTimer = 0; bossIntroSkipLock = 0; bossIntroSkipStamp = 0; isBoss2 = false; boss2Hits = 0; isBoss3 = false; dragonDefeated = false; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 0; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; boss.width = 150; boss.height = 150; boss.speedY = 2; boss.hitImg = BOSS_IMG; boss1Music.playbackRate = 1; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; previousBGIndex = 0; transitionType = "normal"; transitionDuration = 0; transitionText = ""; transitionTimer = 0; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; restoreActionBar(); 
 
              isSherlockActive = false; sherlockCooldown = 0; sherlockTimer = 0;
              isHrBreakActive = false; hrBreakCooldown = 0; hrBreakTimer = 0;
              isArthurActive = false; arthurCooldown = 0; arthurTimer = 0;
             isSleighActive = false; sleighTimer = 0; isNiceFilterActive = false; niceFilterTimer = 0; nicePipeQuota = 0; santaCooldown = 0;
-            isBroomActive = false; broomTimer = 0; broomFlapPulse = 0; isBatsActive = false; batsTimer = 0; witchBats = []; witchBlockCd = 0; witchCooldown = 0;
+            isBroomActive = false; broomTimer = 0; broomFlapPulse = 0; broomFadeTimer = 0; isBatsActive = false; batsTimer = 0; witchBats = []; witchBlockCd = 0; witchCooldown = 0; resetSnowballState();
              
              if (currentSkinKey === 'custom') { currentLives = customStats.lives || 0; wallDestroyCharges = customStats.bombs || 0; dashCharges = customStats.dashes || 0; shrinkCharges = customStats.shrinks || 0; widenCharges = customStats.widens || 0; } else { if (currentSkinKey === 'black' || currentSkinKey === 'tough' || currentSkinKey === 'sherlock') currentLives = (currentSkinKey === 'sherlock' ? 1 : INITIAL_LIVES); else currentLives = 0; wallDestroyCharges = (currentSkinKey === 'yellow' || currentSkinKey === 'black') ? MAX_DESTROY_CHARGES : 0; dashCharges = (currentSkinKey === 'doordash' || currentSkinKey === 'black') ? 4 : 0; shrinkCharges = (currentSkinKey === 'luigi' || currentSkinKey === 'black') ? 4 : 0; widenCharges = (currentSkinKey === 'heisenbark' || currentSkinKey === 'black') ? 4 : 0; }
              updateAbilityButtons(); lastPipeY = 250; add_pipe(CANVAS_WIDTH, 100, 140); deactivateShield(true); voidMusic.pause(); voidMusic.currentTime = 0; connectorMusic.pause(); connectorMusic.currentTime = 0; boss1Music.pause(); boss1Music.currentTime = 0; boss2Music.pause(); boss2Music.currentTime = 0;
@@ -3106,8 +3200,10 @@ window.playClickSound = function() {
                     // --- Witch Shetos power timers (30s cooldown, starts after the power ends) ---
                     if (isBroomActive) { 
                         broomTimer--; 
-                        if (document.getElementById('witch-btn').style.display !== 'none') document.getElementById('witch-btn').innerText = getLangText("active"); 
-                        if (broomTimer <= 0) { isBroomActive = false; broomFlapPulse = 0; bird.angle = 0; witchCooldown = 30 * FPS; } 
+                        // show the remaining glide time right on the button so the player can
+                        // prepare for the drop-off (last 3 seconds get a warning "!")
+                        if (document.getElementById('witch-btn').style.display !== 'none') { const bLeft = Math.ceil(broomTimer / FPS); document.getElementById('witch-btn').innerText = '🧹 ' + bLeft + 's' + (bLeft <= 3 ? ' !' : ''); } 
+                        if (broomTimer <= 0) { isBroomActive = false; broomFlapPulse = 0; bird.angle = 0; broomFadeTimer = 24; witchCooldown = 30 * FPS; }   // fade: soft landing instead of instant free-fall
                     }
                     if (isBatsActive) { 
                         batsTimer--; 
@@ -3147,7 +3243,7 @@ window.playClickSound = function() {
                      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
                  }
                  if (game_mode !== 'waiting_for_website') { const arenaLbl = getAreaName(currentBGIndex); if (arenaLbl) { ctx.save(); ctx.font = '9px "Press Start 2P", cursive'; ctx.textAlign = 'right'; ctx.globalAlpha = 0.92; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.85)'; ctx.strokeText(arenaLbl, CANVAS_WIDTH - 8, 22); ctx.fillStyle = '#FFE44D'; ctx.fillText(arenaLbl, CANVAS_WIDTH - 8, 22); ctx.restore(); } } // arena label
-                 bird.Do_Frame_Things(); updateWitchBats(); if (bottom_bar.complete && bossIntroState >= 5) { if (bottom_bar_offset < -23) bottom_bar_offset = 0; ctx.drawImage(bottom_bar, bottom_bar_offset, CANVAS_HEIGHT - bottom_bar.height); } else if (bottom_bar.complete && game_mode !== 'boss' && game_mode !== 'terminal_ending') { if (bottom_bar_offset < -23) bottom_bar_offset = 0; ctx.drawImage(bottom_bar, bottom_bar_offset, CANVAS_HEIGHT - bottom_bar.height); } else if (bottom_bar.complete && game_mode !== 'terminal_ending') { ctx.drawImage(bottom_bar, bottom_bar_offset, CANVAS_HEIGHT - bottom_bar.height); }
+                 bird.Do_Frame_Things(); updateWitchBats();
 
                  switch (game_mode) {
                      case 'prestart': game_mode = 'running'; break;
@@ -3185,7 +3281,7 @@ window.playClickSound = function() {
 
                      case 'online_match':
                          { let syncNow = Date.now(); onlineSyncAccum += (1000 / FPS); if (onlineSyncAccum >= 200) { onlineSyncAccum = 0; flushOnlineSync(onlineDirty || (syncNow - lastOnlineFlush) >= 1500); } if (activeMatchID && opponentLastSeen > 0 && !isRoundStarting && !trophyProcessed && (syncNow - opponentLastSeen) > ONLINE_TIMEOUT_MS) { handleOpponentLeft(); } }
-                         if (!myHasCrashed) { time_game_last_running = new Date(); bottom_bar_offset += pipe_speed * speedMultiplier; for (var i = 0; i < pipes.length; i++) { pipes[i].Do_Frame_Things(); } pipe_spawn_timer += (1000 / FPS) * speedMultiplier; if (pipe_spawn_timer > currentSpawnInterval) { let gap_size = isWidenActive ? 280 : 140; let safe_area = CANVAS_HEIGHT - gap_size - 50; if(safe_area < 50) safe_area = 50; let top_of_gap = Math.floor(Math.random() * (safe_area - 50)) + 50; add_pipe(CANVAS_WIDTH, top_of_gap, gap_size); pipe_spawn_timer = 0; } make_bird_slow_and_fall(); check_for_end_game(); check_for_score_increase(); [pipes, shields, stars, potions, slowPotions].forEach(arr => { for (let i = arr.length - 1; i >= 0; i--) { if (arr[i].x < -100) arr.splice(i, 1); else if (arr !== pipes) arr[i].Do_Frame_Things(); } }); onlineDirty = true; if(!enemyHasCrashed) { let ghostTargetX = bird.x + ((online_score_enemy - currentScore) * 60); if (ghostTargetX < 20) ghostTargetX = 20; if (ghostTargetX > CANVAS_WIDTH - 80) ghostTargetX = CANVAS_WIDTH - 80; enemyGhostRenderY += (enemyGhostY - enemyGhostRenderY) * 0.25; enemyGhostRenderX += (ghostTargetX - enemyGhostRenderX) * 0.15; ctx.save(); ctx.globalAlpha = 0.5; let ghostW = 50; let ghostH = 50; ghostW = birdHitW(); ghostH = birdHitH(); ctx.drawImage(bird.MyImg, enemyGhostRenderX, enemyGhostRenderY, ghostW, ghostH); ctx.fillStyle = "white"; ctx.font = "10px Arial"; ctx.textAlign="center"; ctx.fillText(opponentName, enemyGhostRenderX + (ghostW/2), enemyGhostRenderY - 5); ctx.restore(); } } else { ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); ctx.font = "20px 'Press Start 2P'"; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(getLangText("waitingOpponent"), CANVAS_WIDTH/2, CANVAS_HEIGHT/2); } updateOnlineUI(); break;
+                         if (!myHasCrashed) { time_game_last_running = new Date(); bottom_bar_offset += pipe_speed * speedMultiplier; for (var i = 0; i < pipes.length; i++) { pipes[i].Do_Frame_Things(); } pipe_spawn_timer += (1000 / FPS) * speedMultiplier; if (pipe_spawn_timer > currentSpawnInterval) { let gap_size = isWidenActive ? 280 : 140; let safe_area = CANVAS_HEIGHT - gap_size - 50; if(safe_area < 50) safe_area = 50; let top_of_gap = Math.floor(Math.random() * (safe_area - 50)) + 50; add_pipe(CANVAS_WIDTH, top_of_gap, gap_size); pipe_spawn_timer = 0; } make_bird_slow_and_fall(); check_for_end_game(); check_for_score_increase(); [pipes, shields, stars, potions, slowPotions].forEach(arr => { for (let i = arr.length - 1; i >= 0; i--) { if (arr[i].x < -100) arr.splice(i, 1); else if (arr !== pipes) arr[i].Do_Frame_Things(); } }); onlineDirty = true; if(!enemyHasCrashed) { let ghostTargetX = bird.x + ((online_score_enemy - currentScore) * 60); if (ghostTargetX < 20) ghostTargetX = 20; if (ghostTargetX > CANVAS_WIDTH - 80) ghostTargetX = CANVAS_WIDTH - 80; enemyGhostRenderY += (enemyGhostY - enemyGhostRenderY) * 0.25; enemyGhostRenderX += (ghostTargetX - enemyGhostRenderX) * 0.15; ctx.save(); ctx.globalAlpha = 0.5; let ghostW = 50; let ghostH = 50; ghostW = birdHitW(); ghostH = birdHitH(); ctx.drawImage(bird.MyImg, enemyGhostRenderX, enemyGhostRenderY, ghostW, ghostH); ctx.fillStyle = "white"; ctx.font = "10px Arial"; ctx.textAlign="center"; ctx.fillText(opponentName, enemyGhostRenderX + (ghostW/2), enemyGhostRenderY - 5); ctx.restore(); } } else { ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); ctx.font = "20px 'Press Start 2P'"; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(getLangText("waitingOpponent"), CANVAS_WIDTH/2, CANVAS_HEIGHT/2); } updateSnowballs(); updateOnlineUI(); break;
                          
                      case 'terminal_ending':
                          ctx.fillStyle = "black"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -3343,10 +3439,20 @@ window.playClickSound = function() {
              case 'prestart': game_mode = 'running'; break;
              case 'running': case 'boss': case 'online_match': case 'pvp_shetos':
                  if (game_mode === 'online_match' && myHasCrashed) return; if (game_mode === 'pvp_shetos' && myHasCrashed) return;
-                 // tap/space to skip to the next line of a boss monologue (the timer also runs out on its own).
-                 // The FIRST line is protected for 3 seconds, so mashing to flap right when
-                 // the fight starts can no longer skip the opening dialogue by accident.
-                 if (game_mode === 'boss' && bossIntroState >= 1 && bossIntroState < 5) { if (bossIntroState === 1 && bossIntroSkipLock > 0) return; bossIntroTimer = 0; return; }
+                // tap/space to skip to the next line of a boss monologue (the timer also runs out on its own).
+                // The FIRST line is protected for 3 seconds, so mashing to flap right when
+                // the fight starts can no longer skip the opening dialogue by accident.
+                if (game_mode === 'boss' && bossIntroState >= 1 && bossIntroState < 5) {
+                    // Cancel the touch so the browser never sends its ghost compatibility mousedown:
+                    // without this, ONE tap fired the handler twice and skipped TWO lines.
+                    if (MyEvent.type === 'touchstart' && MyEvent.cancelable) MyEvent.preventDefault();
+                    if (bossIntroState === 1 && bossIntroSkipLock > 0) return;
+                    const skipNow = Date.now();
+                    if (skipNow - bossIntroSkipStamp < 400) return;   // belt & braces: at most one skip per tap
+                    bossIntroSkipStamp = skipNow;
+                    bossIntroTimer = 0;
+                    return;
+                }
                  if (MyEvent.type === 'touchstart' || MyEvent.type === 'mousedown') { 
                      if (MyEvent.type === 'touchstart' && MyEvent.cancelable) {
                          MyEvent.preventDefault(); 
