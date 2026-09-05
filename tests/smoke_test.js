@@ -301,6 +301,23 @@ try {
   run(`Got_Player_Input({ type: 'mousedown', clientX: 100, clientY: 100, target: { tagName: 'CANVAS', closest: () => null } });`);
   check('tap/click still flaps (mobile input intact)', run('bird.velocity_y === jump_amount'), run('bird.velocity_y'));
 
+  // ================= BOSS DIALOGUE: ONE TAP = ONE LINE =================
+  run(`game_mode = 'boss'; isBoss2 = true; isBoss3 = false; bird.y = 240; bird.velocity_y = 0; boss.movingIn = false; boss.x = 300;`);
+  run(`bossIntroState = 1; bossIntroTimer = 100; bossIntroSkipLock = 50; bossIntroSkipStamp = 0;`);
+  run(`Got_Player_Input({ type: 'mousedown', clientX: 100, clientY: 100, button: 0, preventDefault() {}, target: { tagName: 'CANVAS', closest: () => null } });`);
+  stepFrames(2);
+  check('first dialogue line stays skip-locked', run('bossIntroState') === 1 && run('bossIntroTimer') > 90, 'state=' + run('bossIntroState') + ' timer=' + run('bossIntroTimer'));
+  run(`bossIntroState = 2; bossIntroTimer = 100; bossIntroSkipLock = 0; bossIntroSkipStamp = 0;`);
+  run(`Got_Player_Input({ type: 'touchstart', cancelable: true, preventDefault() {}, touches: [{ clientX: 100, clientY: 100 }], target: { tagName: 'CANVAS', closest: () => null } });`);
+  run(`Got_Player_Input({ type: 'mousedown', clientX: 100, clientY: 100, button: 0, preventDefault() {}, target: { tagName: 'CANVAS', closest: () => null } });`);
+  stepFrames(2);
+  check('one tap skips exactly one line (ghost mousedown can\'t double-skip)', run('bossIntroState') === 3 && run('game_mode') === 'boss', 'state=' + run('bossIntroState'));
+  run(`bossIntroSkipStamp = Date.now() - 1000;`);
+  run(`Got_Player_Input({ type: 'mousedown', clientX: 100, clientY: 100, button: 0, preventDefault() {}, target: { tagName: 'CANVAS', closest: () => null } });`);
+  stepFrames(2);
+  check('a later tap skips the next line (debounce doesn\'t jam skipping)', run('bossIntroState') === 5, 'state=' + run('bossIntroState'));
+  run(`isBoss2 = false; game_mode = 'running'; reset_game(); game_mode = 'running';`);
+
   // ================= CHRISTMAS MAIN MENU =================
   check('xmas overlay canvas exists in menu', run(`!!document.getElementById('xmas-fx')`));
   run(`document.getElementById('landing-page').style.display = 'flex'; initXmasFlakes();`);
