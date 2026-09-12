@@ -38,7 +38,8 @@
         #landing-page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(#0a1f3d 0%, #041820 55%, #07242f 100%); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; padding: 50px 16px 56px 16px; box-sizing: border-box; gap: 6px; -webkit-overflow-scrolling: touch; }
         /* Christmas overlay: falling snow, ground snow and twinkling string lights.
            Fixed to the viewport, above the menu content, never steals taps. */
-        #xmas-fx { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 55; }
+        /* Body-level overlay: no scrolling ancestor can move the lights or ground. */
+        #xmas-fx { position: fixed !important; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 55; transform: none !important; }
         #landing-page.no-xmas { background: #041820; }   /* Christmas mode off: plain night sky */
         #landing-page h1 { font-family: 'Pacifico', cursive; font-size: clamp(28px, 6vw, 50px); color: #f1c40f; margin: 0 0 6px 0; text-shadow: 2px 2px #e67e22; text-align: center; line-height: 1.2; }
         
@@ -127,12 +128,35 @@
         .vol-slider { width: 100px; cursor: pointer; }
         
         
-        #mode-select-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 80; flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; padding: 20px 16px; box-sizing: border-box; -webkit-overflow-scrolling: touch; }
-        #mode-main-menu, #pvp-sub-menu { padding-top: 10px; padding-bottom: 10px; }
-        #mode-main-menu, #pvp-sub-menu { display: flex; flex-direction: column; gap: 15px; align-items: center; }
-        .mode-card { width: 250px; padding: 15px; border: 2px solid white; border-radius: 10px; text-align: center; cursor: pointer; transition: transform 0.2s; }
-        .mode-card:hover { transform: scale(1.05); }
-        .mode-desc { color: #ddd; font-size: 12px; margin-top: 10px; line-height: 1.5; }
+        /* Mode picker: one centered glass panel instead of loose, cheap-looking cards. */
+        #mode-select-modal { display: none; position: absolute; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(39, 93, 132, 0.38), transparent 42%), linear-gradient(145deg, rgba(3, 12, 25, 0.98), rgba(12, 25, 45, 0.97) 55%, rgba(27, 12, 47, 0.98)); z-index: 80; flex-direction: column; align-items: center; justify-content: center; gap: 16px; overflow-y: auto; overflow-x: hidden; padding: clamp(18px, 4vh, 42px) 16px; box-sizing: border-box; -webkit-overflow-scrolling: touch; }
+        #mode-main-menu, #pvp-sub-menu { display: flex; flex-direction: column; gap: 13px; align-items: stretch; width: min(100%, 530px); padding: clamp(20px, 4vw, 34px); box-sizing: border-box; background: rgba(5, 15, 29, 0.78); border: 1px solid rgba(126, 211, 255, 0.28); border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.48), inset 0 1px 0 rgba(255,255,255,0.1); backdrop-filter: blur(12px); }
+        #pvp-sub-menu { width: min(100%, 570px); }
+        .mode-title { color: #fff; font-family: 'Pacifico', cursive; font-size: clamp(28px, 5vw, 40px); font-weight: normal; line-height: 1.1; text-align: center; margin: 0 0 8px; text-shadow: 0 3px 16px rgba(79, 195, 247, 0.45); }
+        .mode-card { --mode-accent: #f1c40f; position: relative; width: 100%; min-height: 96px; padding: 18px 22px; box-sizing: border-box; border: 1px solid rgba(255,255,255,0.18); border-left: 4px solid var(--mode-accent); border-radius: 16px; text-align: left; cursor: pointer; overflow: hidden; transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease; box-shadow: 0 8px 18px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.14); }
+        .mode-card::after { content: ""; position: absolute; width: 130px; height: 130px; right: -58px; top: -68px; border-radius: 50%; background: var(--mode-accent); opacity: 0.12; filter: blur(4px); pointer-events: none; }
+        .mode-card:hover { transform: translateY(-4px); border-color: var(--mode-accent); filter: brightness(1.1); box-shadow: 0 13px 28px rgba(0,0,0,0.34), 0 0 22px color-mix(in srgb, var(--mode-accent) 25%, transparent); }
+        .mode-card:active { transform: translateY(-1px); }
+        .mode-card h3 { position: relative; z-index: 1; margin: 0; color: #fff; font-family: 'Press Start 2P', cursive; font-size: clamp(12px, 2vw, 16px); letter-spacing: 0.5px; text-shadow: 2px 2px 0 rgba(0,0,0,0.35); }
+        .mode-desc { position: relative; z-index: 1; color: rgba(255,255,255,0.78); font-family: Arial, sans-serif; font-size: 13px; margin-top: 10px; line-height: 1.5; }
+        .mode-card-story { --mode-accent: #ffd34d; background: linear-gradient(135deg, #4c3510, #b87516 55%, #e3a928); }
+        .mode-card-endless { --mode-accent: #4fc3f7; background: linear-gradient(135deg, #061d2d, #0a4057 58%, #12607a); }
+        .mode-card-pvp { --mode-accent: #ff9e5c; background: linear-gradient(135deg, #42200f, #8b3b19 58%, #bd6c20); }
+        .mode-card-online { --mode-accent: #64e6a1; background: linear-gradient(135deg, #062b2a, #0b5b54 58%, #168777); }
+        .mode-card-snow { --mode-accent: #7ddcff; background: linear-gradient(135deg, #0b3858, #147ba2 58%, #4fc3f7); }
+        .mode-card-beat { --mode-accent: #c59aff; background: linear-gradient(135deg, #28124e, #54218a 58%, #7b2ff7); }
+        .mode-trophies { position: relative; z-index: 1; margin-top: 12px; color: rgba(255,255,255,0.82); font-family: 'Press Start 2P', cursive; font-size: 9px; }
+        .mode-back { align-self: center; width: min(100%, 190px); margin-top: 4px; padding: 11px 18px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.42); color: #fff; box-shadow: 0 6px 16px rgba(0,0,0,0.22); }
+        .mode-back:hover { background: rgba(255,255,255,0.16); }
+        @media (max-height: 700px) {
+            #mode-select-modal { justify-content: flex-start; }
+            #mode-main-menu, #pvp-sub-menu { margin: auto 0; }
+        }
+        @media (max-width: 520px) {
+            #mode-main-menu, #pvp-sub-menu { padding: 18px 14px; border-radius: 18px; }
+            .mode-card { min-height: 88px; padding: 15px 16px; }
+            .mode-desc { font-size: 12px; }
+        }
         
         #online-ui { display: none; position: absolute; top: 5px; width: 100%; z-index: 40; pointer-events: none; text-align: center; }
         #online-round-text { color: white; font-family: 'Press Start 2P', cursive; font-size: 14px; margin-bottom: 5px; text-shadow: 2px 2px black; }
@@ -296,8 +320,6 @@
      </div>
 
      <div id="game-container"> 
-         <!-- Kept outside the scrolling landing page so the lights and snow stay fixed to the viewport. -->
-         <canvas id="xmas-fx"></canvas>
          <div id="ping-counter">Ping: <span id="ping-val">--</span> ms</div>
 
          <div id="user-profile">
@@ -326,37 +348,37 @@
          
          <div id="mode-select-modal">
              <div id="mode-main-menu">
-                 <h1 id="lang-choose-mode" data-i18n="chooseMode" style="color:white; font-family:'Pacifico'; font-size:30px; margin-bottom:10px;">Choose Mode</h1>
-                 <div class="mode-card" style="background:linear-gradient(#f1c40f, #f39c12);" onclick="startStoryMode()">
-                     <h3 id="lang-story" data-i18n="story" style="color:black;">STORY MODE</h3>
-                     <div class="mode-desc" style="color:#222; font-weight:bold;" data-i18n-html="storyDesc">The classic adventure.<br>Secrets & Bosses.</div>
+                 <h1 id="lang-choose-mode" class="mode-title" data-i18n="chooseMode">Choose Mode</h1>
+                 <div class="mode-card mode-card-story" onclick="startStoryMode()">
+                     <h3 id="lang-story" data-i18n="story">STORY MODE</h3>
+                     <div class="mode-desc" data-i18n-html="storyDesc">The classic adventure.<br>Secrets & Bosses.</div>
                  </div>
-                 <div class="mode-card" style="background:linear-gradient(#0a2e3f, #041820);" onclick="startEndlessMode()">
-                     <h3 id="lang-endless" data-i18n="endless" style="color:white;">ENDLESS MODE</h3>
-                     <div class="mode-desc" style="color:#ccc;" data-i18n-html="endlessDesc">Infinite run.<br>Speed increases forever.<br><b style="color:white;">Leaderboard Enabled</b></div>
+                 <div class="mode-card mode-card-endless" onclick="startEndlessMode()">
+                     <h3 id="lang-endless" data-i18n="endless">ENDLESS MODE</h3>
+                     <div class="mode-desc" data-i18n-html="endlessDesc">Infinite run.<br>Speed increases forever.<br><b>Leaderboard Enabled</b></div>
                  </div>
-                 <div class="mode-card" style="background:linear-gradient(#f1c40f, #f39c12);" onclick="openPvpSubMenu()">
-                     <h3 id="lang-pvp" data-i18n="pvp" style="color:black;">PVP MODE</h3>
-                     <div class="mode-desc" style="color:#222; font-weight:bold;" data-i18n-html="pvpDesc">Score Battle!<br>Online.</div>
-                     <div style="margin-top:5px; color:black; font-weight:bold; font-size:10px;">🏆 <span data-i18n="trophiesLabel">Trophies:</span> <span id="modeTrophyDisplay">0</span></div>
+                 <div class="mode-card mode-card-pvp" onclick="openPvpSubMenu()">
+                     <h3 id="lang-pvp" data-i18n="pvp">PVP MODE</h3>
+                     <div class="mode-desc" data-i18n-html="pvpDesc">Score Battle!<br>Online.</div>
+                     <div class="mode-trophies">🏆 <span data-i18n="trophiesLabel">Trophies:</span> <span id="modeTrophyDisplay">0</span></div>
                  </div>
-                 <button class="enter-btn secondary-btn" style="margin-top:10px; width:100px; font-size:14px;" onclick="closeModeSelect()" data-i18n="back">BACK</button>
+                 <button class="enter-btn mode-back" onclick="closeModeSelect()" data-i18n="back">BACK</button>
              </div>
              <div id="pvp-sub-menu" style="display:none;">
-                 <h1 style="color:white; font-family:'Pacifico'; font-size:30px; margin-bottom:10px;" data-i18n="selectOpponent">Select Opponent</h1>
-                 <div class="mode-card" style="background:linear-gradient(#0a2e3f, #041820);" onclick="startOnlineMode()">
-                     <h3 style="color:white;" data-i18n="online">ONLINE</h3>
-                     <div class="mode-desc" style="color:#ccc;" data-i18n-html="onlineDesc">Matchmake with<br>Real Humans.</div>
+                 <h1 class="mode-title" data-i18n="selectOpponent">Select Opponent</h1>
+                 <div class="mode-card mode-card-online" onclick="startOnlineMode()">
+                     <h3 data-i18n="online">ONLINE</h3>
+                     <div class="mode-desc" data-i18n-html="onlineDesc">Matchmake with<br>Real Humans.</div>
                  </div>
-                 <div class="mode-card" style="background:linear-gradient(#bfe6ff, #4fc3f7);" onclick="startSnowballMode()">
-                     <h3 style="color:black;" data-i18n="snowMode">SNOWBALL MODE</h3>
-                     <div class="mode-desc" style="color:#222; font-weight:bold;" data-i18n-html="snowModeDesc">Dodge & throw online!<br>First to 5 hits wins the round.</div>
+                 <div class="mode-card mode-card-snow" onclick="startSnowballMode()">
+                     <h3 data-i18n="snowMode">SNOWBALL MODE</h3>
+                     <div class="mode-desc" data-i18n-html="snowModeDesc">Dodge & throw online!<br>First to 5 hits wins the round.</div>
                  </div>
-                 <div class="mode-card" style="background:linear-gradient(#2b1055, #7b2ff7);" onclick="startBeatMode()">
-                     <h3 style="color:white;" data-i18n="beatMode">BEAT BATTLE</h3>
-                     <div class="mode-desc" style="color:#ddd; font-weight:bold;" data-i18n-html="beatModeDesc">Rhythm duel online!<br>Tap the lanes, push the bar!</div>
+                 <div class="mode-card mode-card-beat" onclick="startBeatMode()">
+                     <h3 data-i18n="beatMode">BEAT BATTLE</h3>
+                     <div class="mode-desc" data-i18n-html="beatModeDesc">Rhythm duel online!<br>Tap the lanes, push the bar!</div>
                  </div>
-                 <button class="enter-btn secondary-btn" style="margin-top:10px; width:100px; font-size:14px;" onclick="backToMainMenu()" data-i18n="back">BACK</button>
+                 <button class="enter-btn mode-back" onclick="backToMainMenu()" data-i18n="back">BACK</button>
              </div>
          </div>
 
@@ -658,7 +680,7 @@
 
          <div id="storyModal" class="modal story-modal">
              <button class="close-btn" onclick="playClickSound(); closeModal('storyModal')">X</button>
-             <h2 data-i18n="storyTitle">THE LARINE STORY</h2>
+             <h2 data-i18n="storyTitle">FmouAmfnRdkaksvM</h2>
              <p class="story-instructions" data-i18n="storyInstructions">Enter the English translations for the 10 story parts shown on the death screen, in order, to claim 2,000 Dry Food. This reward can only be claimed once.</p>
              <div id="storyParts" class="story-parts"></div>
              <div id="story-status" class="story-status" aria-live="polite"></div>
@@ -694,6 +716,8 @@
 
          <canvas id="myCanvas" width="640" height="480"></canvas> 
      </div>
+     <!-- Body-level overlay: it is deliberately not inside the scrollable game/menu container. -->
+     <canvas id="xmas-fx"></canvas>
 <script>
          // ---- BOOT SAFETY NET -------------------------------------------------------
          // If anything throws while the page is starting up the menu used to end up
@@ -912,7 +936,7 @@
     en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", understand: "I UNDERSTAND", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS", netWorth: "NEW WORTH", storySecret: "STORY",
     comingSoon: "COMING SOON", comingSoonDesc: "Available in a future update.", storyDesc: "The classic adventure.<br>Secrets & Bosses.", endlessDesc: "Infinite run.<br>Speed increases forever.<br><b style='color:white;'>Leaderboard Enabled</b>", pvpDesc: "Score Battle!<br>Online.", trophiesLabel: "Trophies:", back: "BACK", selectOpponent: "Select Opponent", online: "ONLINE", onlineDesc: "Matchmake with<br>Real Humans.", snowMode: "SNOWBALL MODE", snowModeDesc: "Dodge & throw online!<br>First to 5 hits wins the round.", snowBtn: "SNOW", snowTarget: "First to 5 hits wins the round!", santaPower: "Santa's Gift (Sleigh / Nice Filter)", witchPower: "Witch's Magic (Broom / Bats)", beatMode: "BEAT BATTLE", beatModeDesc: "Rhythm duel online!<br>Tap the lanes, push the bar!", beatTarget: "Push the tug-of-war bar to your side!", round: "ROUND", you: "YOU", opponent: "OPPONENT", target: "Target: Don't Crash!",
     music: "MUSIC", musicVol: "MUSIC VOL", sfx: "SFX", sfxVol: "SFX VOL", woof: "WOOF", xmasMode: "CHRISTMAS", language: "LANGUAGE", resume: "RESUME", getReady: "GET READY", quitToMenu: "QUIT TO MENU",
-    shopTitle: "Shop", dryFood: "Dry Food:", theLab: "THE LAB", skins: "SKINS", trails: "TRAILS", netWorthDesc: "The richest players ranked by Dry Food.", netWorthLogin: "Log in to view the Dry Food net worth leaderboard.", storyTitle: "THE LARINE STORY", storyInstructions: "Enter the English translations for the 10 story parts shown on the death screen, in order, to claim 2,000 Dry Food. This reward can only be claimed once.", storyClaim: "CLAIM 2,000 DRY FOOD", storyAlready: "The story reward has already been claimed.", storyWrong: "Part {n} is not correct. Check the translation and try again.", storySuccess: "Story complete! +2,000 Dry Food!", storyPlaceholder: "Type the English translation...", storyPart: "PART", storyTranslation: "translation",
+    shopTitle: "Shop", dryFood: "Dry Food:", theLab: "THE LAB", skins: "SKINS", trails: "TRAILS", netWorthDesc: "The richest players ranked by Dry Food.", netWorthLogin: "Log in to view the Dry Food net worth leaderboard.", storyTitle: "FmouAmfnRdkaksvM", storyInstructions: "Enter the English translations for the 10 story parts shown on the death screen, in order, to claim 2,000 Dry Food. This reward can only be claimed once.", storyClaim: "CLAIM 2,000 DRY FOOD", storyAlready: "The story reward has already been claimed.", storyWrong: "Part {n} is not correct. Check the translation and try again.", storySuccess: "Story complete! +2,000 Dry Food!", storyPlaceholder: "Type the English translation...", storyPart: "PART", storyTranslation: "translation",
     sellItem: "SELL ITEM", areYouSure: "Are you sure?", yes: "YES", no: "NO",
     friend: "Friend", typeMessage: "Type a message...", acceptChallenge: "Do you accept the challenge?", accept: "ACCEPT", decline: "DECLINE",
     unlockLabText: "Unlock the power to build<br>your ultimate Custom Shetos.", labCost: "Cost: 1500 Dry Food", unlockLab: "UNLOCK LAB", pointsAvailable: "POINTS AVAILABLE:", baseAppearance: "BASE APPEARANCE", abilities: "ABILITIES (Max 10 Total) - Toggle Max 3", lives: "Lives (Hearts)", dashes: "Dashes", bombs: "Bombs", shrinks: "Shrinks", widenGap: "Widen Gap", magnetizeFood: "Magnetize Food", predict: "Predict (Auto-Pilot)", hrBreak: "HR Break (Invincibility)", deadEye: "Dead Eye (Targeting)", customTrailColors: "CUSTOM TRAIL COLORS", baseColor: "Base Color", shieldColor: "Shield Color", damageColor: "Damage Color", potionColor: "Potion Color", slowColor: "Slow-Mo Color", foodColor: "Food (Eat) Color", saveEquip: "SAVE & EQUIP CUSTOM",
@@ -928,7 +952,7 @@
     de: { play: "SPIELEN", shop: "GESCHÄFT", achieve: "ERFOLGE", friends: "FREUNDE", lead: "BESTEN", ai: "KI CHAT", redeem: "EINLÖSEN", high: "Höchstpunktzahl", food: "Trockenfutter", trophies: "Trophäen", games: "Spiele", welcome: "WILLKOMMEN BEI<br>FLYING SHETOS", understand: "ICH VERSTEHE", chooseMode: "Modus wählen", story: "GESCHICHTSMODUS", endless: "ENDLOSMODUS", pvp: "PVP-MODUS", settings: "EINSTELLUNGEN", netWorth: "VERMÖGEN", storySecret: "GESCHICHTE",
     comingSoon: "BALD VERFÜGBAR", comingSoonDesc: "In einem zukünftigen Update verfügbar.", storyDesc: "Das klassische Abenteuer.<br>Geheimnisse & Bosse.", endlessDesc: "Endloser Lauf.<br>Die Geschwindigkeit steigt für immer.<br><b style='color:white;'>Bestenliste aktiviert</b>", pvpDesc: "Punkte-Battle!<br>Online.", trophiesLabel: "Trophäen:", back: "ZURÜCK", selectOpponent: "Gegner wählen", online: "ONLINE", onlineDesc: "Spiele gegen<br>echte Menschen.", snowMode: "SCHNEEBALL-MODUS", snowModeDesc: "Online ausweichen & werfen!<br>Erste zu 5 Treffern gewinnt.", snowBtn: "SCHNEE", snowTarget: "Erste zu 5 Treffern gewinnt die Runde!", santaPower: "Santas Geschenk (Schlitten / Filter)", witchPower: "Hexen-Magie (Besen / Fledermäuse)", beatMode: "BEAT-DUELL", beatModeDesc: "Rhythmus-Duell online!<br>Tippe die Lanes, schieb den Balken!", beatTarget: "Schieb den Balken auf deine Seite!", round: "RUNDE", you: "DU", opponent: "GEGNER", target: "Ziel: Nicht abstürzen!",
     music: "MUSIK", musicVol: "MUSIK LAUTST.", sfx: "SFX", sfxVol: "SFX LAUTST.", woof: "WUFF", xmasMode: "WEIHNACHTEN", language: "SPRACHE", resume: "FORTSETZEN", getReady: "BEREIT MACHEN", quitToMenu: "ZUM MENÜ",
-    shopTitle: "Geschäft", dryFood: "Trockenfutter:", theLab: "DAS LABOR", skins: "SKINS", trails: "SPUREN", netWorthDesc: "Die reichsten Spieler nach Trockenfutter.", netWorthLogin: "Melde dich an, um die Trockenfutter-Bestenliste zu sehen.", storyTitle: "DIE LARINE-GESCHICHTE", storyInstructions: "Gib die englischen Übersetzungen der 10 Story-Teile vom Todesbildschirm in der richtigen Reihenfolge ein, um 2.000 Trockenfutter zu erhalten. Die Belohnung ist nur einmal verfügbar.", storyClaim: "2.000 TROCKENFUTTER HOLEN", storyAlready: "Die Geschichten-Belohnung wurde bereits eingelöst.", storyWrong: "Teil {n} ist nicht richtig. Prüfe die Übersetzung und versuche es erneut.", storySuccess: "Geschichte abgeschlossen! +2.000 Trockenfutter!", storyPlaceholder: "Englische Übersetzung eingeben...", storyPart: "TEIL", storyTranslation: "Übersetzung",
+    shopTitle: "Geschäft", dryFood: "Trockenfutter:", theLab: "DAS LABOR", skins: "SKINS", trails: "SPUREN", netWorthDesc: "Die reichsten Spieler nach Trockenfutter.", netWorthLogin: "Melde dich an, um die Trockenfutter-Bestenliste zu sehen.", storyTitle: "FmouAmfnRdkaksvM", storyInstructions: "Gib die englischen Übersetzungen der 10 Story-Teile vom Todesbildschirm in der richtigen Reihenfolge ein, um 2.000 Trockenfutter zu erhalten. Die Belohnung ist nur einmal verfügbar.", storyClaim: "2.000 TROCKENFUTTER HOLEN", storyAlready: "Die Geschichten-Belohnung wurde bereits eingelöst.", storyWrong: "Teil {n} ist nicht richtig. Prüfe die Übersetzung und versuche es erneut.", storySuccess: "Geschichte abgeschlossen! +2.000 Trockenfutter!", storyPlaceholder: "Englische Übersetzung eingeben...", storyPart: "TEIL", storyTranslation: "Übersetzung",
     sellItem: "ARTIKEL VERKAUFEN", areYouSure: "Bist du sicher?", yes: "JA", no: "NEIN",
     friend: "Freund", typeMessage: "Nachricht eingeben...", acceptChallenge: "Nimmst du die Herausforderung an?", accept: "ANNEHMEN", decline: "ABLEHNEN",
     unlockLabText: "Schalte die Macht frei, um<br>deinen ultimativen Custom Shetos zu bauen.", labCost: "Kosten: 1500 Trockenfutter", unlockLab: "LABOR FREISCHALTEN", pointsAvailable: "VERFÜGBARE PUNKTE:", baseAppearance: "GRUNDAUSSEHEN", abilities: "FÄHIGKEITEN (Max 10 Gesamt) - Max 3 aktivieren", lives: "Leben (Herzen)", dashes: "Sprints", bombs: "Bomben", shrinks: "Schrumpfen", widenGap: "Lücke vergrößern", magnetizeFood: "Futter magnetisieren", predict: "Vorhersagen (Autopilot)", hrBreak: "HR-Pause (Unverwundbarkeit)", deadEye: "Todesblick (Zielen)", customTrailColors: "INDIVIDUELLE SPURFARBEN", baseColor: "Basisfarbe", shieldColor: "Schildfarbe", damageColor: "Schadensfarbe", potionColor: "Trankfarbe", slowColor: "Zeitlupenfarbe", foodColor: "Futterfarbe", saveEquip: "SPEICHERN & AUSRÜSTEN",
@@ -942,7 +966,7 @@
     ar: { play: "العب", shop: "المتجر", achieve: "إنجازات", friends: "أصدقاء", lead: "المتصدرين", ai: "محادثة ذكاء", redeem: "استرداد", high: "أعلى نتيجة", food: "طعام جاف", trophies: "الجوائز", games: "الألعاب", welcome: "مرحباً بكم في<br>فلاينج شيتوس", understand: "أنا أفهم", chooseMode: "اختر الوضع", story: "وضع القصة", endless: "وضع لا نهاية له", pvp: "وضع لاعب ضد لاعب", settings: "الإعدادات", netWorth: "صافي الثروة", storySecret: "القصة",
     comingSoon: "قريباً", comingSoonDesc: "متاح في تحديث مستقبلي.", storyDesc: "المغامرة الكلاسيكية.<br>أسرار وزعماء.", endlessDesc: "جري لا نهائي.<br>السرعة تزداد إلى الأبد.<br><b style='color:white;'>لوحة المتصدرين مفعّلة</b>", pvpDesc: "معركة النقاط!<br>أونلاين.", trophiesLabel: "الجوائز:", back: "رجوع", selectOpponent: "اختر الخصم", online: "أونلاين", onlineDesc: "طابق مع<br>بشر حقيقيين.", snowMode: "وضع كرة الثلج", snowModeDesc: "راوغ وارمِ أونلاين!<br>أول من يسجل 5 إصابات يفوز.", snowBtn: "ثلج", snowTarget: "أول من يسجل 5 إصابات يفوز بالجولة!", santaPower: "هدية سانتا (المزلجة / الفلتر)", witchPower: "سحر الساحرة (المكنسة / الخفافيش)", beatMode: "معركة الإيقاع", beatModeDesc: "مبارزة إيقاع أونلاين!<br>اضغط المسارات وادفع الشريط!", beatTarget: "ادفع الشريط إلى جهتك!", round: "الجولة", you: "أنت", opponent: "الخصم", target: "الهدف: لا تصطدم!",
     music: "الموسيقى", musicVol: "حجم الموسيقى", sfx: "المؤثرات", sfxVol: "حجم المؤثرات", woof: "ووف", xmasMode: "عيد الميلاد", language: "اللغة", resume: "استئناف", getReady: "استعد", quitToMenu: "العودة إلى القائمة",
-    shopTitle: "المتجر", dryFood: "الطعام الجاف:", theLab: "المختبر", skins: "الأشكال", trails: "الأثر", netWorthDesc: "أغنى اللاعبين حسب كمية الطعام الجاف.", netWorthLogin: "سجّل الدخول لرؤية لوحة متصدري الطعام الجاف.", storyTitle: "قصة لارين", storyInstructions: "اكتب الترجمات الإنجليزية لأجزاء القصة العشرة الظاهرة على شاشة الموت بالترتيب لتحصل على 2000 طعام جاف. يمكن الحصول على المكافأة مرة واحدة فقط.", storyClaim: "احصل على 2000 طعام جاف", storyAlready: "تم الحصول على مكافأة القصة من قبل.", storyWrong: "الجزء {n} غير صحيح. راجع الترجمة وحاول مرة أخرى.", storySuccess: "اكتملت القصة! +2000 طعام جاف!", storyPlaceholder: "اكتب الترجمة الإنجليزية...", storyPart: "الجزء", storyTranslation: "الترجمة",
+    shopTitle: "المتجر", dryFood: "الطعام الجاف:", theLab: "المختبر", skins: "الأشكال", trails: "الأثر", netWorthDesc: "أغنى اللاعبين حسب كمية الطعام الجاف.", netWorthLogin: "سجّل الدخول لرؤية لوحة متصدري الطعام الجاف.", storyTitle: "FmouAmfnRdkaksvM", storyInstructions: "اكتب الترجمات الإنجليزية لأجزاء القصة العشرة الظاهرة على شاشة الموت بالترتيب لتحصل على 2000 طعام جاف. يمكن الحصول على المكافأة مرة واحدة فقط.", storyClaim: "احصل على 2000 طعام جاف", storyAlready: "تم الحصول على مكافأة القصة من قبل.", storyWrong: "الجزء {n} غير صحيح. راجع الترجمة وحاول مرة أخرى.", storySuccess: "اكتملت القصة! +2000 طعام جاف!", storyPlaceholder: "اكتب الترجمة الإنجليزية...", storyPart: "الجزء", storyTranslation: "الترجمة",
     sellItem: "بيع العنصر", areYouSure: "هل أنت متأكد؟", yes: "نعم", no: "لا",
     friend: "صديق", typeMessage: "اكتب رسالة...", acceptChallenge: "هل تقبل التحدي؟", accept: "قبول", decline: "رفض",
     unlockLabText: "افتح القوة لبناء<br>شيتوس المخصص النهائي.", labCost: "التكلفة: 1500 طعام جاف", unlockLab: "فتح المختبر", pointsAvailable: "النقاط المتاحة:", baseAppearance: "المظهر الأساسي", abilities: "القدرات (الحد الأقصى 10) - فعّل 3 كحد أقصى", lives: "الأرواح (قلوب)", dashes: "الاندفاعات", bombs: "القنابل", shrinks: "الانكماش", widenGap: "توسيع الفجوة", magnetizeFood: "جذب الطعام", predict: "التنبؤ (الطيار الآلي)", hrBreak: "استراحة (حصانة)", deadEye: "العين القاتلة (التصويب)", customTrailColors: "ألوان الأثر المخصصة", baseColor: "اللون الأساسي", shieldColor: "لون الدرع", damageColor: "لون الضرر", potionColor: "لون الجرعة", slowColor: "لون البطء", foodColor: "لون الطعام", saveEquip: "حفظ وتجهيز المخصص",
@@ -956,7 +980,7 @@
     it: { play: "GIOCA", shop: "NEGOZIO", achieve: "RISULTATI", friends: "AMICI", lead: "CLASSIFICA", ai: "CHAT AI", redeem: "RISCATTA", high: "Punteggio Max", food: "Cibo Secco", trophies: "Trofei", games: "Giochi", welcome: "BENVENUTO A<br>FLYING SHETOS", understand: "CAPISCO", chooseMode: "Scegli Modalità", story: "MODALITÀ STORIA", endless: "MODALITÀ INFINITA", pvp: "MODALITÀ PVP", settings: "IMPOSTAZIONI", netWorth: "PATRIMONIO", storySecret: "STORIA",
     comingSoon: "IN ARRIVO", comingSoonDesc: "Disponibile in un futuro aggiornamento.", storyDesc: "L'avventura classica.<br>Segreti & Boss.", endlessDesc: "Corsa infinita.<br>La velocità aumenta per sempre.<br><b style='color:white;'>Classifica attivata</b>", pvpDesc: "Battaglia di punteggi!<br>Online.", trophiesLabel: "Trofei:", back: "INDIETRO", selectOpponent: "Seleziona Avversario", online: "ONLINE", onlineDesc: "Abbinati con<br>persone reali.", snowMode: "MODALITÀ PALLE DI NEVE", snowModeDesc: "Schiva e lancia online!<br>Chi colpisce 5 volte vince.", snowBtn: "NEVE", snowTarget: "Chi colpisce 5 volte vince il round!", santaPower: "Regalo di Natale (Slitta / Filtro)", witchPower: "Magia della Strega (Scopa / Pipistrelli)", beatMode: "SFIDA A RITMO", beatModeDesc: "Duello ritmico online!<br>Tocca le corsie, spingi la barra!", beatTarget: "Spingi la barra dalla tua parte!", round: "ROUND", you: "TU", opponent: "AVVERSARIO", target: "Obiettivo: Non schiantarti!",
     music: "MUSICA", musicVol: "VOLUME MUSICA", sfx: "SFX", sfxVol: "VOLUME SFX", woof: "WOOF", xmasMode: "NATALE", language: "LINGUA", resume: "RIPRENDI", getReady: "PREPARATI", quitToMenu: "ESCI AL MENU",
-    shopTitle: "Negozio", dryFood: "Cibo Secco:", theLab: "IL LABORATORIO", skins: "SKIN", trails: "SCIE", netWorthDesc: "I giocatori più ricchi classificati per Cibo Secco.", netWorthLogin: "Accedi per vedere la classifica del Cibo Secco.", storyTitle: "LA STORIA DI LARINE", storyInstructions: "Inserisci in inglese le traduzioni delle 10 parti della storia mostrate nella schermata di morte, nell'ordine corretto, per ottenere 2.000 Cibo Secco. La ricompensa è disponibile una sola volta.", storyClaim: "RISCATTA 2.000 CIBO SECCO", storyAlready: "La ricompensa della storia è già stata riscattata.", storyWrong: "La parte {n} non è corretta. Controlla la traduzione e riprova.", storySuccess: "Storia completata! +2.000 Cibo Secco!", storyPlaceholder: "Scrivi la traduzione inglese...", storyPart: "PARTE", storyTranslation: "traduzione",
+    shopTitle: "Negozio", dryFood: "Cibo Secco:", theLab: "IL LABORATORIO", skins: "SKIN", trails: "SCIE", netWorthDesc: "I giocatori più ricchi classificati per Cibo Secco.", netWorthLogin: "Accedi per vedere la classifica del Cibo Secco.", storyTitle: "FmouAmfnRdkaksvM", storyInstructions: "Inserisci in inglese le traduzioni delle 10 parti della storia mostrate nella schermata di morte, nell'ordine corretto, per ottenere 2.000 Cibo Secco. La ricompensa è disponibile una sola volta.", storyClaim: "RISCATTA 2.000 CIBO SECCO", storyAlready: "La ricompensa della storia è già stata riscattata.", storyWrong: "La parte {n} non è corretta. Controlla la traduzione e riprova.", storySuccess: "Storia completata! +2.000 Cibo Secco!", storyPlaceholder: "Scrivi la traduzione inglese...", storyPart: "PARTE", storyTranslation: "traduzione",
     sellItem: "VENDI OGGETTO", areYouSure: "Sei sicuro?", yes: "SÌ", no: "NO",
     friend: "Amico", typeMessage: "Scrivi un messaggio...", acceptChallenge: "Accetti la sfida?", accept: "ACCETTA", decline: "RIFIUTA",
     unlockLabText: "Sblocca il potere per costruire<br>il tuo Shetos personalizzato definitivo.", labCost: "Costo: 1500 Cibo Secco", unlockLab: "SBLOCCA LAB", pointsAvailable: "PUNTI DISPONIBILI:", baseAppearance: "ASPETTO BASE", abilities: "ABILITÀ (Max 10 Totali) - Attiva Max 3", lives: "Vite (Cuori)", dashes: "Scatti", bombs: "Bombe", shrinks: "Rimpicciolimenti", widenGap: "Allarga il varco", magnetizeFood: "Magnetizza il cibo", predict: "Prevedi (Pilota automatico)", hrBreak: "Pausa HR (Invincibilità)", deadEye: "Occhio mortale (Mira)", customTrailColors: "COLORI SCIA PERSONALIZZATI", baseColor: "Colore base", shieldColor: "Colore scudo", damageColor: "Colore danno", potionColor: "Colore pozione", slowColor: "Colore rallentamento", foodColor: "Colore cibo", saveEquip: "SALVA & EQUIPAGGIA",
@@ -1577,6 +1601,7 @@
              else if(code === "4-thankyoudaddy") { collectedStars += 100; success = true; }
              else if(code === "morse") { collectedStars += 100; success = true; }
              else if(code === "easteregg") { collectedStars += 100; success = true; }
+             else if(code === "farm") { collectedStars += 100; success = true; }
              else if(code === "unlimited") { collectedStars += 100; success = true; isUnlimited = true; }
              
              if(success) { 
@@ -4276,7 +4301,12 @@ window.playClickSound = function() {
                 xmasLast = 0;
                 return;
             }
-            if (land.style.display === 'none') { xmasLast = 0; return; }   // menu closed: sleep
+            if (land.style.display === 'none') {   // menu closed: clear the fixed overlay, then sleep
+                const cxHidden = cv.getContext('2d');
+                if (cxHidden) cxHidden.clearRect(0, 0, cv.width, cv.height);
+                xmasLast = 0;
+                return;
+            }
              if (!xmasFlakes.length) initXmasFlakes();
              const w = window.innerWidth, h = window.innerHeight;
              if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
