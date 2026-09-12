@@ -195,7 +195,7 @@
         .achievement-item { display: flex; align-items: center; justify-content: space-between; background: #222; padding: 15px; margin-bottom: 10px; border-radius: 5px; border-left: 5px solid #555; }
         .achievement-item.unlocked { border-left-color: lime; }
 
-        /* Secret Morse-story challenge. It is deliberately scrollable because the ten
+        /* Secret story challenge. It is deliberately scrollable because the ten
            translations are long, while the reward/status stays easy to find. */
         #storyModal { top: 5%; left: 5%; width: 90%; height: 90%; max-width: 960px; margin: 0 auto; background: #071b25; border-color: #f1c40f; }
         #storyModal h2, #netWorthModal h2 { color: #f1c40f; font-family: 'Press Start 2P', cursive; text-align: center; font-size: clamp(13px, 2.2vw, 20px); margin-top: 4px; }
@@ -203,7 +203,6 @@
         .story-parts { display: flex; flex-direction: column; gap: 10px; }
         .story-part { background: rgba(255,255,255,0.06); border: 1px solid #49606b; border-radius: 6px; padding: 10px; }
         .story-part-title { color: #f1c40f; font-family: 'Press Start 2P', cursive; font-size: 11px; margin-bottom: 7px; }
-        .story-morse { display: block; white-space: pre-wrap; word-break: break-word; background: #02090c; color: #9fffb0; border: 1px solid #233b42; border-radius: 4px; padding: 8px; margin: 0 0 8px; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.35; }
         .story-answer { width: 100%; min-height: 54px; box-sizing: border-box; resize: vertical; padding: 8px; border: 1px solid #6c7f87; border-radius: 4px; background: #fff; color: #111; font: 14px Arial, sans-serif; }
         .story-answer:focus { outline: 2px solid #f1c40f; border-color: #f1c40f; }
         .story-status { min-height: 20px; color: #f1c40f; text-align: center; font-size: 13px; font-weight: bold; margin: 14px 0 4px; }
@@ -216,7 +215,6 @@
         #netWorthTable img { width: 28px; height: 28px; object-fit: cover; border-radius: 50%; vertical-align: middle; }
         @media (max-width: 600px) {
             .story-instructions, .net-worth-instructions { font-size: 11px; }
-            .story-morse { font-size: 10px; }
             .story-answer { font-size: 13px; }
         }
         .ach-title { font-weight: bold; font-size: 16px; color: white; margin-bottom: 5px; }
@@ -298,6 +296,8 @@
      </div>
 
      <div id="game-container"> 
+         <!-- Kept outside the scrolling landing page so the lights and snow stay fixed to the viewport. -->
+         <canvas id="xmas-fx"></canvas>
          <div id="ping-counter">Ping: <span id="ping-val">--</span> ms</div>
 
          <div id="user-profile">
@@ -560,7 +560,6 @@
          </div>
 
          <div id="landing-page"> 
-             <canvas id="xmas-fx"></canvas>
              <div class="title-wrap">
                  <h1>Flying Shetos</h1>
                  <div id="splash-text">Splash!</div>
@@ -582,7 +581,7 @@
                      <button class="enter-btn btn-yellow" id="btn-achieve" data-i18n="achieve" style="font-size: 10px;" onclick="playClickSound(); openAchievements()">ACHIEVE</button>
                      <button class="enter-btn btn-yellow" id="btn-friends" data-i18n="friends" style="font-size: 10px;" onclick="playClickSound(); openFriends()">FRIENDS</button>
                      <button class="enter-btn btn-yellow" id="btn-lead" data-i18n="lead" style="font-size: 10px;" onclick="playClickSound(); openLeaderboard('all_time')">LEADER</button>
-                     <button class="enter-btn btn-yellow" id="btn-net-worth" data-i18n="netWorth" style="font-size: 10px;" onclick="playClickSound(); openNetWorthLeaderboard()">NET WORTH</button>
+                     <button class="enter-btn btn-yellow" id="btn-net-worth" data-i18n="netWorth" style="font-size: 10px;" onclick="playClickSound(); openNetWorthLeaderboard()">NEW WORTH</button>
                      <button class="enter-btn btn-yellow" id="btn-story" data-i18n="storySecret" style="font-size: 10px;" onclick="playClickSound(); openStoryChallenge()">STORY</button>
                      <button class="enter-btn btn-yellow" id="btn-ai" data-i18n="comingSoon" style="font-size: 10px; opacity:0.5; cursor:not-allowed;" disabled>COMING SOON</button>
                  </div>
@@ -623,7 +622,7 @@
 
          <div id="netWorthModal" class="modal">
              <button class="close-btn" onclick="playClickSound(); closeModal('netWorthModal')">X</button>
-             <h2 data-i18n="netWorth">NET WORTH</h2>
+             <h2 data-i18n="netWorth">NEW WORTH</h2>
              <p class="net-worth-instructions" data-i18n="netWorthDesc">The richest players ranked by Dry Food.</p>
              <table id="netWorthTable">
                  <thead><tr><th data-i18n="rank">Rank</th><th data-i18n="player">Player</th><th data-i18n="food">Dry Food</th></tr></thead>
@@ -660,7 +659,7 @@
          <div id="storyModal" class="modal story-modal">
              <button class="close-btn" onclick="playClickSound(); closeModal('storyModal')">X</button>
              <h2 data-i18n="storyTitle">THE LARINE STORY</h2>
-             <p class="story-instructions" data-i18n="storyInstructions">Translate all 10 Morse parts into English and type them in order to claim 2,000 Dry Food. This reward can only be claimed once.</p>
+             <p class="story-instructions" data-i18n="storyInstructions">Enter the English translations for the 10 story parts shown on the death screen, in order, to claim 2,000 Dry Food. This reward can only be claimed once.</p>
              <div id="storyParts" class="story-parts"></div>
              <div id="story-status" class="story-status" aria-live="polite"></div>
              <button id="story-submit-btn" class="enter-btn btn-gold" onclick="redeemStoryReward()" data-i18n="storyClaim">CLAIM 2,000 DRY FOOD</button>
@@ -899,7 +898,7 @@
              "yeah really close I guess", "yes there is an ending", "if function",
              "..- ... . -.-. --- -.. . .-..-.\n-- --- .-. ... . .-..-.",
              "Wasted", "You are dead Ig", "Good Night",
-             "shetos fell from a high place", "Dead", "Too Bad",
+             "Dead", "Too Bad",
              "One more game, please", "pixelated game btw",
              "Yes, AI generated",
              "Who is typing these random\ndeath-screen texts",
@@ -910,10 +909,10 @@
          ];
 
          const TRANSLATIONS = {
-    en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", understand: "I UNDERSTAND", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS", netWorth: "NET WORTH", storySecret: "STORY",
+    en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", understand: "I UNDERSTAND", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS", netWorth: "NEW WORTH", storySecret: "STORY",
     comingSoon: "COMING SOON", comingSoonDesc: "Available in a future update.", storyDesc: "The classic adventure.<br>Secrets & Bosses.", endlessDesc: "Infinite run.<br>Speed increases forever.<br><b style='color:white;'>Leaderboard Enabled</b>", pvpDesc: "Score Battle!<br>Online.", trophiesLabel: "Trophies:", back: "BACK", selectOpponent: "Select Opponent", online: "ONLINE", onlineDesc: "Matchmake with<br>Real Humans.", snowMode: "SNOWBALL MODE", snowModeDesc: "Dodge & throw online!<br>First to 5 hits wins the round.", snowBtn: "SNOW", snowTarget: "First to 5 hits wins the round!", santaPower: "Santa's Gift (Sleigh / Nice Filter)", witchPower: "Witch's Magic (Broom / Bats)", beatMode: "BEAT BATTLE", beatModeDesc: "Rhythm duel online!<br>Tap the lanes, push the bar!", beatTarget: "Push the tug-of-war bar to your side!", round: "ROUND", you: "YOU", opponent: "OPPONENT", target: "Target: Don't Crash!",
     music: "MUSIC", musicVol: "MUSIC VOL", sfx: "SFX", sfxVol: "SFX VOL", woof: "WOOF", xmasMode: "CHRISTMAS", language: "LANGUAGE", resume: "RESUME", getReady: "GET READY", quitToMenu: "QUIT TO MENU",
-    shopTitle: "Shop", dryFood: "Dry Food:", theLab: "THE LAB", skins: "SKINS", trails: "TRAILS", netWorthDesc: "The richest players ranked by Dry Food.", netWorthLogin: "Log in to view the Dry Food net worth leaderboard.", storyTitle: "THE LARINE STORY", storyInstructions: "Translate all 10 Morse parts into English and type them in order to claim 2,000 Dry Food. This reward can only be claimed once.", storyClaim: "CLAIM 2,000 DRY FOOD", storyAlready: "The story reward has already been claimed.", storyWrong: "Part {n} is not correct. Check the translation and try again.", storySuccess: "Story complete! +2,000 Dry Food!", storyPlaceholder: "Type the English translation...", storyPart: "PART",
+    shopTitle: "Shop", dryFood: "Dry Food:", theLab: "THE LAB", skins: "SKINS", trails: "TRAILS", netWorthDesc: "The richest players ranked by Dry Food.", netWorthLogin: "Log in to view the Dry Food net worth leaderboard.", storyTitle: "THE LARINE STORY", storyInstructions: "Enter the English translations for the 10 story parts shown on the death screen, in order, to claim 2,000 Dry Food. This reward can only be claimed once.", storyClaim: "CLAIM 2,000 DRY FOOD", storyAlready: "The story reward has already been claimed.", storyWrong: "Part {n} is not correct. Check the translation and try again.", storySuccess: "Story complete! +2,000 Dry Food!", storyPlaceholder: "Type the English translation...", storyPart: "PART", storyTranslation: "translation",
     sellItem: "SELL ITEM", areYouSure: "Are you sure?", yes: "YES", no: "NO",
     friend: "Friend", typeMessage: "Type a message...", acceptChallenge: "Do you accept the challenge?", accept: "ACCEPT", decline: "DECLINE",
     unlockLabText: "Unlock the power to build<br>your ultimate Custom Shetos.", labCost: "Cost: 1500 Dry Food", unlockLab: "UNLOCK LAB", pointsAvailable: "POINTS AVAILABLE:", baseAppearance: "BASE APPEARANCE", abilities: "ABILITIES (Max 10 Total) - Toggle Max 3", lives: "Lives (Hearts)", dashes: "Dashes", bombs: "Bombs", shrinks: "Shrinks", widenGap: "Widen Gap", magnetizeFood: "Magnetize Food", predict: "Predict (Auto-Pilot)", hrBreak: "HR Break (Invincibility)", deadEye: "Dead Eye (Targeting)", customTrailColors: "CUSTOM TRAIL COLORS", baseColor: "Base Color", shieldColor: "Shield Color", damageColor: "Damage Color", potionColor: "Potion Color", slowColor: "Slow-Mo Color", foodColor: "Food (Eat) Color", saveEquip: "SAVE & EQUIP CUSTOM",
@@ -925,11 +924,11 @@
     area0: "The Beginning", area1: "The SKY", area2: "The SUNSET", area3: "The NIGHT", area4: "The VOID",
     syncingData: "SYNCING DATA...", dataSynced: "DATA SYNCED!", bossDefeated: "BOSS DEFEATED!", boss2Defeated: "BOSS 2 DEFEATED!", opponentDisconnected: "OPPONENT DISCONNECTED!", customEquipped: "CUSTOM EQUIPPED!", itemSold: "ITEM SOLD!", maxToggles: "MAX 3 TOGGLES ALLOWED", warpAhead: "WARP AHEAD! +10", warpBack: "WARP BACK! -10", endlessMode: "ENDLESS MODE!", codeRedeemed: "CODE REDEEMED!", unlimitedAir: "you got unlimited amount of air", searchingOpponent: "SEARCHING FOR OPPONENT...", waitingFor: "WAITING FOR", cancel: "CANCEL", challengedYou: "CHALLENGED YOU!",
     shopEquipped: "EQUIPPED", shopEquip: "EQUIP", shopBuy: "BUY", shopSell: "SELL", achReward: "Reward:", none: "None",
-    b1_1: "oh, here you are", b1_2: "I was waiting for you", b2_1: "you are getting out of control", b2_2: "you werent supposed to come HERE", b2_3: "Its too late to go back now....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "So, we will not talk about how a dog is flying?", b3_2: "Why am i even asking that's not even my thoughts, It's the game developer who's typing all this nonsense.", b3_3: "I guess he thought it would be funny to make me question why a dog is flying.", b3_4: "Let's start the fight i guess.", boss3Defeated: "DRAGON DEFEATED!", sys: "System Override...", bypass: "Bypassing...", admin: "Administrator Granted.", tbc: "To Be Continued...", cat: "THAT WAS A CAT", kid: "you got clipped by a kid lmao", err1: "Connection Error", fall: "Fell down!", wall: "Hit a wall!", eaten: "EATEN BY SHETOS!" },
+    b1_1: "oh, here you are", b1_2: "I was waiting for you", b2_1: "you are getting out of control", b2_2: "you werent supposed to come HERE", b2_3: "Its too late to go back now....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "So, we will not talk about how a dog is flying?", b3_2: "Why am i even asking that's not even my thoughts, It's the game developer who's typing all this nonsense.", b3_3: "I guess he thought it would be funny to make me question why a dog is flying.", b3_4: "Let's start the fight i guess.", boss3Defeated: "DRAGON DEFEATED!", sys: "System Override...", bypass: "Bypassing...", admin: "Administrator Granted.", tbc: "To Be Continued...", cat: "THAT WAS A CAT", kid: "you got clipped by a kid lmao", err1: "Connection Error", highPlace: "shetos died from a high place", fall: "Fell down!", wall: "Hit a wall!", eaten: "EATEN BY SHETOS!" },
     de: { play: "SPIELEN", shop: "GESCHÄFT", achieve: "ERFOLGE", friends: "FREUNDE", lead: "BESTEN", ai: "KI CHAT", redeem: "EINLÖSEN", high: "Höchstpunktzahl", food: "Trockenfutter", trophies: "Trophäen", games: "Spiele", welcome: "WILLKOMMEN BEI<br>FLYING SHETOS", understand: "ICH VERSTEHE", chooseMode: "Modus wählen", story: "GESCHICHTSMODUS", endless: "ENDLOSMODUS", pvp: "PVP-MODUS", settings: "EINSTELLUNGEN", netWorth: "VERMÖGEN", storySecret: "GESCHICHTE",
     comingSoon: "BALD VERFÜGBAR", comingSoonDesc: "In einem zukünftigen Update verfügbar.", storyDesc: "Das klassische Abenteuer.<br>Geheimnisse & Bosse.", endlessDesc: "Endloser Lauf.<br>Die Geschwindigkeit steigt für immer.<br><b style='color:white;'>Bestenliste aktiviert</b>", pvpDesc: "Punkte-Battle!<br>Online.", trophiesLabel: "Trophäen:", back: "ZURÜCK", selectOpponent: "Gegner wählen", online: "ONLINE", onlineDesc: "Spiele gegen<br>echte Menschen.", snowMode: "SCHNEEBALL-MODUS", snowModeDesc: "Online ausweichen & werfen!<br>Erste zu 5 Treffern gewinnt.", snowBtn: "SCHNEE", snowTarget: "Erste zu 5 Treffern gewinnt die Runde!", santaPower: "Santas Geschenk (Schlitten / Filter)", witchPower: "Hexen-Magie (Besen / Fledermäuse)", beatMode: "BEAT-DUELL", beatModeDesc: "Rhythmus-Duell online!<br>Tippe die Lanes, schieb den Balken!", beatTarget: "Schieb den Balken auf deine Seite!", round: "RUNDE", you: "DU", opponent: "GEGNER", target: "Ziel: Nicht abstürzen!",
     music: "MUSIK", musicVol: "MUSIK LAUTST.", sfx: "SFX", sfxVol: "SFX LAUTST.", woof: "WUFF", xmasMode: "WEIHNACHTEN", language: "SPRACHE", resume: "FORTSETZEN", getReady: "BEREIT MACHEN", quitToMenu: "ZUM MENÜ",
-    shopTitle: "Geschäft", dryFood: "Trockenfutter:", theLab: "DAS LABOR", skins: "SKINS", trails: "SPUREN", netWorthDesc: "Die reichsten Spieler nach Trockenfutter.", netWorthLogin: "Melde dich an, um die Trockenfutter-Bestenliste zu sehen.", storyTitle: "DIE LARINE-GESCHICHTE", storyInstructions: "Übersetze alle 10 Morse-Teile ins Englische und gib sie in der richtigen Reihenfolge ein, um 2.000 Trockenfutter zu erhalten. Die Belohnung ist nur einmal verfügbar.", storyClaim: "2.000 TROCKENFUTTER HOLEN", storyAlready: "Die Geschichten-Belohnung wurde bereits eingelöst.", storyWrong: "Teil {n} ist nicht richtig. Prüfe die Übersetzung und versuche es erneut.", storySuccess: "Geschichte abgeschlossen! +2.000 Trockenfutter!", storyPlaceholder: "Englische Übersetzung eingeben...", storyPart: "TEIL",
+    shopTitle: "Geschäft", dryFood: "Trockenfutter:", theLab: "DAS LABOR", skins: "SKINS", trails: "SPUREN", netWorthDesc: "Die reichsten Spieler nach Trockenfutter.", netWorthLogin: "Melde dich an, um die Trockenfutter-Bestenliste zu sehen.", storyTitle: "DIE LARINE-GESCHICHTE", storyInstructions: "Gib die englischen Übersetzungen der 10 Story-Teile vom Todesbildschirm in der richtigen Reihenfolge ein, um 2.000 Trockenfutter zu erhalten. Die Belohnung ist nur einmal verfügbar.", storyClaim: "2.000 TROCKENFUTTER HOLEN", storyAlready: "Die Geschichten-Belohnung wurde bereits eingelöst.", storyWrong: "Teil {n} ist nicht richtig. Prüfe die Übersetzung und versuche es erneut.", storySuccess: "Geschichte abgeschlossen! +2.000 Trockenfutter!", storyPlaceholder: "Englische Übersetzung eingeben...", storyPart: "TEIL", storyTranslation: "Übersetzung",
     sellItem: "ARTIKEL VERKAUFEN", areYouSure: "Bist du sicher?", yes: "JA", no: "NEIN",
     friend: "Freund", typeMessage: "Nachricht eingeben...", acceptChallenge: "Nimmst du die Herausforderung an?", accept: "ANNEHMEN", decline: "ABLEHNEN",
     unlockLabText: "Schalte die Macht frei, um<br>deinen ultimativen Custom Shetos zu bauen.", labCost: "Kosten: 1500 Trockenfutter", unlockLab: "LABOR FREISCHALTEN", pointsAvailable: "VERFÜGBARE PUNKTE:", baseAppearance: "GRUNDAUSSEHEN", abilities: "FÄHIGKEITEN (Max 10 Gesamt) - Max 3 aktivieren", lives: "Leben (Herzen)", dashes: "Sprints", bombs: "Bomben", shrinks: "Schrumpfen", widenGap: "Lücke vergrößern", magnetizeFood: "Futter magnetisieren", predict: "Vorhersagen (Autopilot)", hrBreak: "HR-Pause (Unverwundbarkeit)", deadEye: "Todesblick (Zielen)", customTrailColors: "INDIVIDUELLE SPURFARBEN", baseColor: "Basisfarbe", shieldColor: "Schildfarbe", damageColor: "Schadensfarbe", potionColor: "Trankfarbe", slowColor: "Zeitlupenfarbe", foodColor: "Futterfarbe", saveEquip: "SPEICHERN & AUSRÜSTEN",
@@ -939,11 +938,11 @@
     area0: "Der Anfang", area1: "Der HIMMEL", area2: "Der SONNENUNTERGANG", area3: "Die NACHT", area4: "Die LEERE",
     syncingData: "DATEN WERDEN SYNCHRONISIERT...", dataSynced: "DATEN SYNCHRONISIERT!", bossDefeated: "BOSS BESIEGT!", boss2Defeated: "BOSS 2 BESIEGT!", opponentDisconnected: "GEGNER GETRENNT!", customEquipped: "CUSTOM AUSGERÜSTET!", itemSold: "ARTIKEL VERKAUFT!", maxToggles: "MAX 3 SCHALTER ERLAUBT", warpAhead: "VORWÄRTS GEWARPT! +10", warpBack: "ZURÜCK GEWARPT! -10", endlessMode: "ENDLOSMODUS!", codeRedeemed: "CODE EINGELÖST!", unlimitedAir: "du hast unbegrenzt Luft bekommen", searchingOpponent: "SUCHE GEGNER...", waitingFor: "WARTE AUF", cancel: "ABBRECHEN", challengedYou: "FORDERT DICH HERAUS!",
     shopEquipped: "AUSGERÜSTET", shopEquip: "AUSRÜSTEN", shopBuy: "KAUFEN", shopSell: "VERKAUFEN", achReward: "Belohnung:", none: "Keine",
-    b1_1: "oh, da bist du ja", b1_2: "ich habe auf dich gewartet", b2_1: "du gerätst außer kontrolle", b2_2: "du solltest nicht HIERHER kommen", b2_3: "es ist zu spät um umzukehren....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "Also, wir reden nicht darueber, wie ein Hund fliegt?", b3_2: "Warum frage ich ueberhaupt? Das sind nicht mal meine Gedanken, der Spieleentwickler tippt hier den ganzen Unsinn.", b3_3: "Ich glaube, er dachte, es waere lustig, mich fragen zu lassen, warum ein Hund fliegt.", b3_4: "Dann fangen wir wohl besser an zu kaempfen.", boss3Defeated: "DRACHE BESIEGT!", sys: "Systemüberschreibung...", bypass: "Umgehung...", admin: "Administrator gewährt.", tbc: "Fortsetzung folgt...", cat: "DAS WAR EINE KATZE", kid: "du wurdest von einem kind erwischt lmao", err1: "Verbindungsfehler", fall: "Heruntergefallen!", wall: "Wand getroffen!", eaten: "VON SHETOS GEFRESSEN!" },
+    b1_1: "oh, da bist du ja", b1_2: "ich habe auf dich gewartet", b2_1: "du gerätst außer kontrolle", b2_2: "du solltest nicht HIERHER kommen", b2_3: "es ist zu spät um umzukehren....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "Also, wir reden nicht darueber, wie ein Hund fliegt?", b3_2: "Warum frage ich ueberhaupt? Das sind nicht mal meine Gedanken, der Spieleentwickler tippt hier den ganzen Unsinn.", b3_3: "Ich glaube, er dachte, es waere lustig, mich fragen zu lassen, warum ein Hund fliegt.", b3_4: "Dann fangen wir wohl besser an zu kaempfen.", boss3Defeated: "DRACHE BESIEGT!", sys: "Systemüberschreibung...", bypass: "Umgehung...", admin: "Administrator gewährt.", tbc: "Fortsetzung folgt...", cat: "DAS WAR EINE KATZE", kid: "du wurdest von einem kind erwischt lmao", err1: "Verbindungsfehler", highPlace: "shetos starb aus großer Höhe", fall: "Heruntergefallen!", wall: "Wand getroffen!", eaten: "VON SHETOS GEFRESSEN!" },
     ar: { play: "العب", shop: "المتجر", achieve: "إنجازات", friends: "أصدقاء", lead: "المتصدرين", ai: "محادثة ذكاء", redeem: "استرداد", high: "أعلى نتيجة", food: "طعام جاف", trophies: "الجوائز", games: "الألعاب", welcome: "مرحباً بكم في<br>فلاينج شيتوس", understand: "أنا أفهم", chooseMode: "اختر الوضع", story: "وضع القصة", endless: "وضع لا نهاية له", pvp: "وضع لاعب ضد لاعب", settings: "الإعدادات", netWorth: "صافي الثروة", storySecret: "القصة",
     comingSoon: "قريباً", comingSoonDesc: "متاح في تحديث مستقبلي.", storyDesc: "المغامرة الكلاسيكية.<br>أسرار وزعماء.", endlessDesc: "جري لا نهائي.<br>السرعة تزداد إلى الأبد.<br><b style='color:white;'>لوحة المتصدرين مفعّلة</b>", pvpDesc: "معركة النقاط!<br>أونلاين.", trophiesLabel: "الجوائز:", back: "رجوع", selectOpponent: "اختر الخصم", online: "أونلاين", onlineDesc: "طابق مع<br>بشر حقيقيين.", snowMode: "وضع كرة الثلج", snowModeDesc: "راوغ وارمِ أونلاين!<br>أول من يسجل 5 إصابات يفوز.", snowBtn: "ثلج", snowTarget: "أول من يسجل 5 إصابات يفوز بالجولة!", santaPower: "هدية سانتا (المزلجة / الفلتر)", witchPower: "سحر الساحرة (المكنسة / الخفافيش)", beatMode: "معركة الإيقاع", beatModeDesc: "مبارزة إيقاع أونلاين!<br>اضغط المسارات وادفع الشريط!", beatTarget: "ادفع الشريط إلى جهتك!", round: "الجولة", you: "أنت", opponent: "الخصم", target: "الهدف: لا تصطدم!",
     music: "الموسيقى", musicVol: "حجم الموسيقى", sfx: "المؤثرات", sfxVol: "حجم المؤثرات", woof: "ووف", xmasMode: "عيد الميلاد", language: "اللغة", resume: "استئناف", getReady: "استعد", quitToMenu: "العودة إلى القائمة",
-    shopTitle: "المتجر", dryFood: "الطعام الجاف:", theLab: "المختبر", skins: "الأشكال", trails: "الأثر", netWorthDesc: "أغنى اللاعبين حسب كمية الطعام الجاف.", netWorthLogin: "سجّل الدخول لرؤية لوحة متصدري الطعام الجاف.", storyTitle: "قصة لارين", storyInstructions: "ترجم أجزاء شفرة مورس العشرة إلى الإنجليزية واكتبها بالترتيب لتحصل على 2000 طعام جاف. يمكن الحصول على المكافأة مرة واحدة فقط.", storyClaim: "احصل على 2000 طعام جاف", storyAlready: "تم الحصول على مكافأة القصة من قبل.", storyWrong: "الجزء {n} غير صحيح. راجع الترجمة وحاول مرة أخرى.", storySuccess: "اكتملت القصة! +2000 طعام جاف!", storyPlaceholder: "اكتب الترجمة الإنجليزية...", storyPart: "الجزء",
+    shopTitle: "المتجر", dryFood: "الطعام الجاف:", theLab: "المختبر", skins: "الأشكال", trails: "الأثر", netWorthDesc: "أغنى اللاعبين حسب كمية الطعام الجاف.", netWorthLogin: "سجّل الدخول لرؤية لوحة متصدري الطعام الجاف.", storyTitle: "قصة لارين", storyInstructions: "اكتب الترجمات الإنجليزية لأجزاء القصة العشرة الظاهرة على شاشة الموت بالترتيب لتحصل على 2000 طعام جاف. يمكن الحصول على المكافأة مرة واحدة فقط.", storyClaim: "احصل على 2000 طعام جاف", storyAlready: "تم الحصول على مكافأة القصة من قبل.", storyWrong: "الجزء {n} غير صحيح. راجع الترجمة وحاول مرة أخرى.", storySuccess: "اكتملت القصة! +2000 طعام جاف!", storyPlaceholder: "اكتب الترجمة الإنجليزية...", storyPart: "الجزء", storyTranslation: "الترجمة",
     sellItem: "بيع العنصر", areYouSure: "هل أنت متأكد؟", yes: "نعم", no: "لا",
     friend: "صديق", typeMessage: "اكتب رسالة...", acceptChallenge: "هل تقبل التحدي؟", accept: "قبول", decline: "رفض",
     unlockLabText: "افتح القوة لبناء<br>شيتوس المخصص النهائي.", labCost: "التكلفة: 1500 طعام جاف", unlockLab: "فتح المختبر", pointsAvailable: "النقاط المتاحة:", baseAppearance: "المظهر الأساسي", abilities: "القدرات (الحد الأقصى 10) - فعّل 3 كحد أقصى", lives: "الأرواح (قلوب)", dashes: "الاندفاعات", bombs: "القنابل", shrinks: "الانكماش", widenGap: "توسيع الفجوة", magnetizeFood: "جذب الطعام", predict: "التنبؤ (الطيار الآلي)", hrBreak: "استراحة (حصانة)", deadEye: "العين القاتلة (التصويب)", customTrailColors: "ألوان الأثر المخصصة", baseColor: "اللون الأساسي", shieldColor: "لون الدرع", damageColor: "لون الضرر", potionColor: "لون الجرعة", slowColor: "لون البطء", foodColor: "لون الطعام", saveEquip: "حفظ وتجهيز المخصص",
@@ -953,11 +952,11 @@
     area0: "البداية", area1: "السماء", area2: "الغروب", area3: "الليل", area4: "الفراغ",
     syncingData: "جارٍ مزامنة البيانات...", dataSynced: "تمت مزامنة البيانات!", bossDefeated: "تم هزيمة الزعيم!", boss2Defeated: "تم هزيمة الزعيم 2!", opponentDisconnected: "انقطع الخصم!", customEquipped: "تم تجهيز المخصص!", itemSold: "تم بيع العنصر!", maxToggles: "مسموح بـ 3 مفاتيح كحد أقصى", warpAhead: "قفزة للأمام! +10", warpBack: "قفزة للخلف! -10", endlessMode: "الوضع اللانهائي!", codeRedeemed: "تم استرداد الرمز!", unlimitedAir: "حصلت على كمية غير محدودة من الهواء", searchingOpponent: "جارٍ البحث عن خصم...", waitingFor: "في انتظار", cancel: "إلغاء", challengedYou: "تحداك!",
     shopEquipped: "مُجهَّز", shopEquip: "تجهيز", shopBuy: "شراء", shopSell: "بيع", achReward: "المكافأة:", none: "لا شيء",
-    b1_1: "أوه، ها أنت ذا", b1_2: "كنت في انتظارك", b2_1: "أنت تخرج عن السيطرة", b2_2: "لم يكن من المفترض أن تأتي إلى هنا", b2_3: "لقد فات الأوان للتراجع....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "طيب، مش هنتكلم إزاي كلب بيطير؟", b3_2: "ليه بسأل أصلًا؟ دي مش أفكاري، ده مطور اللعبة اللي بيكتب كل الهبل ده.", b3_3: "أكيد افتكر إنه مضحك يخليني أسأل ليه كلب بيطير.", b3_4: "خلينا نبدأ القتال يعني.", boss3Defeated: "تم هزيمة التنين!", sys: "تجاوز النظام...", bypass: "جاري التجاوز...", admin: "تم منح حق المسؤول.", tbc: "يتبع...", cat: "تلك كانت قطة", kid: "لقد صدمك طفل لول", err1: "خطأ في الاتصال", fall: "سقطت!", wall: "اصطدمت بجدار!", eaten: "أكلك شيتوس!" },
+    b1_1: "أوه، ها أنت ذا", b1_2: "كنت في انتظارك", b2_1: "أنت تخرج عن السيطرة", b2_2: "لم يكن من المفترض أن تأتي إلى هنا", b2_3: "لقد فات الأوان للتراجع....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "طيب، مش هنتكلم إزاي كلب بيطير؟", b3_2: "ليه بسأل أصلًا؟ دي مش أفكاري، ده مطور اللعبة اللي بيكتب كل الهبل ده.", b3_3: "أكيد افتكر إنه مضحك يخليني أسأل ليه كلب بيطير.", b3_4: "خلينا نبدأ القتال يعني.", boss3Defeated: "تم هزيمة التنين!", sys: "تجاوز النظام...", bypass: "جاري التجاوز...", admin: "تم منح حق المسؤول.", tbc: "يتبع...", cat: "تلك كانت قطة", kid: "لقد صدمك طفل لول", err1: "خطأ في الاتصال", highPlace: "مات شيتوس من مكان مرتفع", fall: "سقطت!", wall: "اصطدمت بجدار!", eaten: "أكلك شيتوس!" },
     it: { play: "GIOCA", shop: "NEGOZIO", achieve: "RISULTATI", friends: "AMICI", lead: "CLASSIFICA", ai: "CHAT AI", redeem: "RISCATTA", high: "Punteggio Max", food: "Cibo Secco", trophies: "Trofei", games: "Giochi", welcome: "BENVENUTO A<br>FLYING SHETOS", understand: "CAPISCO", chooseMode: "Scegli Modalità", story: "MODALITÀ STORIA", endless: "MODALITÀ INFINITA", pvp: "MODALITÀ PVP", settings: "IMPOSTAZIONI", netWorth: "PATRIMONIO", storySecret: "STORIA",
     comingSoon: "IN ARRIVO", comingSoonDesc: "Disponibile in un futuro aggiornamento.", storyDesc: "L'avventura classica.<br>Segreti & Boss.", endlessDesc: "Corsa infinita.<br>La velocità aumenta per sempre.<br><b style='color:white;'>Classifica attivata</b>", pvpDesc: "Battaglia di punteggi!<br>Online.", trophiesLabel: "Trofei:", back: "INDIETRO", selectOpponent: "Seleziona Avversario", online: "ONLINE", onlineDesc: "Abbinati con<br>persone reali.", snowMode: "MODALITÀ PALLE DI NEVE", snowModeDesc: "Schiva e lancia online!<br>Chi colpisce 5 volte vince.", snowBtn: "NEVE", snowTarget: "Chi colpisce 5 volte vince il round!", santaPower: "Regalo di Natale (Slitta / Filtro)", witchPower: "Magia della Strega (Scopa / Pipistrelli)", beatMode: "SFIDA A RITMO", beatModeDesc: "Duello ritmico online!<br>Tocca le corsie, spingi la barra!", beatTarget: "Spingi la barra dalla tua parte!", round: "ROUND", you: "TU", opponent: "AVVERSARIO", target: "Obiettivo: Non schiantarti!",
     music: "MUSICA", musicVol: "VOLUME MUSICA", sfx: "SFX", sfxVol: "VOLUME SFX", woof: "WOOF", xmasMode: "NATALE", language: "LINGUA", resume: "RIPRENDI", getReady: "PREPARATI", quitToMenu: "ESCI AL MENU",
-    shopTitle: "Negozio", dryFood: "Cibo Secco:", theLab: "IL LABORATORIO", skins: "SKIN", trails: "SCIE", netWorthDesc: "I giocatori più ricchi classificati per Cibo Secco.", netWorthLogin: "Accedi per vedere la classifica del Cibo Secco.", storyTitle: "LA STORIA DI LARINE", storyInstructions: "Traduci in inglese tutte le 10 parti Morse e inseriscile nell'ordine corretto per ottenere 2.000 Cibo Secco. La ricompensa è disponibile una sola volta.", storyClaim: "RISCATTA 2.000 CIBO SECCO", storyAlready: "La ricompensa della storia è già stata riscattata.", storyWrong: "La parte {n} non è corretta. Controlla la traduzione e riprova.", storySuccess: "Storia completata! +2.000 Cibo Secco!", storyPlaceholder: "Scrivi la traduzione inglese...", storyPart: "PARTE",
+    shopTitle: "Negozio", dryFood: "Cibo Secco:", theLab: "IL LABORATORIO", skins: "SKIN", trails: "SCIE", netWorthDesc: "I giocatori più ricchi classificati per Cibo Secco.", netWorthLogin: "Accedi per vedere la classifica del Cibo Secco.", storyTitle: "LA STORIA DI LARINE", storyInstructions: "Inserisci in inglese le traduzioni delle 10 parti della storia mostrate nella schermata di morte, nell'ordine corretto, per ottenere 2.000 Cibo Secco. La ricompensa è disponibile una sola volta.", storyClaim: "RISCATTA 2.000 CIBO SECCO", storyAlready: "La ricompensa della storia è già stata riscattata.", storyWrong: "La parte {n} non è corretta. Controlla la traduzione e riprova.", storySuccess: "Storia completata! +2.000 Cibo Secco!", storyPlaceholder: "Scrivi la traduzione inglese...", storyPart: "PARTE", storyTranslation: "traduzione",
     sellItem: "VENDI OGGETTO", areYouSure: "Sei sicuro?", yes: "SÌ", no: "NO",
     friend: "Amico", typeMessage: "Scrivi un messaggio...", acceptChallenge: "Accetti la sfida?", accept: "ACCETTA", decline: "RIFIUTA",
     unlockLabText: "Sblocca il potere per costruire<br>il tuo Shetos personalizzato definitivo.", labCost: "Costo: 1500 Cibo Secco", unlockLab: "SBLOCCA LAB", pointsAvailable: "PUNTI DISPONIBILI:", baseAppearance: "ASPETTO BASE", abilities: "ABILITÀ (Max 10 Totali) - Attiva Max 3", lives: "Vite (Cuori)", dashes: "Scatti", bombs: "Bombe", shrinks: "Rimpicciolimenti", widenGap: "Allarga il varco", magnetizeFood: "Magnetizza il cibo", predict: "Prevedi (Pilota automatico)", hrBreak: "Pausa HR (Invincibilità)", deadEye: "Occhio mortale (Mira)", customTrailColors: "COLORI SCIA PERSONALIZZATI", baseColor: "Colore base", shieldColor: "Colore scudo", damageColor: "Colore danno", potionColor: "Colore pozione", slowColor: "Colore rallentamento", foodColor: "Colore cibo", saveEquip: "SALVA & EQUIPAGGIA",
@@ -967,7 +966,7 @@
     area0: "L'inizio", area1: "Il CIELO", area2: "Il TRAMONTO", area3: "La NOTTE", area4: "Il VUOTO",
     syncingData: "SINCRONIZZAZIONE DATI...", dataSynced: "DATI SINCRONIZZATI!", bossDefeated: "BOSS SCONFITTO!", boss2Defeated: "BOSS 2 SCONFITTO!", opponentDisconnected: "AVVERSARIO DISCONNESSO!", customEquipped: "PERSONALIZZATO EQUIPAGGIATO!", itemSold: "OGGETTO VENDUTO!", maxToggles: "MAX 3 INTERRUTTORI CONSENTITI", warpAhead: "AVANZI! +10", warpBack: "INDIETRO! -10", endlessMode: "MODALITÀ INFINITA!", codeRedeemed: "CODICE RISCATTATO!", unlimitedAir: "hai ottenuto aria illimitata", searchingOpponent: "CERCO UN AVVERSARIO...", waitingFor: "IN ATTESA DI", cancel: "ANNULLA", challengedYou: "TI HA SFIDATO!",
     shopEquipped: "EQUIPAGGIATO", shopEquip: "EQUIPAGGIA", shopBuy: "COMPRA", shopSell: "VENDI", achReward: "Ricompensa:", none: "Nessuna",
-    b1_1: "oh, eccoti qui", b1_2: "ti stavo aspettando", b2_1: "stai perdendo il controllo", b2_2: "non dovevi venire QUI", b2_3: "è troppo tardi per tornare indietro....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "Quindi, non parliamo del fatto che un cane vola?", b3_2: "Perche' lo chiedo? Non sono nemmeno i miei pensieri, e' lo sviluppatore che scrive tutte queste sciocchezze.", b3_3: "Immagino abbia pensato che fosse divertente farmi chiedere perche' un cane vola.", b3_4: "Direi di iniziare a combattere.", boss3Defeated: "DRAGO SCONFITTO!", sys: "Override del Sistema...", bypass: "Bypass in corso...", admin: "Amministratore Concesso.", tbc: "Continua...", cat: "QUELLO ERA UN GATTO", kid: "ti ha colpito un bambino lmao", err1: "Errore di Connessione", fall: "Sei caduto!", wall: "Hai colpito un muro!", eaten: "MANGIATO DA SHETOS!" }
+    b1_1: "oh, eccoti qui", b1_2: "ti stavo aspettando", b2_1: "stai perdendo il controllo", b2_2: "non dovevi venire QUI", b2_3: "è troppo tardi per tornare indietro....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "Quindi, non parliamo del fatto che un cane vola?", b3_2: "Perche' lo chiedo? Non sono nemmeno i miei pensieri, e' lo sviluppatore che scrive tutte queste sciocchezze.", b3_3: "Immagino abbia pensato che fosse divertente farmi chiedere perche' un cane vola.", b3_4: "Direi di iniziare a combattere.", boss3Defeated: "DRAGO SCONFITTO!", sys: "Override del Sistema...", bypass: "Bypass in corso...", admin: "Amministratore Concesso.", tbc: "Continua...", cat: "QUELLO ERA UN GATTO", kid: "ti ha colpito un bambino lmao", err1: "Errore di Connessione", highPlace: "shetos è morto da un luogo alto", fall: "Sei caduto!", wall: "Hai colpito un muro!", eaten: "MANGIATO DA SHETOS!" }
 };
 
          function getLangText(key) { return (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key] !== undefined) ? TRANSLATIONS[currentLang][key] : (TRANSLATIONS.en[key] !== undefined ? TRANSLATIONS.en[key] : key); }
@@ -1669,15 +1668,14 @@
              if (!parts || !status || !submit) return;
              parts.innerHTML = '';
              const claimed = hasRedeemedStoryReward();
-             STORY_REDEEM_PARTS.forEach((morse, index) => {
+             STORY_REDEEM_PARTS.forEach((_, index) => {
                  const card = document.createElement('div'); card.className = 'story-part';
                  const title = document.createElement('div'); title.className = 'story-part-title';
                  title.textContent = getLangText('storyPart') + ' ' + (index + 1);
-                 const code = document.createElement('pre'); code.className = 'story-morse'; code.textContent = morse;
                  const answer = document.createElement('textarea'); answer.className = 'story-answer'; answer.dataset.part = String(index); answer.placeholder = getLangText('storyPlaceholder');
-                 answer.setAttribute('aria-label', getLangText('storyPart') + ' ' + (index + 1));
+                 answer.setAttribute('aria-label', getLangText('storyPart') + ' ' + (index + 1) + ' ' + getLangText('storyTranslation'));
                  answer.disabled = claimed;
-                 card.appendChild(title); card.appendChild(code); card.appendChild(answer); parts.appendChild(card);
+                 card.appendChild(title); card.appendChild(answer); parts.appendChild(card);
              });
              submit.disabled = claimed;
              if (claimed) {
@@ -3580,20 +3578,20 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
          }
 
          window.roundEnding = false;
-         function triggerPlayerDeath(msg) { 
+         function triggerPlayerDeath(msg, reason) { 
              if (game_mode === 'online_match' || game_mode === 'pvp_shetos') { 
                  if (!myHasCrashed) { 
                      myHasCrashed = true; 
                      window.roundEnding = false; 
                      if(!sfxMuted){deathSound.currentTime = 0; deathSound.play().catch(e=>console.warn(e));} 
                      if (game_mode === 'online_match') { 
-                         if (!activeMatchID) return triggerGameOver(msg); 
+                         if (!activeMatchID) return triggerGameOver(msg, reason); 
                          flushOnlineSync(true); 
                          try { checkRoundResult(); } catch (e) { console.log(e); } 
                      } 
                  } 
              } else { 
-                 triggerGameOver(msg); 
+                 triggerGameOver(msg, reason); 
              } 
          }
          function resetOnlineRound() { opponentLastSeen = Date.now(); pipes = []; bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; bird.velocity_x = 0; currentScore = 0; lastPipeY = 250; pipe_speed = -2; speedMultiplier = 1; pipe_spawn_timer = 0; onlineStartTimer = 3; isRoundStarting = true; myHasCrashed = false; enemyHasCrashed = false; window.roundEnding = false; enemyGhostY = CANVAS_HEIGHT / 2; enemyGhostRenderY = bird.y; enemyGhostRenderX = (game_mode === 'online_match' && snowballMode) ? snowballRivalX() : bird.x; onlineDirty = true; if(game_mode === 'pvp_shetos') { shetosBotY = CANVAS_HEIGHT/2; shetosBotScore = 0; shetosBotAlive = true; shetosBotVelocityY = 0; } if (snowballMode) resetSnowballState(); if (beatMode) resetBeatState(); if(activeMatchID && game_mode === 'online_match') { flushOnlineSync(true); } updateOnlineUI(); flashTimer = 0; }
@@ -4039,12 +4037,18 @@ window.playClickSound = function() {
                          if(pipes[i].parentPipe) pipes[i].parentPipe.visible = false;
                          trailRedTimer = 120;
                      } else {
-                         triggerPlayerDeath(getLangText('wall'));
+                         triggerPlayerDeath(getLangText('wall'), 'pipe');
+                         if (game_mode === 'over') return;
                      }
                  }
              }
-             if (bird.y > CANVAS_HEIGHT || bird.y < -50) {
-                 triggerPlayerDeath(getLangText('fall'));
+             // A pipe collision is handled above; never replace that reason with a fall message
+             // if the same frame also carries the bird outside the playfield.
+             if (game_mode === 'over') return;
+             if (bird.y > CANVAS_HEIGHT) {
+                 triggerPlayerDeath(getLangText('highPlace'), 'fall');
+             } else if (bird.y < -50) {
+                 triggerPlayerDeath(getLangText('fall'), 'ceiling');
              }
             if (game_mode === 'boss' && !isBoss2 && ImagesTouching(bird, boss)) {
                 if(isDashActive || isHrBreakActive || isSleighActive) return;
@@ -4170,12 +4174,17 @@ window.playClickSound = function() {
              return STORY_MORSE[i];
          }
 
-         function triggerGameOver(msg) {
+         function triggerGameOver(msg, reason) {
              // Boss 1 / Boss 2 deaths always reveal a story part, the void reveals one half the time.
              let diedToBoss = (game_mode === 'boss' && !isBoss3);
              let diedInVoid = (game_mode === 'running' && currentBGIndex === 4);
+             let diedFromFall = (reason === 'fall');
              game_mode = 'over';
-             if (msg && (msg.includes("VICTORY") || msg.includes("DEFEAT"))) {
+             // This is a specific out-of-bounds message, not a generic death-screen joke.
+             // Keep it tied to the fall path so a pipe can never select it.
+             if (diedFromFall) {
+                 deathMessage = msg || getLangText('highPlace');
+             } else if (msg && (msg.includes("VICTORY") || msg.includes("DEFEAT"))) {
                  deathMessage = msg;
              } else if (diedToBoss || (diedInVoid && Math.random() < 0.5)) {
                  deathMessage = pickStoryPart();
