@@ -9,7 +9,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
-        body { background-color: #111; color: white; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: Arial, sans-serif; touch-action: none; }
+        html { width: 100%; height: 100%; overflow: hidden; overscroll-behavior: none; }
+        body { position: fixed; inset: 0; width: 100%; height: 100%; background-color: #111; color: white; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; overflow: hidden; overscroll-behavior: none; font-family: Arial, sans-serif; touch-action: none; }
         
         #game-container { position: relative; width: 100vw; height: 100vh; background-color: #000; box-shadow: 0 0 20px rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; overflow: hidden; touch-action: none; transform-origin: center center; }
         canvas { width: 100%; height: 100%; object-fit: fill; position: absolute; top: 0; left: 0; z-index: 1; touch-action: none; }
@@ -38,7 +39,9 @@
         #landing-page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(#0a1f3d 0%, #041820 55%, #07242f 100%); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; padding: 50px 16px 56px 16px; box-sizing: border-box; gap: 6px; -webkit-overflow-scrolling: touch; }
         /* Christmas overlay: falling snow, ground snow and twinkling string lights.
            Fixed to the viewport, above the menu content, never steals taps. */
-        #xmas-fx { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 55; }
+        /* Dedicated viewport layer: the Christmas effects must not share the menu's scroll/compositing layer. */
+        #menu-fixed-ui { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important; overflow: hidden; pointer-events: none; z-index: 55; transform: none !important; contain: strict; isolation: isolate; }
+        #xmas-fx { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; pointer-events: none; display: block; transform: none !important; }
         #landing-page.no-xmas { background: #041820; }   /* Christmas mode off: plain night sky */
         #landing-page h1 { font-family: 'Pacifico', cursive; font-size: clamp(28px, 6vw, 50px); color: #f1c40f; margin: 0 0 6px 0; text-shadow: 2px 2px #e67e22; text-align: center; line-height: 1.2; }
         
@@ -107,6 +110,11 @@
            unreachable on short phone screens - it sat below the visible area). */
         #pause-menu::before { content: ""; margin-top: auto; }
         #pause-menu::after { content: ""; margin-bottom: auto; }
+        /* Keep the game frozen while a player gets ready after pressing RESUME. */
+        #resume-countdown { display: none; position: absolute; inset: 0; z-index: 175; flex-direction: column; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.38); pointer-events: none; text-align: center; }
+        #resume-countdown.show { display: flex; }
+        #resume-countdown-label { color: #f1c40f; font-family: 'Press Start 2P', cursive; font-size: clamp(12px, 2.4vw, 20px); line-height: 1.5; text-shadow: 3px 3px #000; }
+        #resume-countdown-number { color: #fff; font-family: 'Press Start 2P', cursive; font-size: clamp(54px, 12vw, 104px); line-height: 1; min-height: 1em; margin-top: 12px; text-shadow: 5px 5px #000, 0 0 18px rgba(241, 196, 15, 0.75); }
         #pause-menu h1 { font-family: 'Press Start 2P', cursive; color: white; margin-bottom: 30px; }
         .pause-options { display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px; width: 250px; }
         .toggle-row { display: flex; justify-content: space-between; align-items: center; color: white; font-family: 'Press Start 2P', cursive; font-size: 12px; }
@@ -122,12 +130,35 @@
         .vol-slider { width: 100px; cursor: pointer; }
         
         
-        #mode-select-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 80; flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; padding: 20px 16px; box-sizing: border-box; -webkit-overflow-scrolling: touch; }
-        #mode-main-menu, #pvp-sub-menu { padding-top: 10px; padding-bottom: 10px; }
-        #mode-main-menu, #pvp-sub-menu { display: flex; flex-direction: column; gap: 15px; align-items: center; }
-        .mode-card { width: 250px; padding: 15px; border: 2px solid white; border-radius: 10px; text-align: center; cursor: pointer; transition: transform 0.2s; }
-        .mode-card:hover { transform: scale(1.05); }
-        .mode-desc { color: #ddd; font-size: 12px; margin-top: 10px; line-height: 1.5; }
+        /* Mode picker: one centered glass panel instead of loose, cheap-looking cards. */
+        #mode-select-modal { display: none; position: absolute; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(39, 93, 132, 0.38), transparent 42%), linear-gradient(145deg, rgba(3, 12, 25, 0.98), rgba(12, 25, 45, 0.97) 55%, rgba(27, 12, 47, 0.98)); z-index: 80; flex-direction: column; align-items: center; justify-content: center; gap: 16px; overflow-y: auto; overflow-x: hidden; padding: clamp(18px, 4vh, 42px) 16px; box-sizing: border-box; -webkit-overflow-scrolling: touch; }
+        #mode-main-menu, #pvp-sub-menu { display: flex; flex-direction: column; gap: 13px; align-items: stretch; width: min(100%, 530px); padding: clamp(20px, 4vw, 34px); box-sizing: border-box; background: rgba(5, 15, 29, 0.78); border: 1px solid rgba(126, 211, 255, 0.28); border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.48), inset 0 1px 0 rgba(255,255,255,0.1); backdrop-filter: blur(12px); }
+        #pvp-sub-menu { width: min(100%, 570px); }
+        .mode-title { color: #fff; font-family: 'Pacifico', cursive; font-size: clamp(28px, 5vw, 40px); font-weight: normal; line-height: 1.1; text-align: center; margin: 0 0 8px; text-shadow: 0 3px 16px rgba(79, 195, 247, 0.45); }
+        .mode-card { --mode-accent: #f1c40f; position: relative; width: 100%; min-height: 96px; padding: 18px 22px; box-sizing: border-box; border: 1px solid rgba(255,255,255,0.18); border-left: 4px solid var(--mode-accent); border-radius: 16px; text-align: left; cursor: pointer; overflow: hidden; transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease; box-shadow: 0 8px 18px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.14); }
+        .mode-card::after { content: ""; position: absolute; width: 130px; height: 130px; right: -58px; top: -68px; border-radius: 50%; background: var(--mode-accent); opacity: 0.12; filter: blur(4px); pointer-events: none; }
+        .mode-card:hover { transform: translateY(-4px); border-color: var(--mode-accent); filter: brightness(1.1); box-shadow: 0 13px 28px rgba(0,0,0,0.34), 0 0 22px color-mix(in srgb, var(--mode-accent) 25%, transparent); }
+        .mode-card:active { transform: translateY(-1px); }
+        .mode-card h3 { position: relative; z-index: 1; margin: 0; color: #fff; font-family: 'Press Start 2P', cursive; font-size: clamp(12px, 2vw, 16px); letter-spacing: 0.5px; text-shadow: 2px 2px 0 rgba(0,0,0,0.35); }
+        .mode-desc { position: relative; z-index: 1; color: rgba(255,255,255,0.78); font-family: Arial, sans-serif; font-size: 13px; margin-top: 10px; line-height: 1.5; }
+        .mode-card-story { --mode-accent: #ffd34d; background: linear-gradient(135deg, #4c3510, #b87516 55%, #e3a928); }
+        .mode-card-endless { --mode-accent: #4fc3f7; background: linear-gradient(135deg, #061d2d, #0a4057 58%, #12607a); }
+        .mode-card-pvp { --mode-accent: #ff9e5c; background: linear-gradient(135deg, #42200f, #8b3b19 58%, #bd6c20); }
+        .mode-card-online { --mode-accent: #64e6a1; background: linear-gradient(135deg, #062b2a, #0b5b54 58%, #168777); }
+        .mode-card-snow { --mode-accent: #7ddcff; background: linear-gradient(135deg, #0b3858, #147ba2 58%, #4fc3f7); }
+        .mode-card-beat { --mode-accent: #c59aff; background: linear-gradient(135deg, #28124e, #54218a 58%, #7b2ff7); }
+        .mode-trophies { position: relative; z-index: 1; margin-top: 12px; color: rgba(255,255,255,0.82); font-family: 'Press Start 2P', cursive; font-size: 9px; }
+        .mode-back { align-self: center; width: min(100%, 190px); margin-top: 4px; padding: 11px 18px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.42); color: #fff; box-shadow: 0 6px 16px rgba(0,0,0,0.22); }
+        .mode-back:hover { background: rgba(255,255,255,0.16); }
+        @media (max-height: 700px) {
+            #mode-select-modal { justify-content: flex-start; }
+            #mode-main-menu, #pvp-sub-menu { margin: auto 0; }
+        }
+        @media (max-width: 520px) {
+            #mode-main-menu, #pvp-sub-menu { padding: 18px 14px; border-radius: 18px; }
+            .mode-card { min-height: 88px; padding: 15px 16px; }
+            .mode-desc { font-size: 12px; }
+        }
         
         #online-ui { display: none; position: absolute; top: 5px; width: 100%; z-index: 40; pointer-events: none; text-align: center; }
         #online-round-text { color: white; font-family: 'Press Start 2P', cursive; font-size: 14px; margin-bottom: 5px; text-shadow: 2px 2px black; }
@@ -189,6 +220,29 @@
         th, td { padding: 10px; text-align: center; border-bottom: 1px solid #444; }
         .achievement-item { display: flex; align-items: center; justify-content: space-between; background: #222; padding: 15px; margin-bottom: 10px; border-radius: 5px; border-left: 5px solid #555; }
         .achievement-item.unlocked { border-left-color: lime; }
+
+        /* Secret story challenge. It is deliberately scrollable because the ten
+           translations are long, while the reward/status stays easy to find. */
+        #storyModal { top: 5%; left: 5%; width: 90%; height: 90%; max-width: 960px; margin: 0 auto; background: #071b25; border-color: #f1c40f; }
+        #storyModal h2, #netWorthModal h2 { color: #f1c40f; font-family: 'Press Start 2P', cursive; text-align: center; font-size: clamp(13px, 2.2vw, 20px); margin-top: 4px; }
+        .story-instructions, .net-worth-instructions { color: #ddd; text-align: center; line-height: 1.5; font-size: 13px; margin: 10px auto 16px; max-width: 760px; }
+        .story-parts { display: flex; flex-direction: column; gap: 10px; }
+        .story-part { background: rgba(255,255,255,0.06); border: 1px solid #49606b; border-radius: 6px; padding: 10px; }
+        .story-part-title { color: #f1c40f; font-family: 'Press Start 2P', cursive; font-size: 11px; margin-bottom: 7px; }
+        .story-answer { width: 100%; min-height: 54px; box-sizing: border-box; resize: vertical; padding: 8px; border: 1px solid #6c7f87; border-radius: 4px; background: #fff; color: #111; font: 14px Arial, sans-serif; }
+        .story-answer:focus { outline: 2px solid #f1c40f; border-color: #f1c40f; }
+        .story-status { min-height: 20px; color: #f1c40f; text-align: center; font-size: 13px; font-weight: bold; margin: 14px 0 4px; }
+        .story-status.error { color: #ff7676; }
+        .story-status.success { color: #7dff9b; }
+        #story-submit-btn { display: block; margin: 10px auto 0; max-width: 360px; }
+        #netWorthModal { background: #071b25; border-color: #f1c40f; }
+        #netWorthTable td:last-child, #netWorthTable th:last-child { color: #f1c40f; font-weight: bold; }
+        #netWorthTable td:first-child { color: #aaa; width: 58px; }
+        #netWorthTable img { width: 28px; height: 28px; object-fit: cover; border-radius: 50%; vertical-align: middle; }
+        @media (max-width: 600px) {
+            .story-instructions, .net-worth-instructions { font-size: 11px; }
+            .story-answer { font-size: 13px; }
+        }
         .ach-title { font-weight: bold; font-size: 16px; color: white; margin-bottom: 5px; }
         .ach-desc { font-size: 12px; color: #aaa; }
         
@@ -296,37 +350,37 @@
          
          <div id="mode-select-modal">
              <div id="mode-main-menu">
-                 <h1 id="lang-choose-mode" data-i18n="chooseMode" style="color:white; font-family:'Pacifico'; font-size:30px; margin-bottom:10px;">Choose Mode</h1>
-                 <div class="mode-card" style="background:linear-gradient(#f1c40f, #f39c12);" onclick="startStoryMode()">
-                     <h3 id="lang-story" data-i18n="story" style="color:black;">STORY MODE</h3>
-                     <div class="mode-desc" style="color:#222; font-weight:bold;" data-i18n-html="storyDesc">The classic adventure.<br>Secrets & Bosses.</div>
+                 <h1 id="lang-choose-mode" class="mode-title" data-i18n="chooseMode">Choose Mode</h1>
+                 <div class="mode-card mode-card-story" onclick="startStoryMode()">
+                     <h3 id="lang-story" data-i18n="story">STORY MODE</h3>
+                     <div class="mode-desc" data-i18n-html="storyDesc">The classic adventure.<br>Secrets & Bosses.</div>
                  </div>
-                 <div class="mode-card" style="background:linear-gradient(#0a2e3f, #041820);" onclick="startEndlessMode()">
-                     <h3 id="lang-endless" data-i18n="endless" style="color:white;">ENDLESS MODE</h3>
-                     <div class="mode-desc" style="color:#ccc;" data-i18n-html="endlessDesc">Infinite run.<br>Speed increases forever.<br><b style="color:white;">Leaderboard Enabled</b></div>
+                 <div class="mode-card mode-card-endless" onclick="startEndlessMode()">
+                     <h3 id="lang-endless" data-i18n="endless">ENDLESS MODE</h3>
+                     <div class="mode-desc" data-i18n-html="endlessDesc">Infinite run.<br>Speed increases forever.<br><b>Leaderboard Enabled</b></div>
                  </div>
-                 <div class="mode-card" style="background:linear-gradient(#f1c40f, #f39c12);" onclick="openPvpSubMenu()">
-                     <h3 id="lang-pvp" data-i18n="pvp" style="color:black;">PVP MODE</h3>
-                     <div class="mode-desc" style="color:#222; font-weight:bold;" data-i18n-html="pvpDesc">Score Battle!<br>Online.</div>
-                     <div style="margin-top:5px; color:black; font-weight:bold; font-size:10px;">🏆 <span data-i18n="trophiesLabel">Trophies:</span> <span id="modeTrophyDisplay">0</span></div>
+                 <div class="mode-card mode-card-pvp" onclick="openPvpSubMenu()">
+                     <h3 id="lang-pvp" data-i18n="pvp">PVP MODE</h3>
+                     <div class="mode-desc" data-i18n-html="pvpDesc">Score Battle!<br>Online.</div>
+                     <div class="mode-trophies">🏆 <span data-i18n="trophiesLabel">Trophies:</span> <span id="modeTrophyDisplay">0</span></div>
                  </div>
-                 <button class="enter-btn secondary-btn" style="margin-top:10px; width:100px; font-size:14px;" onclick="closeModeSelect()" data-i18n="back">BACK</button>
+                 <button class="enter-btn mode-back" onclick="closeModeSelect()" data-i18n="back">BACK</button>
              </div>
              <div id="pvp-sub-menu" style="display:none;">
-                 <h1 style="color:white; font-family:'Pacifico'; font-size:30px; margin-bottom:10px;" data-i18n="selectOpponent">Select Opponent</h1>
-                 <div class="mode-card" style="background:linear-gradient(#0a2e3f, #041820);" onclick="startOnlineMode()">
-                     <h3 style="color:white;" data-i18n="online">ONLINE</h3>
-                     <div class="mode-desc" style="color:#ccc;" data-i18n-html="onlineDesc">Matchmake with<br>Real Humans.</div>
+                 <h1 class="mode-title" data-i18n="selectOpponent">Select Opponent</h1>
+                 <div class="mode-card mode-card-online" onclick="startOnlineMode()">
+                     <h3 data-i18n="online">ONLINE</h3>
+                     <div class="mode-desc" data-i18n-html="onlineDesc">Matchmake with<br>Real Humans.</div>
                  </div>
-                 <div class="mode-card" style="background:linear-gradient(#bfe6ff, #4fc3f7);" onclick="startSnowballMode()">
-                     <h3 style="color:black;" data-i18n="snowMode">SNOWBALL MODE</h3>
-                     <div class="mode-desc" style="color:#222; font-weight:bold;" data-i18n-html="snowModeDesc">Dodge & throw online!<br>First to 5 hits wins the round.</div>
+                 <div class="mode-card mode-card-snow" onclick="startSnowballMode()">
+                     <h3 data-i18n="snowMode">SNOWBALL MODE</h3>
+                     <div class="mode-desc" data-i18n-html="snowModeDesc">Dodge & throw online!<br>First to 5 hits wins the round.</div>
                  </div>
-                 <div class="mode-card" style="background:linear-gradient(#2b1055, #7b2ff7);" onclick="startBeatMode()">
-                     <h3 style="color:white;" data-i18n="beatMode">BEAT BATTLE</h3>
-                     <div class="mode-desc" style="color:#ddd; font-weight:bold;" data-i18n-html="beatModeDesc">Rhythm duel online!<br>Tap the lanes, push the bar!</div>
+                 <div class="mode-card mode-card-beat" onclick="startBeatMode()">
+                     <h3 data-i18n="beatMode">BEAT BATTLE</h3>
+                     <div class="mode-desc" data-i18n-html="beatModeDesc">Rhythm duel online!<br>Tap the lanes, push the bar!</div>
                  </div>
-                 <button class="enter-btn secondary-btn" style="margin-top:10px; width:100px; font-size:14px;" onclick="backToMainMenu()" data-i18n="back">BACK</button>
+                 <button class="enter-btn mode-back" onclick="backToMainMenu()" data-i18n="back">BACK</button>
              </div>
          </div>
 
@@ -404,6 +458,11 @@
              </div>
              <button id="resume-btn" data-i18n="resume" class="enter-btn btn-yellow btn-full-width" onclick="togglePause()">RESUME</button>
              <button class="enter-btn secondary-btn btn-full-width" style="background-color: #c0392b; margin-top:10px;" onclick="quitToMenu()" data-i18n="quitToMenu">QUIT TO MENU</button>
+         </div>
+
+         <div id="resume-countdown" aria-live="assertive" aria-atomic="true">
+             <div id="resume-countdown-label" data-i18n="getReady">GET READY</div>
+             <div id="resume-countdown-number">3</div>
          </div>
 
          <div id="shop-modal" class="modal" style="background: #041820; border: 4px solid #f1c40f;">
@@ -525,7 +584,6 @@
          </div>
 
          <div id="landing-page"> 
-             <canvas id="xmas-fx"></canvas>
              <div class="title-wrap">
                  <h1>Flying Shetos</h1>
                  <div id="splash-text">Splash!</div>
@@ -547,6 +605,8 @@
                      <button class="enter-btn btn-yellow" id="btn-achieve" data-i18n="achieve" style="font-size: 10px;" onclick="playClickSound(); openAchievements()">ACHIEVE</button>
                      <button class="enter-btn btn-yellow" id="btn-friends" data-i18n="friends" style="font-size: 10px;" onclick="playClickSound(); openFriends()">FRIENDS</button>
                      <button class="enter-btn btn-yellow" id="btn-lead" data-i18n="lead" style="font-size: 10px;" onclick="playClickSound(); openLeaderboard('all_time')">LEADER</button>
+                     <button class="enter-btn btn-yellow" id="btn-net-worth" data-i18n="netWorth" style="font-size: 10px;" onclick="playClickSound(); openNetWorthLeaderboard()">NEW WORTH</button>
+                     <button class="enter-btn btn-yellow" id="btn-story" data-i18n="storySecret" style="font-size: 10px;" onclick="playClickSound(); openStoryChallenge()">STORY</button>
                      <button class="enter-btn btn-yellow" id="btn-ai" data-i18n="comingSoon" style="font-size: 10px; opacity:0.5; cursor:not-allowed;" disabled>COMING SOON</button>
                  </div>
 
@@ -584,6 +644,16 @@
              </table>
          </div>
 
+         <div id="netWorthModal" class="modal">
+             <button class="close-btn" onclick="playClickSound(); closeModal('netWorthModal')">X</button>
+             <h2 data-i18n="netWorth">NEW WORTH</h2>
+             <p class="net-worth-instructions" data-i18n="netWorthDesc">The richest players ranked by Dry Food.</p>
+             <table id="netWorthTable">
+                 <thead><tr><th data-i18n="rank">Rank</th><th data-i18n="player">Player</th><th data-i18n="food">Dry Food</th></tr></thead>
+                 <tbody id="netWorthBody"><tr><td colspan="3" data-i18n="loading">Loading...</td></tr></tbody>
+             </table>
+         </div>
+
          <div id="friendsModal" class="modal">
              <button class="close-btn" onclick="playClickSound(); closeModal('friendsModal')">X</button>
              <h2 data-i18n="friendsTitle">Friends</h2>
@@ -608,6 +678,15 @@
              <p style="font-size: 10px; color: #ccc; margin-bottom: 20px;" data-i18n="secretCode">Enter your secret code here. One-time use only!</p>
              <input type="text" id="redeemInput" placeholder="Enter code..." data-i18n-placeholder="enterCode" style="width: 80%; padding: 10px; font-family: Arial; font-size: 14px; margin-bottom: 20px; text-align: center;">
              <button class="enter-btn btn-yellow btn-full-width" onclick="redeemCode()" data-i18n="submit">SUBMIT</button>
+         </div>
+
+         <div id="storyModal" class="modal story-modal">
+             <button class="close-btn" onclick="playClickSound(); closeModal('storyModal')">X</button>
+             <h2 data-i18n="storyTitle">FmouAmfnRdkaksvM</h2>
+             <p class="story-instructions" data-i18n="storyInstructions">Enter the English translations for the 10 story parts shown on the death screen, in order, to claim 2,000 Dry Food. This reward can only be claimed once.</p>
+             <div id="storyParts" class="story-parts"></div>
+             <div id="story-status" class="story-status" aria-live="polite"></div>
+             <button id="story-submit-btn" class="enter-btn btn-gold" onclick="redeemStoryReward()" data-i18n="storyClaim">CLAIM 2,000 DRY FOOD</button>
          </div>
 
          <div id="chatModal" class="modal" style="z-index: 150;">
@@ -639,6 +718,8 @@
 
          <canvas id="myCanvas" width="640" height="480"></canvas> 
      </div>
+     <!-- This layer is a direct body child and is completely independent from menu scrolling. -->
+     <div id="menu-fixed-ui" aria-hidden="true"><canvas id="xmas-fx"></canvas></div>
 <script>
          // ---- BOOT SAFETY NET -------------------------------------------------------
          // If anything throws while the page is starting up the menu used to end up
@@ -767,7 +848,7 @@
         // Last resort: if a mid-boot crash still left any menu handler undefined,
         // replace it with a working stub instead of a silently dead button.
         window.addEventListener('load', function() {
-            const menuHandlers = ['openModeSelect','openShopFromMenu','openAchievements','openFriends','openLeaderboard','openRedeemModal','openPrivacyPolicy','togglePause','signInWithGoogle','signOutUser','closeModal','closeAllModals','quitToMenu','closeStartupWarning','playClickSound'];
+            const menuHandlers = ['openModeSelect','openShopFromMenu','openAchievements','openFriends','openLeaderboard','openNetWorthLeaderboard','openStoryChallenge','redeemStoryReward','openRedeemModal','openPrivacyPolicy','togglePause','signInWithGoogle','signOutUser','closeModal','closeAllModals','quitToMenu','closeStartupWarning','playClickSound'];
             const missing = [];
             for (let i = 0; i < menuHandlers.length; i++) {
                 if (typeof window[menuHandlers[i]] !== 'function') {
@@ -813,6 +894,24 @@
              ".--. .- .-. - / .---- .----\n-- .- -.-- -... . / .. ..-. / .. / .--- --- .. -. . -..\n/ .... . .-. / ... .... . / .-- --- ..- .-.. -.. -. -\n/ -... . / - .... .- - / -- .- -.."
          ];
 
+         // The secret reward intentionally uses the first ten parts. The eleventh
+         // epilogue remains available in the normal death-story rotation, but is not
+         // required for this one-time menu challenge.
+         const STORY_REDEEM_PARTS = STORY_MORSE.slice(0, 10);
+         const STORY_REWARD_CODE = 'morse_story_10';
+         const STORY_TRANSLATIONS = [
+             ["she wont stop looking at me even with six feet of dirt over her eyes"],
+             ["i burned her cotton dresses behind the barn tonight the smoke smelled like her lavender perfume"],
+             ["the neighbor stopped his truck by the fence i smiled and lied god my teeth felt like ice"],
+             ["i scrubbed the pine floorboards until my knuckles bled the wood is stained forever"],
+             ["i set the table for two out of habit i sat there in the dark until the soup went cold"],
+             ["the crows keep gathering over the corn rows they know whats buried beneath the stalks"],
+             ["i didnt mean to do that to you larine you just said you were leaving me and the world went red"],
+             ["i planted purple roses over the patch of fresh dirt she always wanted a flower garden"],
+             ["flashing red lights just pulled up the long driveway my hands are shaking too hard to bolt the door"],
+             ["i can hear her knocking benath the floorboards shes asking me why i did it", "i can hear her knocking beneath the floorboards shes asking me why i did it"]
+         ];
+
          const DEATH_MESSAGES = [
              "404 ERROR", "oops", "wow", "*Thumbs down*",
              "..- ... . -.-. --- -.. . .-..-.\n. .- ... - . .-. . --. --. .-..-.",
@@ -825,7 +924,7 @@
              "yeah really close I guess", "yes there is an ending", "if function",
              "..- ... . -.-. --- -.. . .-..-.\n-- --- .-. ... . .-..-.",
              "Wasted", "You are dead Ig", "Good Night",
-             "shetos fell from a high place", "Dead", "Too Bad",
+             "Dead", "Too Bad",
              "One more game, please", "pixelated game btw",
              "Yes, AI generated",
              "Who is typing these random\ndeath-screen texts",
@@ -836,10 +935,10 @@
          ];
 
          const TRANSLATIONS = {
-    en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", understand: "I UNDERSTAND", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS",
+    en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", understand: "I UNDERSTAND", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS", netWorth: "NEW WORTH", storySecret: "STORY",
     comingSoon: "COMING SOON", comingSoonDesc: "Available in a future update.", storyDesc: "The classic adventure.<br>Secrets & Bosses.", endlessDesc: "Infinite run.<br>Speed increases forever.<br><b style='color:white;'>Leaderboard Enabled</b>", pvpDesc: "Score Battle!<br>Online.", trophiesLabel: "Trophies:", back: "BACK", selectOpponent: "Select Opponent", online: "ONLINE", onlineDesc: "Matchmake with<br>Real Humans.", snowMode: "SNOWBALL MODE", snowModeDesc: "Dodge & throw online!<br>First to 5 hits wins the round.", snowBtn: "SNOW", snowTarget: "First to 5 hits wins the round!", santaPower: "Santa's Gift (Sleigh / Nice Filter)", witchPower: "Witch's Magic (Broom / Bats)", beatMode: "BEAT BATTLE", beatModeDesc: "Rhythm duel online!<br>Tap the lanes, push the bar!", beatTarget: "Push the tug-of-war bar to your side!", round: "ROUND", you: "YOU", opponent: "OPPONENT", target: "Target: Don't Crash!",
-    music: "MUSIC", musicVol: "MUSIC VOL", sfx: "SFX", sfxVol: "SFX VOL", woof: "WOOF", xmasMode: "CHRISTMAS", language: "LANGUAGE", resume: "RESUME", quitToMenu: "QUIT TO MENU",
-    shopTitle: "Shop", dryFood: "Dry Food:", theLab: "THE LAB", skins: "SKINS", trails: "TRAILS",
+    music: "MUSIC", musicVol: "MUSIC VOL", sfx: "SFX", sfxVol: "SFX VOL", woof: "WOOF", xmasMode: "CHRISTMAS", language: "LANGUAGE", resume: "RESUME", getReady: "GET READY", quitToMenu: "QUIT TO MENU",
+    shopTitle: "Shop", dryFood: "Dry Food:", theLab: "THE LAB", skins: "SKINS", trails: "TRAILS", netWorthDesc: "The richest players ranked by Dry Food.", netWorthLogin: "Log in to view the Dry Food net worth leaderboard.", storyTitle: "FmouAmfnRdkaksvM", storyInstructions: "Enter the English translations for the 10 story parts shown on the death screen, in order, to claim 2,000 Dry Food. This reward can only be claimed once.", storyClaim: "CLAIM 2,000 DRY FOOD", storyAlready: "The story reward has already been claimed.", storyWrong: "Part {n} is not correct. Check the translation and try again.", storySuccess: "Story complete! +2,000 Dry Food!", storyPlaceholder: "Type the English translation...", storyPart: "PART", storyTranslation: "translation",
     sellItem: "SELL ITEM", areYouSure: "Are you sure?", yes: "YES", no: "NO",
     friend: "Friend", typeMessage: "Type a message...", acceptChallenge: "Do you accept the challenge?", accept: "ACCEPT", decline: "DECLINE",
     unlockLabText: "Unlock the power to build<br>your ultimate Custom Shetos.", labCost: "Cost: 1500 Dry Food", unlockLab: "UNLOCK LAB", pointsAvailable: "POINTS AVAILABLE:", baseAppearance: "BASE APPEARANCE", abilities: "ABILITIES (Max 10 Total) - Toggle Max 3", lives: "Lives (Hearts)", dashes: "Dashes", bombs: "Bombs", shrinks: "Shrinks", widenGap: "Widen Gap", magnetizeFood: "Magnetize Food", predict: "Predict (Auto-Pilot)", hrBreak: "HR Break (Invincibility)", deadEye: "Dead Eye (Targeting)", customTrailColors: "CUSTOM TRAIL COLORS", baseColor: "Base Color", shieldColor: "Shield Color", damageColor: "Damage Color", potionColor: "Potion Color", slowColor: "Slow-Mo Color", foodColor: "Food (Eat) Color", saveEquip: "SAVE & EQUIP CUSTOM",
@@ -851,11 +950,11 @@
     area0: "The Beginning", area1: "The SKY", area2: "The SUNSET", area3: "The NIGHT", area4: "The VOID",
     syncingData: "SYNCING DATA...", dataSynced: "DATA SYNCED!", bossDefeated: "BOSS DEFEATED!", boss2Defeated: "BOSS 2 DEFEATED!", opponentDisconnected: "OPPONENT DISCONNECTED!", customEquipped: "CUSTOM EQUIPPED!", itemSold: "ITEM SOLD!", maxToggles: "MAX 3 TOGGLES ALLOWED", warpAhead: "WARP AHEAD! +10", warpBack: "WARP BACK! -10", endlessMode: "ENDLESS MODE!", codeRedeemed: "CODE REDEEMED!", unlimitedAir: "you got unlimited amount of air", searchingOpponent: "SEARCHING FOR OPPONENT...", waitingFor: "WAITING FOR", cancel: "CANCEL", challengedYou: "CHALLENGED YOU!",
     shopEquipped: "EQUIPPED", shopEquip: "EQUIP", shopBuy: "BUY", shopSell: "SELL", achReward: "Reward:", none: "None",
-    b1_1: "oh, here you are", b1_2: "I was waiting for you", b2_1: "you are getting out of control", b2_2: "you werent supposed to come HERE", b2_3: "Its too late to go back now....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "So, we will not talk about how a dog is flying?", b3_2: "Why am i even asking that's not even my thoughts, It's the game developer who's typing all this nonsense.", b3_3: "I guess he thought it would be funny to make me question why a dog is flying.", b3_4: "Let's start the fight i guess.", boss3Defeated: "DRAGON DEFEATED!", sys: "System Override...", bypass: "Bypassing...", admin: "Administrator Granted.", tbc: "To Be Continued...", cat: "THAT WAS A CAT", kid: "you got clipped by a kid lmao", err1: "Connection Error", fall: "Fell down!", wall: "Hit a wall!", eaten: "EATEN BY SHETOS!" },
-    de: { play: "SPIELEN", shop: "GESCHÄFT", achieve: "ERFOLGE", friends: "FREUNDE", lead: "BESTEN", ai: "KI CHAT", redeem: "EINLÖSEN", high: "Höchstpunktzahl", food: "Trockenfutter", trophies: "Trophäen", games: "Spiele", welcome: "WILLKOMMEN BEI<br>FLYING SHETOS", understand: "ICH VERSTEHE", chooseMode: "Modus wählen", story: "GESCHICHTSMODUS", endless: "ENDLOSMODUS", pvp: "PVP-MODUS", settings: "EINSTELLUNGEN",
+    b1_1: "oh, here you are", b1_2: "I was waiting for you", b2_1: "you are getting out of control", b2_2: "you werent supposed to come HERE", b2_3: "Its too late to go back now....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "So, we will not talk about how a dog is flying?", b3_2: "Why am i even asking that's not even my thoughts, It's the game developer who's typing all this nonsense.", b3_3: "I guess he thought it would be funny to make me question why a dog is flying.", b3_4: "Let's start the fight i guess.", boss3Defeated: "DRAGON DEFEATED!", sys: "System Override...", bypass: "Bypassing...", admin: "Administrator Granted.", tbc: "To Be Continued...", cat: "THAT WAS A CAT", kid: "you got clipped by a kid lmao", err1: "Connection Error", highPlace: "shetos died from a high place", fall: "Fell down!", wall: "Hit a wall!", eaten: "EATEN BY SHETOS!" },
+    de: { play: "SPIELEN", shop: "GESCHÄFT", achieve: "ERFOLGE", friends: "FREUNDE", lead: "BESTEN", ai: "KI CHAT", redeem: "EINLÖSEN", high: "Höchstpunktzahl", food: "Trockenfutter", trophies: "Trophäen", games: "Spiele", welcome: "WILLKOMMEN BEI<br>FLYING SHETOS", understand: "ICH VERSTEHE", chooseMode: "Modus wählen", story: "GESCHICHTSMODUS", endless: "ENDLOSMODUS", pvp: "PVP-MODUS", settings: "EINSTELLUNGEN", netWorth: "VERMÖGEN", storySecret: "GESCHICHTE",
     comingSoon: "BALD VERFÜGBAR", comingSoonDesc: "In einem zukünftigen Update verfügbar.", storyDesc: "Das klassische Abenteuer.<br>Geheimnisse & Bosse.", endlessDesc: "Endloser Lauf.<br>Die Geschwindigkeit steigt für immer.<br><b style='color:white;'>Bestenliste aktiviert</b>", pvpDesc: "Punkte-Battle!<br>Online.", trophiesLabel: "Trophäen:", back: "ZURÜCK", selectOpponent: "Gegner wählen", online: "ONLINE", onlineDesc: "Spiele gegen<br>echte Menschen.", snowMode: "SCHNEEBALL-MODUS", snowModeDesc: "Online ausweichen & werfen!<br>Erste zu 5 Treffern gewinnt.", snowBtn: "SCHNEE", snowTarget: "Erste zu 5 Treffern gewinnt die Runde!", santaPower: "Santas Geschenk (Schlitten / Filter)", witchPower: "Hexen-Magie (Besen / Fledermäuse)", beatMode: "BEAT-DUELL", beatModeDesc: "Rhythmus-Duell online!<br>Tippe die Lanes, schieb den Balken!", beatTarget: "Schieb den Balken auf deine Seite!", round: "RUNDE", you: "DU", opponent: "GEGNER", target: "Ziel: Nicht abstürzen!",
-    music: "MUSIK", musicVol: "MUSIK LAUTST.", sfx: "SFX", sfxVol: "SFX LAUTST.", woof: "WUFF", xmasMode: "WEIHNACHTEN", language: "SPRACHE", resume: "FORTSETZEN", quitToMenu: "ZUM MENÜ",
-    shopTitle: "Geschäft", dryFood: "Trockenfutter:", theLab: "DAS LABOR", skins: "SKINS", trails: "SPUREN",
+    music: "MUSIK", musicVol: "MUSIK LAUTST.", sfx: "SFX", sfxVol: "SFX LAUTST.", woof: "WUFF", xmasMode: "WEIHNACHTEN", language: "SPRACHE", resume: "FORTSETZEN", getReady: "BEREIT MACHEN", quitToMenu: "ZUM MENÜ",
+    shopTitle: "Geschäft", dryFood: "Trockenfutter:", theLab: "DAS LABOR", skins: "SKINS", trails: "SPUREN", netWorthDesc: "Die reichsten Spieler nach Trockenfutter.", netWorthLogin: "Melde dich an, um die Trockenfutter-Bestenliste zu sehen.", storyTitle: "FmouAmfnRdkaksvM", storyInstructions: "Gib die englischen Übersetzungen der 10 Story-Teile vom Todesbildschirm in der richtigen Reihenfolge ein, um 2.000 Trockenfutter zu erhalten. Die Belohnung ist nur einmal verfügbar.", storyClaim: "2.000 TROCKENFUTTER HOLEN", storyAlready: "Die Geschichten-Belohnung wurde bereits eingelöst.", storyWrong: "Teil {n} ist nicht richtig. Prüfe die Übersetzung und versuche es erneut.", storySuccess: "Geschichte abgeschlossen! +2.000 Trockenfutter!", storyPlaceholder: "Englische Übersetzung eingeben...", storyPart: "TEIL", storyTranslation: "Übersetzung",
     sellItem: "ARTIKEL VERKAUFEN", areYouSure: "Bist du sicher?", yes: "JA", no: "NEIN",
     friend: "Freund", typeMessage: "Nachricht eingeben...", acceptChallenge: "Nimmst du die Herausforderung an?", accept: "ANNEHMEN", decline: "ABLEHNEN",
     unlockLabText: "Schalte die Macht frei, um<br>deinen ultimativen Custom Shetos zu bauen.", labCost: "Kosten: 1500 Trockenfutter", unlockLab: "LABOR FREISCHALTEN", pointsAvailable: "VERFÜGBARE PUNKTE:", baseAppearance: "GRUNDAUSSEHEN", abilities: "FÄHIGKEITEN (Max 10 Gesamt) - Max 3 aktivieren", lives: "Leben (Herzen)", dashes: "Sprints", bombs: "Bomben", shrinks: "Schrumpfen", widenGap: "Lücke vergrößern", magnetizeFood: "Futter magnetisieren", predict: "Vorhersagen (Autopilot)", hrBreak: "HR-Pause (Unverwundbarkeit)", deadEye: "Todesblick (Zielen)", customTrailColors: "INDIVIDUELLE SPURFARBEN", baseColor: "Basisfarbe", shieldColor: "Schildfarbe", damageColor: "Schadensfarbe", potionColor: "Trankfarbe", slowColor: "Zeitlupenfarbe", foodColor: "Futterfarbe", saveEquip: "SPEICHERN & AUSRÜSTEN",
@@ -865,11 +964,11 @@
     area0: "Der Anfang", area1: "Der HIMMEL", area2: "Der SONNENUNTERGANG", area3: "Die NACHT", area4: "Die LEERE",
     syncingData: "DATEN WERDEN SYNCHRONISIERT...", dataSynced: "DATEN SYNCHRONISIERT!", bossDefeated: "BOSS BESIEGT!", boss2Defeated: "BOSS 2 BESIEGT!", opponentDisconnected: "GEGNER GETRENNT!", customEquipped: "CUSTOM AUSGERÜSTET!", itemSold: "ARTIKEL VERKAUFT!", maxToggles: "MAX 3 SCHALTER ERLAUBT", warpAhead: "VORWÄRTS GEWARPT! +10", warpBack: "ZURÜCK GEWARPT! -10", endlessMode: "ENDLOSMODUS!", codeRedeemed: "CODE EINGELÖST!", unlimitedAir: "du hast unbegrenzt Luft bekommen", searchingOpponent: "SUCHE GEGNER...", waitingFor: "WARTE AUF", cancel: "ABBRECHEN", challengedYou: "FORDERT DICH HERAUS!",
     shopEquipped: "AUSGERÜSTET", shopEquip: "AUSRÜSTEN", shopBuy: "KAUFEN", shopSell: "VERKAUFEN", achReward: "Belohnung:", none: "Keine",
-    b1_1: "oh, da bist du ja", b1_2: "ich habe auf dich gewartet", b2_1: "du gerätst außer kontrolle", b2_2: "du solltest nicht HIERHER kommen", b2_3: "es ist zu spät um umzukehren....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "Also, wir reden nicht darueber, wie ein Hund fliegt?", b3_2: "Warum frage ich ueberhaupt? Das sind nicht mal meine Gedanken, der Spieleentwickler tippt hier den ganzen Unsinn.", b3_3: "Ich glaube, er dachte, es waere lustig, mich fragen zu lassen, warum ein Hund fliegt.", b3_4: "Dann fangen wir wohl besser an zu kaempfen.", boss3Defeated: "DRACHE BESIEGT!", sys: "Systemüberschreibung...", bypass: "Umgehung...", admin: "Administrator gewährt.", tbc: "Fortsetzung folgt...", cat: "DAS WAR EINE KATZE", kid: "du wurdest von einem kind erwischt lmao", err1: "Verbindungsfehler", fall: "Heruntergefallen!", wall: "Wand getroffen!", eaten: "VON SHETOS GEFRESSEN!" },
-    ar: { play: "العب", shop: "المتجر", achieve: "إنجازات", friends: "أصدقاء", lead: "المتصدرين", ai: "محادثة ذكاء", redeem: "استرداد", high: "أعلى نتيجة", food: "طعام جاف", trophies: "الجوائز", games: "الألعاب", welcome: "مرحباً بكم في<br>فلاينج شيتوس", understand: "أنا أفهم", chooseMode: "اختر الوضع", story: "وضع القصة", endless: "وضع لا نهاية له", pvp: "وضع لاعب ضد لاعب", settings: "الإعدادات",
+    b1_1: "oh, da bist du ja", b1_2: "ich habe auf dich gewartet", b2_1: "du gerätst außer kontrolle", b2_2: "du solltest nicht HIERHER kommen", b2_3: "es ist zu spät um umzukehren....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "Also, wir reden nicht darueber, wie ein Hund fliegt?", b3_2: "Warum frage ich ueberhaupt? Das sind nicht mal meine Gedanken, der Spieleentwickler tippt hier den ganzen Unsinn.", b3_3: "Ich glaube, er dachte, es waere lustig, mich fragen zu lassen, warum ein Hund fliegt.", b3_4: "Dann fangen wir wohl besser an zu kaempfen.", boss3Defeated: "DRACHE BESIEGT!", sys: "Systemüberschreibung...", bypass: "Umgehung...", admin: "Administrator gewährt.", tbc: "Fortsetzung folgt...", cat: "DAS WAR EINE KATZE", kid: "du wurdest von einem kind erwischt lmao", err1: "Verbindungsfehler", highPlace: "shetos starb aus großer Höhe", fall: "Heruntergefallen!", wall: "Wand getroffen!", eaten: "VON SHETOS GEFRESSEN!" },
+    ar: { play: "العب", shop: "المتجر", achieve: "إنجازات", friends: "أصدقاء", lead: "المتصدرين", ai: "محادثة ذكاء", redeem: "استرداد", high: "أعلى نتيجة", food: "طعام جاف", trophies: "الجوائز", games: "الألعاب", welcome: "مرحباً بكم في<br>فلاينج شيتوس", understand: "أنا أفهم", chooseMode: "اختر الوضع", story: "وضع القصة", endless: "وضع لا نهاية له", pvp: "وضع لاعب ضد لاعب", settings: "الإعدادات", netWorth: "صافي الثروة", storySecret: "القصة",
     comingSoon: "قريباً", comingSoonDesc: "متاح في تحديث مستقبلي.", storyDesc: "المغامرة الكلاسيكية.<br>أسرار وزعماء.", endlessDesc: "جري لا نهائي.<br>السرعة تزداد إلى الأبد.<br><b style='color:white;'>لوحة المتصدرين مفعّلة</b>", pvpDesc: "معركة النقاط!<br>أونلاين.", trophiesLabel: "الجوائز:", back: "رجوع", selectOpponent: "اختر الخصم", online: "أونلاين", onlineDesc: "طابق مع<br>بشر حقيقيين.", snowMode: "وضع كرة الثلج", snowModeDesc: "راوغ وارمِ أونلاين!<br>أول من يسجل 5 إصابات يفوز.", snowBtn: "ثلج", snowTarget: "أول من يسجل 5 إصابات يفوز بالجولة!", santaPower: "هدية سانتا (المزلجة / الفلتر)", witchPower: "سحر الساحرة (المكنسة / الخفافيش)", beatMode: "معركة الإيقاع", beatModeDesc: "مبارزة إيقاع أونلاين!<br>اضغط المسارات وادفع الشريط!", beatTarget: "ادفع الشريط إلى جهتك!", round: "الجولة", you: "أنت", opponent: "الخصم", target: "الهدف: لا تصطدم!",
-    music: "الموسيقى", musicVol: "حجم الموسيقى", sfx: "المؤثرات", sfxVol: "حجم المؤثرات", woof: "ووف", xmasMode: "عيد الميلاد", language: "اللغة", resume: "استئناف", quitToMenu: "العودة إلى القائمة",
-    shopTitle: "المتجر", dryFood: "الطعام الجاف:", theLab: "المختبر", skins: "الأشكال", trails: "الأثر",
+    music: "الموسيقى", musicVol: "حجم الموسيقى", sfx: "المؤثرات", sfxVol: "حجم المؤثرات", woof: "ووف", xmasMode: "عيد الميلاد", language: "اللغة", resume: "استئناف", getReady: "استعد", quitToMenu: "العودة إلى القائمة",
+    shopTitle: "المتجر", dryFood: "الطعام الجاف:", theLab: "المختبر", skins: "الأشكال", trails: "الأثر", netWorthDesc: "أغنى اللاعبين حسب كمية الطعام الجاف.", netWorthLogin: "سجّل الدخول لرؤية لوحة متصدري الطعام الجاف.", storyTitle: "FmouAmfnRdkaksvM", storyInstructions: "اكتب الترجمات الإنجليزية لأجزاء القصة العشرة الظاهرة على شاشة الموت بالترتيب لتحصل على 2000 طعام جاف. يمكن الحصول على المكافأة مرة واحدة فقط.", storyClaim: "احصل على 2000 طعام جاف", storyAlready: "تم الحصول على مكافأة القصة من قبل.", storyWrong: "الجزء {n} غير صحيح. راجع الترجمة وحاول مرة أخرى.", storySuccess: "اكتملت القصة! +2000 طعام جاف!", storyPlaceholder: "اكتب الترجمة الإنجليزية...", storyPart: "الجزء", storyTranslation: "الترجمة",
     sellItem: "بيع العنصر", areYouSure: "هل أنت متأكد؟", yes: "نعم", no: "لا",
     friend: "صديق", typeMessage: "اكتب رسالة...", acceptChallenge: "هل تقبل التحدي؟", accept: "قبول", decline: "رفض",
     unlockLabText: "افتح القوة لبناء<br>شيتوس المخصص النهائي.", labCost: "التكلفة: 1500 طعام جاف", unlockLab: "فتح المختبر", pointsAvailable: "النقاط المتاحة:", baseAppearance: "المظهر الأساسي", abilities: "القدرات (الحد الأقصى 10) - فعّل 3 كحد أقصى", lives: "الأرواح (قلوب)", dashes: "الاندفاعات", bombs: "القنابل", shrinks: "الانكماش", widenGap: "توسيع الفجوة", magnetizeFood: "جذب الطعام", predict: "التنبؤ (الطيار الآلي)", hrBreak: "استراحة (حصانة)", deadEye: "العين القاتلة (التصويب)", customTrailColors: "ألوان الأثر المخصصة", baseColor: "اللون الأساسي", shieldColor: "لون الدرع", damageColor: "لون الضرر", potionColor: "لون الجرعة", slowColor: "لون البطء", foodColor: "لون الطعام", saveEquip: "حفظ وتجهيز المخصص",
@@ -879,11 +978,11 @@
     area0: "البداية", area1: "السماء", area2: "الغروب", area3: "الليل", area4: "الفراغ",
     syncingData: "جارٍ مزامنة البيانات...", dataSynced: "تمت مزامنة البيانات!", bossDefeated: "تم هزيمة الزعيم!", boss2Defeated: "تم هزيمة الزعيم 2!", opponentDisconnected: "انقطع الخصم!", customEquipped: "تم تجهيز المخصص!", itemSold: "تم بيع العنصر!", maxToggles: "مسموح بـ 3 مفاتيح كحد أقصى", warpAhead: "قفزة للأمام! +10", warpBack: "قفزة للخلف! -10", endlessMode: "الوضع اللانهائي!", codeRedeemed: "تم استرداد الرمز!", unlimitedAir: "حصلت على كمية غير محدودة من الهواء", searchingOpponent: "جارٍ البحث عن خصم...", waitingFor: "في انتظار", cancel: "إلغاء", challengedYou: "تحداك!",
     shopEquipped: "مُجهَّز", shopEquip: "تجهيز", shopBuy: "شراء", shopSell: "بيع", achReward: "المكافأة:", none: "لا شيء",
-    b1_1: "أوه، ها أنت ذا", b1_2: "كنت في انتظارك", b2_1: "أنت تخرج عن السيطرة", b2_2: "لم يكن من المفترض أن تأتي إلى هنا", b2_3: "لقد فات الأوان للتراجع....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "طيب، مش هنتكلم إزاي كلب بيطير؟", b3_2: "ليه بسأل أصلًا؟ دي مش أفكاري، ده مطور اللعبة اللي بيكتب كل الهبل ده.", b3_3: "أكيد افتكر إنه مضحك يخليني أسأل ليه كلب بيطير.", b3_4: "خلينا نبدأ القتال يعني.", boss3Defeated: "تم هزيمة التنين!", sys: "تجاوز النظام...", bypass: "جاري التجاوز...", admin: "تم منح حق المسؤول.", tbc: "يتبع...", cat: "تلك كانت قطة", kid: "لقد صدمك طفل لول", err1: "خطأ في الاتصال", fall: "سقطت!", wall: "اصطدمت بجدار!", eaten: "أكلك شيتوس!" },
-    it: { play: "GIOCA", shop: "NEGOZIO", achieve: "RISULTATI", friends: "AMICI", lead: "CLASSIFICA", ai: "CHAT AI", redeem: "RISCATTA", high: "Punteggio Max", food: "Cibo Secco", trophies: "Trofei", games: "Giochi", welcome: "BENVENUTO A<br>FLYING SHETOS", understand: "CAPISCO", chooseMode: "Scegli Modalità", story: "MODALITÀ STORIA", endless: "MODALITÀ INFINITA", pvp: "MODALITÀ PVP", settings: "IMPOSTAZIONI",
+    b1_1: "أوه، ها أنت ذا", b1_2: "كنت في انتظارك", b2_1: "أنت تخرج عن السيطرة", b2_2: "لم يكن من المفترض أن تأتي إلى هنا", b2_3: "لقد فات الأوان للتراجع....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "طيب، مش هنتكلم إزاي كلب بيطير؟", b3_2: "ليه بسأل أصلًا؟ دي مش أفكاري، ده مطور اللعبة اللي بيكتب كل الهبل ده.", b3_3: "أكيد افتكر إنه مضحك يخليني أسأل ليه كلب بيطير.", b3_4: "خلينا نبدأ القتال يعني.", boss3Defeated: "تم هزيمة التنين!", sys: "تجاوز النظام...", bypass: "جاري التجاوز...", admin: "تم منح حق المسؤول.", tbc: "يتبع...", cat: "تلك كانت قطة", kid: "لقد صدمك طفل لول", err1: "خطأ في الاتصال", highPlace: "مات شيتوس من مكان مرتفع", fall: "سقطت!", wall: "اصطدمت بجدار!", eaten: "أكلك شيتوس!" },
+    it: { play: "GIOCA", shop: "NEGOZIO", achieve: "RISULTATI", friends: "AMICI", lead: "CLASSIFICA", ai: "CHAT AI", redeem: "RISCATTA", high: "Punteggio Max", food: "Cibo Secco", trophies: "Trofei", games: "Giochi", welcome: "BENVENUTO A<br>FLYING SHETOS", understand: "CAPISCO", chooseMode: "Scegli Modalità", story: "MODALITÀ STORIA", endless: "MODALITÀ INFINITA", pvp: "MODALITÀ PVP", settings: "IMPOSTAZIONI", netWorth: "PATRIMONIO", storySecret: "STORIA",
     comingSoon: "IN ARRIVO", comingSoonDesc: "Disponibile in un futuro aggiornamento.", storyDesc: "L'avventura classica.<br>Segreti & Boss.", endlessDesc: "Corsa infinita.<br>La velocità aumenta per sempre.<br><b style='color:white;'>Classifica attivata</b>", pvpDesc: "Battaglia di punteggi!<br>Online.", trophiesLabel: "Trofei:", back: "INDIETRO", selectOpponent: "Seleziona Avversario", online: "ONLINE", onlineDesc: "Abbinati con<br>persone reali.", snowMode: "MODALITÀ PALLE DI NEVE", snowModeDesc: "Schiva e lancia online!<br>Chi colpisce 5 volte vince.", snowBtn: "NEVE", snowTarget: "Chi colpisce 5 volte vince il round!", santaPower: "Regalo di Natale (Slitta / Filtro)", witchPower: "Magia della Strega (Scopa / Pipistrelli)", beatMode: "SFIDA A RITMO", beatModeDesc: "Duello ritmico online!<br>Tocca le corsie, spingi la barra!", beatTarget: "Spingi la barra dalla tua parte!", round: "ROUND", you: "TU", opponent: "AVVERSARIO", target: "Obiettivo: Non schiantarti!",
-    music: "MUSICA", musicVol: "VOLUME MUSICA", sfx: "SFX", sfxVol: "VOLUME SFX", woof: "WOOF", xmasMode: "NATALE", language: "LINGUA", resume: "RIPRENDI", quitToMenu: "ESCI AL MENU",
-    shopTitle: "Negozio", dryFood: "Cibo Secco:", theLab: "IL LABORATORIO", skins: "SKIN", trails: "SCIE",
+    music: "MUSICA", musicVol: "VOLUME MUSICA", sfx: "SFX", sfxVol: "VOLUME SFX", woof: "WOOF", xmasMode: "NATALE", language: "LINGUA", resume: "RIPRENDI", getReady: "PREPARATI", quitToMenu: "ESCI AL MENU",
+    shopTitle: "Negozio", dryFood: "Cibo Secco:", theLab: "IL LABORATORIO", skins: "SKIN", trails: "SCIE", netWorthDesc: "I giocatori più ricchi classificati per Cibo Secco.", netWorthLogin: "Accedi per vedere la classifica del Cibo Secco.", storyTitle: "FmouAmfnRdkaksvM", storyInstructions: "Inserisci in inglese le traduzioni delle 10 parti della storia mostrate nella schermata di morte, nell'ordine corretto, per ottenere 2.000 Cibo Secco. La ricompensa è disponibile una sola volta.", storyClaim: "RISCATTA 2.000 CIBO SECCO", storyAlready: "La ricompensa della storia è già stata riscattata.", storyWrong: "La parte {n} non è corretta. Controlla la traduzione e riprova.", storySuccess: "Storia completata! +2.000 Cibo Secco!", storyPlaceholder: "Scrivi la traduzione inglese...", storyPart: "PARTE", storyTranslation: "traduzione",
     sellItem: "VENDI OGGETTO", areYouSure: "Sei sicuro?", yes: "SÌ", no: "NO",
     friend: "Amico", typeMessage: "Scrivi un messaggio...", acceptChallenge: "Accetti la sfida?", accept: "ACCETTA", decline: "RIFIUTA",
     unlockLabText: "Sblocca il potere per costruire<br>il tuo Shetos personalizzato definitivo.", labCost: "Costo: 1500 Cibo Secco", unlockLab: "SBLOCCA LAB", pointsAvailable: "PUNTI DISPONIBILI:", baseAppearance: "ASPETTO BASE", abilities: "ABILITÀ (Max 10 Totali) - Attiva Max 3", lives: "Vite (Cuori)", dashes: "Scatti", bombs: "Bombe", shrinks: "Rimpicciolimenti", widenGap: "Allarga il varco", magnetizeFood: "Magnetizza il cibo", predict: "Prevedi (Pilota automatico)", hrBreak: "Pausa HR (Invincibilità)", deadEye: "Occhio mortale (Mira)", customTrailColors: "COLORI SCIA PERSONALIZZATI", baseColor: "Colore base", shieldColor: "Colore scudo", damageColor: "Colore danno", potionColor: "Colore pozione", slowColor: "Colore rallentamento", foodColor: "Colore cibo", saveEquip: "SALVA & EQUIPAGGIA",
@@ -893,7 +992,7 @@
     area0: "L'inizio", area1: "Il CIELO", area2: "Il TRAMONTO", area3: "La NOTTE", area4: "Il VUOTO",
     syncingData: "SINCRONIZZAZIONE DATI...", dataSynced: "DATI SINCRONIZZATI!", bossDefeated: "BOSS SCONFITTO!", boss2Defeated: "BOSS 2 SCONFITTO!", opponentDisconnected: "AVVERSARIO DISCONNESSO!", customEquipped: "PERSONALIZZATO EQUIPAGGIATO!", itemSold: "OGGETTO VENDUTO!", maxToggles: "MAX 3 INTERRUTTORI CONSENTITI", warpAhead: "AVANZI! +10", warpBack: "INDIETRO! -10", endlessMode: "MODALITÀ INFINITA!", codeRedeemed: "CODICE RISCATTATO!", unlimitedAir: "hai ottenuto aria illimitata", searchingOpponent: "CERCO UN AVVERSARIO...", waitingFor: "IN ATTESA DI", cancel: "ANNULLA", challengedYou: "TI HA SFIDATO!",
     shopEquipped: "EQUIPAGGIATO", shopEquip: "EQUIPAGGIA", shopBuy: "COMPRA", shopSell: "VENDI", achReward: "Ricompensa:", none: "Nessuna",
-    b1_1: "oh, eccoti qui", b1_2: "ti stavo aspettando", b2_1: "stai perdendo il controllo", b2_2: "non dovevi venire QUI", b2_3: "è troppo tardi per tornare indietro....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "Quindi, non parliamo del fatto che un cane vola?", b3_2: "Perche' lo chiedo? Non sono nemmeno i miei pensieri, e' lo sviluppatore che scrive tutte queste sciocchezze.", b3_3: "Immagino abbia pensato che fosse divertente farmi chiedere perche' un cane vola.", b3_4: "Direi di iniziare a combattere.", boss3Defeated: "DRAGO SCONFITTO!", sys: "Override del Sistema...", bypass: "Bypass in corso...", admin: "Amministratore Concesso.", tbc: "Continua...", cat: "QUELLO ERA UN GATTO", kid: "ti ha colpito un bambino lmao", err1: "Errore di Connessione", fall: "Sei caduto!", wall: "Hai colpito un muro!", eaten: "MANGIATO DA SHETOS!" }
+    b1_1: "oh, eccoti qui", b1_2: "ti stavo aspettando", b2_1: "stai perdendo il controllo", b2_2: "non dovevi venire QUI", b2_3: "è troppo tardi per tornare indietro....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "Quindi, non parliamo del fatto che un cane vola?", b3_2: "Perche' lo chiedo? Non sono nemmeno i miei pensieri, e' lo sviluppatore che scrive tutte queste sciocchezze.", b3_3: "Immagino abbia pensato che fosse divertente farmi chiedere perche' un cane vola.", b3_4: "Direi di iniziare a combattere.", boss3Defeated: "DRAGO SCONFITTO!", sys: "Override del Sistema...", bypass: "Bypass in corso...", admin: "Amministratore Concesso.", tbc: "Continua...", cat: "QUELLO ERA UN GATTO", kid: "ti ha colpito un bambino lmao", err1: "Errore di Connessione", highPlace: "shetos è morto da un luogo alto", fall: "Sei caduto!", wall: "Hai colpito un muro!", eaten: "MANGIATO DA SHETOS!" }
 };
 
          function getLangText(key) { return (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key] !== undefined) ? TRANSLATIONS[currentLang][key] : (TRANSLATIONS.en[key] !== undefined ? TRANSLATIONS.en[key] : key); }
@@ -1070,6 +1169,7 @@
          const ONLINE_TIMEOUT_MS = 15000; // how long an opponent may go silent before we call it a disconnect
          let isEndless = false; let myFriends = []; 
          let redeemedCodes = []; try { redeemedCodes = JSON.parse(localStorage.getItem('flappyRedeemed')) || []; } catch(e) {}
+         let storyRewardSubmitting = false;
 
          let sherlockCooldown = 0; let isSherlockActive = false; let sherlockTimer = 0;
          let hrBreakCooldown = 0; let isHrBreakActive = false; let hrBreakTimer = 0;
@@ -1179,7 +1279,12 @@
                      if (cloudData.endlessHighScore && cloudData.endlessHighScore > endlessHighScore) { endlessHighScore = cloudData.endlessHighScore; localStorage.setItem('flappyEndlessHighScore', endlessHighScore); }
                      if (cloudData.highScore && cloudData.highScore > highScore) { highScore = cloudData.highScore; localStorage.setItem('flappyHighScore', highScore); }
                      if (cloudData.friends) myFriends = cloudData.friends;
-                     if (cloudData.redeemedCodes) { redeemedCodes = cloudData.redeemedCodes; localStorage.setItem('flappyRedeemed', JSON.stringify(redeemedCodes)); }
+                     if (cloudData.redeemedCodes) {
+                         // Merge local and cloud markers so one-time rewards cannot be
+                         // reclaimed after a guest reward is synced to an account.
+                         redeemedCodes = Array.from(new Set([...(cloudData.redeemedCodes || []), ...redeemedCodes]));
+                         localStorage.setItem('flappyRedeemed', JSON.stringify(redeemedCodes));
+                     }
                      
                      if (cloudData.labUnlocked) { labUnlocked = true; localStorage.setItem('flappyLabUnlocked', 'true'); }
                      if (cloudData.customStats) { customStats = cloudData.customStats; localStorage.setItem('flappyCustomStats', JSON.stringify(customStats)); }
@@ -1381,7 +1486,7 @@
          }
 
          window.closeAllModals = function() {
-             const modals = ['mode-select-modal', 'leaderboardModal', 'friendsModal', 'chatModal', 'labModal', 'achievementsModal', 'charInfoModal', 'friendChatModal', 'privacyModal', 'redeemModal', 'inviteModal', 'shop-modal', 'confirm-modal', 'friendProfileModal'];
+             const modals = ['mode-select-modal', 'leaderboardModal', 'netWorthModal', 'friendsModal', 'chatModal', 'labModal', 'achievementsModal', 'charInfoModal', 'friendChatModal', 'privacyModal', 'redeemModal', 'storyModal', 'inviteModal', 'shop-modal', 'confirm-modal', 'friendProfileModal'];
              modals.forEach(id => { let el = document.getElementById(id); if(el) el.style.display = 'none'; });
          }
 
@@ -1498,6 +1603,7 @@
              else if(code === "4-thankyoudaddy") { collectedStars += 100; success = true; }
              else if(code === "morse") { collectedStars += 100; success = true; }
              else if(code === "easteregg") { collectedStars += 100; success = true; }
+             else if(code === "farm") { collectedStars += 100; success = true; }
              else if(code === "unlimited") { collectedStars += 100; success = true; isUnlimited = true; }
              
              if(success) { 
@@ -1520,6 +1626,138 @@
          }
 
          window.openPrivacyPolicy = function() { playClickSound(); closeAllModals(); document.getElementById('privacyModal').style.display = 'block'; }
+
+         window.openNetWorthLeaderboard = async function() {
+             closeAllModals();
+             const modal = document.getElementById('netWorthModal');
+             if (modal) modal.style.display = 'block';
+             const tbody = document.getElementById('netWorthBody');
+             if (!tbody) return;
+             tbody.innerHTML = '<tr><td colspan="3">' + getLangText('loading') + '</td></tr>';
+             if (!db) {
+                 tbody.innerHTML = '<tr><td colspan="3">' + getLangText('offlineMode') + '</td></tr>';
+                 return;
+             }
+             if (!currentUser) {
+                 tbody.innerHTML = '<tr><td colspan="3">' + getLangText('netWorthLogin') + '</td></tr>';
+                 return;
+             }
+             try {
+                 const snapshot = await db.collection('users').orderBy('stars', 'desc').limit(10).get();
+                 tbody.innerHTML = '';
+                 if (snapshot.empty) {
+                     tbody.innerHTML = '<tr><td colspan="3">' + getLangText('noScores') + '</td></tr>';
+                     return;
+                 }
+                 let rank = 1;
+                 snapshot.forEach(doc => {
+                     const data = doc.data() || {};
+                     const row = document.createElement('tr');
+                     const rankCell = document.createElement('td');
+                     rankCell.textContent = '#' + rank++;
+                     const nameCell = document.createElement('td');
+                     if (data.photo) {
+                         const avatar = document.createElement('img');
+                         avatar.src = data.photo;
+                         avatar.alt = '';
+                         nameCell.appendChild(avatar);
+                         nameCell.appendChild(document.createTextNode(' '));
+                     }
+                     nameCell.appendChild(document.createTextNode(data.displayName || 'Player'));
+                     const foodCell = document.createElement('td');
+                     foodCell.textContent = (Number(data.stars) || 0).toLocaleString();
+                     row.appendChild(rankCell); row.appendChild(nameCell); row.appendChild(foodCell);
+                     tbody.appendChild(row);
+                 });
+             } catch (e) {
+                 console.error('Net worth leaderboard error:', e);
+                 tbody.innerHTML = '<tr><td colspan="3">' + getLangText('errorLoading') + '</td></tr>';
+             }
+         }
+
+         function hasRedeemedStoryReward() {
+             return redeemedCodes.some(code => String(code).toLowerCase() === STORY_REWARD_CODE);
+         }
+         function normalizeStoryAnswer(text) {
+             // Ignore capitalization, punctuation and apostrophes so both "wont" and
+             // "won't" count, while keeping every word and its required order.
+             const normalized = String(text || '').toLowerCase()
+                 .replace(/[’']/g, '')
+                 .replace(/[^a-z0-9]+/g, ' ')
+                 .replace(/\s+/g, ' ')
+                 .trim();
+             return normalized.replace(/^part\s+\d+\s+/, '');
+         }
+         function renderStoryChallenge() {
+             const parts = document.getElementById('storyParts');
+             const status = document.getElementById('story-status');
+             const submit = document.getElementById('story-submit-btn');
+             if (!parts || !status || !submit) return;
+             parts.innerHTML = '';
+             const claimed = hasRedeemedStoryReward();
+             STORY_REDEEM_PARTS.forEach((_, index) => {
+                 const card = document.createElement('div'); card.className = 'story-part';
+                 const title = document.createElement('div'); title.className = 'story-part-title';
+                 title.textContent = getLangText('storyPart') + ' ' + (index + 1);
+                 const answer = document.createElement('textarea'); answer.className = 'story-answer'; answer.dataset.part = String(index); answer.placeholder = getLangText('storyPlaceholder');
+                 answer.setAttribute('aria-label', getLangText('storyPart') + ' ' + (index + 1) + ' ' + getLangText('storyTranslation'));
+                 answer.disabled = claimed;
+                 card.appendChild(title); card.appendChild(answer); parts.appendChild(card);
+             });
+             submit.disabled = claimed;
+             if (claimed) {
+                 status.className = 'story-status success';
+                 status.textContent = getLangText('storyAlready');
+             } else {
+                 status.className = 'story-status';
+                 status.textContent = '';
+             }
+         }
+         window.openStoryChallenge = function() {
+             closeAllModals();
+             renderStoryChallenge();
+             const modal = document.getElementById('storyModal');
+             if (modal) modal.style.display = 'block';
+             const firstAnswer = document.querySelector('#storyParts .story-answer:not(:disabled)');
+             if (firstAnswer) setTimeout(() => firstAnswer.focus(), 60);
+         }
+         window.redeemStoryReward = function() {
+             if (storyRewardSubmitting) return;
+             playClickSound();
+             const status = document.getElementById('story-status');
+             const submit = document.getElementById('story-submit-btn');
+             if (hasRedeemedStoryReward()) {
+                 if (status) { status.className = 'story-status success'; status.textContent = getLangText('storyAlready'); }
+                 if (submit) submit.disabled = true;
+                 return;
+             }
+             const answers = Array.from(document.querySelectorAll('#storyParts .story-answer'));
+             let wrongPart = -1;
+             for (let i = 0; i < STORY_TRANSLATIONS.length; i++) {
+                 const typed = normalizeStoryAnswer(answers[i] ? answers[i].value : '');
+                 const accepted = STORY_TRANSLATIONS[i].some(answer => normalizeStoryAnswer(answer) === typed);
+                 if (!accepted) { wrongPart = i; break; }
+             }
+             if (wrongPart !== -1) {
+                 if (status) {
+                     status.className = 'story-status error';
+                     status.textContent = getLangText('storyWrong').replace('{n}', String(wrongPart + 1));
+                 }
+                 if (answers[wrongPart]) answers[wrongPart].focus();
+                 return;
+             }
+             storyRewardSubmitting = true;
+             if (submit) submit.disabled = true;
+             collectedStars += 2000;
+             redeemedCodes.push(STORY_REWARD_CODE);
+             try { localStorage.setItem('flappyRedeemed', JSON.stringify(redeemedCodes)); } catch (e) {}
+             try { localStorage.setItem('flappyStars', collectedStars); } catch (e) {}
+             updateMenuStats();
+             saveUserData();
+             if (status) { status.className = 'story-status success'; status.textContent = getLangText('storySuccess'); }
+             showCheatFeedback(getLangText('storySuccess'));
+             setTimeout(() => closeModal('storyModal'), 900);
+         }
 
          window.openLeaderboard = async function(type = 'all_time') {
              closeAllModals(); document.getElementById('leaderboardModal').style.display = 'block';
@@ -1795,7 +2033,7 @@ window.triggerPvpTrashTalk = async function() {
          let CANVAS_WIDTH = 640; 
          let CANVAS_HEIGHT = 480;
 
-         var game_mode = 'waiting_for_website'; var myCanvas, ctx; var gameInterval = null; var FPS = 40; let isPaused = false; let voidUIErrorTimer = 0; 
+         var game_mode = 'waiting_for_website'; var myCanvas, ctx; var gameInterval = null; var FPS = 40; let isPaused = false; let resumeCountdownEndAt = 0; const RESUME_COUNTDOWN_MS = 3000; let voidUIErrorTimer = 0; 
          const BOSS_IMG = new Image(); BOSS_IMG.src = 'boss.png'; const BOSS2_IMG = new Image(); BOSS2_IMG.src = 'boss_2.png'; const PLAYER_IMG = new Image(); PLAYER_IMG.src = 'player.png'; const CHOCO_IMG = new Image(); CHOCO_IMG.src = 'chocolate.png'; const SHIELD_IMG = new Image(); SHIELD_IMG.src = 'shield.png'; const SHIELDED_BIRD_IMG = new Image(); SHIELDED_BIRD_IMG.src = 'player_shielded.png'; const POTION_IMG = new Image(); POTION_IMG.src = 'potion.png'; const SLOW_POTION_IMG = new Image(); SLOW_POTION_IMG.src = 'slow_potion.png'; const STAR_IMG = new Image(); STAR_IMG.src = 'dryfood.png'; const DOORDASH_IMG = new Image(); DOORDASH_IMG.src = 'doordash_cheetos.png'; var pipe_piece = new Image(); pipe_piece.src = 'wall.png'; const DRAGON_IMG = new Image(); DRAGON_IMG.src = 'dragon.png'; const DRAGON_MAD_IMG = new Image(); DRAGON_MAD_IMG.src = 'dragon_mad.png'; const DRAGON_DIZZY_IMG = new Image(); DRAGON_DIZZY_IMG.src = 'dragon_dizzy.png'; const DRAGON_SHOOT_IMG = new Image(); DRAGON_SHOOT_IMG.src = 'dragon_shoot.png'; const DRAGON_AWKWARD_IMG = new Image(); DRAGON_AWKWARD_IMG.src = 'dragon_awkward.png'; const DRAGON_ANNOYED_IMG = new Image(); DRAGON_ANNOYED_IMG.src = 'dragon_annoyed.png'; const DRAGON_DEADPAN_IMG = new Image(); DRAGON_DEADPAN_IMG.src = 'dragon_deadpan.png'; const DRAGON_SMUG_IMG = new Image(); DRAGON_SMUG_IMG.src = 'dragon_smug.png';
          const backgroundImages = []; for (let i = 1; i <= 5; i++) { let img = new Image(); img.src = `bg${i}.png`; backgroundImages.push(img); }
 
@@ -1931,7 +2169,7 @@ window.triggerPvpTrashTalk = async function() {
          }
          window.addEventListener('click', () => { if(mainMenuMusic.paused && !musicMuted && game_mode === 'waiting_for_website') { mainMenuMusic.play().catch(e => console.log("Music auto-started")); } }, {once: true});
 
-         let boss = { x: 9999, y: 100, width: 150, height: 150, stamina: 100, speedY: 2, movingIn: true, hitImg: BOSS_IMG }; let chocolates = []; let victoryTimer = 0; let deathMessage = "Game Over"; let bossIntroState = 0; let bossIntroTimer = 0; let bossIntroSkipLock = 0; let bossIntroSkipStamp = 0; let boss1Defeated = false; let isBoss2 = false; let isBoss3 = false; let dragonDefeated = false; let dragonHP = 100; let dragonPhase = 1; let dragonAtkState = 'idle'; let dragonAtkTimer = 0; let dragonCycle = 0; let dragonDashesDone = 0; let dragonDashVec = null; let dragonBodyCd = 0; let dragonDashSpeed = 13.5; let dragonMouthTimer = 0; let dragonDizzyDone = false; let dragonDizzyTimer = 0; let dragonDefeatTimer = 0; let dragonBob = 0; let dragonFire = []; let dragonTauntFx = []; const BOSS2_MAX_HITS = 5; let deleteBtnTimer = 0; let deleteBtnSpawnTimer = 0; let errorSigns = []; let errorSignCooldown = 0; 
+         let boss = { x: 9999, y: 100, width: 150, height: 150, stamina: 100, speedY: 2, movingIn: true, hitImg: BOSS_IMG }; let chocolates = []; let victoryTimer = 0; let deathMessage = "Game Over"; let bossIntroState = 0; let bossIntroTimer = 0; let bossIntroSkipLock = 0; let bossIntroSkipStamp = 0; let boss1Defeated = false; let isBoss2 = false; let isBoss3 = false; const DRAGON_MAX_HP = 100; let dragonDefeated = false; let dragonHP = DRAGON_MAX_HP; let dragonPhase = 1; let dragonAtkState = 'idle'; let dragonAtkTimer = 0; let dragonCycle = 0; let dragonDashesDone = 0; let dragonDashVec = null; let dragonBodyCd = 0; let dragonDashSpeed = 13.5; let dragonMouthTimer = 0; let dragonDizzyDone = false; let dragonDizzyTimer = 0; let dragonDefeatTimer = 0; let dragonBob = 0; let dragonFire = []; let dragonTauntFx = []; const BOSS2_MAX_HITS = 5; let deleteBtnTimer = 0; let deleteBtnSpawnTimer = 0; let errorSigns = []; let errorSignCooldown = 0; 
          function getAreaName(i) { return getLangText("area" + i); } const GLITCH_TEXTS = ["thats not the reality", "404", "not found", "wake up", "null", "error"]; let currentBGIndex = 0; let previousBGIndex = 0; let transitionText = ""; let transitionTimer = 0; let transitionType = "normal"; let transitionDuration = 0; const NORMAL_TRANSITION_DURATION = 32; const GLITCH_TRANSITION_DURATION = 80; let flashColor = null; let flashTimer = 0; let levelReached = 1; let cheatBuffer = ""; let floatingTexts = []; 
          var jump_amount = -7; var max_fall_speed = +8; var acceleration = 0.6; const SUPER_JUMP_AMOUNT = -3.8; const SUPER_ACCELERATION = 0.18; const SUPER_MAX_FALL_SPEED = +3.5; const VOID_ACCEL = 0.35; const VOID_MAX_FALL = 6.0; const MAGNET_RADIUS = 300; const INITIAL_LIVES = 3; let currentLives = 0; const MAX_DESTROY_CHARGES = 5; let wallDestroyCharges = 0; const WALLS_TO_DESTROY = 2; let dashCharges = 0; let isDashActive = false; const DASH_DURATION = 68; let dashTimer = 0; let shrinkCharges = 0; let isShrunk = false; let shrinkTimer = 0; const SHRINK_DURATION = 160; let widenCharges = 0; let isWidenActive = false; let widenTimer = 0; const WIDEN_DURATION = 240; let heisenBlinkTimer = 0; let pipe_speed = -2; let currentSpawnInterval = 2500; let speedMultiplier = 1; let trailRedTimer = 0; let trailGoldTimer = 0;
          var time_game_last_running; var bottom_bar_offset = 0; var pipes = []; var pipe_spawn_timer = 0; let currentScore = 0; let lastPipeY = 250; let totalGamesPlayed = 0; try { totalGamesPlayed = parseInt(localStorage.getItem('flappyGamesPlayed')) || 0; } catch(e) {}
@@ -2173,8 +2411,80 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              }); 
              document.getElementById('achievementsModal').style.display = 'block'; 
          }
-         window.togglePause = function() { playClickSound(); if (game_mode === 'waiting_for_website') { let menu = document.getElementById('pause-menu'); if(menu.style.display === 'flex') { menu.style.display = 'none'; } else { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'none'; } return; } if (game_mode === 'online_match' || game_mode === 'pvp_shetos') { let menu = document.getElementById('pause-menu'); if(menu.style.display === 'flex') { menu.style.display = 'none'; } else { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'block'; } return; } isPaused = !isPaused; let menu = document.getElementById('pause-menu'); if (isPaused) { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'block'; if (game_mode === 'running' || game_mode === 'boss') { bgMusic.pause(); voidMusic.pause(); breathingSound.pause(); boss1Music.pause(); boss2Music.pause(); connectorMusic.pause(); } } else { menu.style.display = 'none'; if (!musicMuted && (game_mode === 'running' || game_mode === 'boss')) { if (game_mode === 'boss') { if (!isBoss2) boss1Music.play().catch(e=>console.log(e)); else boss2Music.play().catch(e=>console.log(e)); } else { if (currentBGIndex === 4) voidMusic.play(); else if(connectorMusic.currentTime > 0 && !connectorMusic.ended) connectorMusic.play(); else bgMusic.play(); } } } }
-         window.quitToMenu = function() { restoreActionBar(); document.getElementById('user-profile').style.display = 'block'; bgMusic.pause(); bgMusic.currentTime = 0; voidMusic.pause(); voidMusic.currentTime = 0; connectorMusic.pause(); connectorMusic.currentTime = 0; boss1Music.pause(); boss1Music.currentTime = 0; boss2Music.pause(); boss2Music.currentTime = 0; breathingSound.pause(); breathingSound.currentTime = 0; const loader = document.getElementById('temp-online-loader'); if(loader) loader.remove(); if (activeMatchID) { db.collection('matches').doc(activeMatchID).update({ status: 'ended' }).catch(e=>console.log(e)); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; } isPaused = false; document.getElementById('pause-menu').style.display = 'none'; document.getElementById('online-ui').style.display = 'none'; document.getElementById('settings-btn').style.display = 'block'; 
+         function hideResumeCountdown() {
+             const overlay = document.getElementById('resume-countdown');
+             if (overlay) overlay.classList.remove('show');
+         }
+         function updateResumeCountdownDisplay() {
+             const number = document.getElementById('resume-countdown-number');
+             if (!number || resumeCountdownEndAt <= 0) return;
+             const seconds = Math.ceil(Math.max(0, resumeCountdownEndAt - Date.now()) / 1000);
+             number.innerText = seconds > 0 ? seconds : getLangText('go');
+         }
+         function resumeGameplayAudio() {
+             if (musicMuted || (game_mode !== 'running' && game_mode !== 'boss')) return;
+             if (game_mode === 'boss') {
+                 if (!isBoss2) boss1Music.play().catch(e => console.log(e));
+                 else boss2Music.play().catch(e => console.log(e));
+             } else if (currentBGIndex === 4) {
+                 voidMusic.play().catch(e => console.log(e));
+             } else if (connectorMusic.currentTime > 0 && !connectorMusic.ended) {
+                 connectorMusic.play().catch(e => console.log(e));
+             } else {
+                 bgMusic.play().catch(e => console.log(e));
+             }
+         }
+         function finishResumeCountdown() {
+             resumeCountdownEndAt = 0;
+             hideResumeCountdown();
+             isPaused = false;
+             resumeGameplayAudio();
+         }
+         function beginResumeCountdown() {
+             resumeCountdownEndAt = Date.now() + RESUME_COUNTDOWN_MS;
+             const menu = document.getElementById('pause-menu');
+             if (menu) menu.style.display = 'none';
+             const overlay = document.getElementById('resume-countdown');
+             if (overlay) overlay.classList.add('show');
+             updateResumeCountdownDisplay();
+         }
+         window.togglePause = function() {
+             // A second click cannot skip the ready period or accidentally unpause the game.
+             if (resumeCountdownEndAt > 0) return;
+             playClickSound();
+             if (game_mode === 'waiting_for_website') {
+                 const menu = document.getElementById('pause-menu');
+                 if (menu.style.display === 'flex') menu.style.display = 'none';
+                 else { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'none'; }
+                 return;
+             }
+             if (game_mode === 'online_match' || game_mode === 'pvp_shetos') {
+                 const menu = document.getElementById('pause-menu');
+                 if (menu.style.display === 'flex') menu.style.display = 'none';
+                 else { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'block'; }
+                 return;
+             }
+             const menu = document.getElementById('pause-menu');
+             if (!isPaused) {
+                 isPaused = true;
+                 menu.style.display = 'flex';
+                 document.getElementById('resume-btn').style.display = 'block';
+                 hideResumeCountdown();
+                 if (game_mode === 'running' || game_mode === 'boss') {
+                     bgMusic.pause(); voidMusic.pause(); breathingSound.pause();
+                     boss1Music.pause(); boss2Music.pause(); connectorMusic.pause();
+                 }
+             } else if (game_mode === 'running' || game_mode === 'boss') {
+                 // Keep isPaused true during the three-second countdown so physics,
+                 // timers, attacks and collisions cannot advance early.
+                 beginResumeCountdown();
+             } else {
+                 isPaused = false;
+                 menu.style.display = 'none';
+                 resumeGameplayAudio();
+             }
+         }
+         window.quitToMenu = function() { restoreActionBar(); document.getElementById('user-profile').style.display = 'block'; bgMusic.pause(); bgMusic.currentTime = 0; voidMusic.pause(); voidMusic.currentTime = 0; connectorMusic.pause(); connectorMusic.currentTime = 0; boss1Music.pause(); boss1Music.currentTime = 0; boss2Music.pause(); boss2Music.currentTime = 0; breathingSound.pause(); breathingSound.currentTime = 0; const loader = document.getElementById('temp-online-loader'); if(loader) loader.remove(); if (activeMatchID) { db.collection('matches').doc(activeMatchID).update({ status: 'ended' }).catch(e=>console.log(e)); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; } resumeCountdownEndAt = 0; hideResumeCountdown(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; document.getElementById('online-ui').style.display = 'none'; document.getElementById('settings-btn').style.display = 'block'; 
              myCanvas.width = CANVAS_WIDTH; myCanvas.height = CANVAS_HEIGHT; let container = document.getElementById('game-container'); container.classList.remove('portrait-shake'); myCanvas.style.filter = "none";
              document.getElementById('landing-page').style.display = 'flex'; updateMenuStats(); game_mode = 'waiting_for_website'; reset_game(); document.getElementById('user-profile').style.display = 'block'; // boot lands on the main menu: login/logout visible document.getElementById('dash-btn').style.display = 'none'; document.getElementById('bomb-btn').style.display = 'none'; document.getElementById('shrink-btn').style.display = 'none'; document.getElementById('widen-btn').style.display = 'none'; document.getElementById('sherlock-btn').style.display = 'none'; document.getElementById('hrbreak-btn').style.display = 'none'; document.getElementById('arthur-btn').style.display = 'none'; document.getElementById('santa-btn').style.display = 'none'; document.getElementById('witch-btn').style.display = 'none'; document.getElementById('snowball-btn').style.display = 'none';
              currentBGIndex = 0; ctx.fillStyle = "#041820"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); if(!musicMuted) mainMenuMusic.play().catch(e => console.log(e)); window.updateSplashText(); applyScale(); setTimeout(() => { try { showQueuedInvite(); } catch(e) {} }, 400); }
@@ -2849,6 +3159,57 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              ctx.fillStyle = g; ctx.beginPath(); ctx.arc(gx, gy, gr, 0, Math.PI * 2); ctx.fill();
              ctx.restore();
          }
+         // Draw boss health in one place so the dragon's bar stays in sync with its
+         // real HP and remains readable on both a phone and a desktop canvas.
+         function drawBossHealthBar() {
+             if (bossIntroState < 5) return;
+             const isDragonBoss = isBoss3;
+             const maxHP = isDragonBoss ? DRAGON_MAX_HP : (isBoss2 ? BOSS2_MAX_HITS : 100);
+             const currentHP = isDragonBoss ? dragonHP : (isBoss2 ? BOSS2_MAX_HITS - boss2Hits : boss.stamina);
+             const hpPercent = Math.max(0, Math.min(1, currentHP / maxHP));
+             const barW = Math.min(440, Math.max(140, CANVAS_WIDTH * (isDragonBoss ? 0.48 : 0.30)));
+             const barH = isDragonBoss ? 18 : 12;
+             const barX = Math.round((CANVAS_WIDTH - barW) / 2);
+             const barY = isDragonBoss ? 42 : 20;
+             const label = isDragonBoss ? 'SUNSET DRAGON' : 'BOSS';
+
+             ctx.save();
+             ctx.globalAlpha = 1;
+             ctx.textAlign = 'center';
+             ctx.textBaseline = 'middle';
+             // Thick dark backing keeps the bar visible over every arena background.
+             ctx.fillStyle = 'rgba(0, 0, 0, 0.78)';
+             ctx.fillRect(barX - 6, barY - 6, barW + 12, barH + 12);
+             ctx.fillStyle = isDragonBoss ? '#3b0a0a' : '#160707';
+             ctx.fillRect(barX, barY, barW, barH);
+             if (hpPercent > 0) {
+                 const fill = ctx.createLinearGradient(barX, barY, barX + barW, barY);
+                 if (isDragonBoss && dragonPhase === 2) {
+                     fill.addColorStop(0, '#ff7b00'); fill.addColorStop(1, '#ff1e00');
+                 } else {
+                     fill.addColorStop(0, '#ff4d4d'); fill.addColorStop(1, '#c40000');
+                 }
+                 ctx.fillStyle = fill;
+                 ctx.fillRect(barX, barY, barW * hpPercent, barH);
+             }
+             ctx.strokeStyle = '#fff';
+             ctx.lineWidth = isDragonBoss ? 3 : 2;
+             ctx.strokeRect(barX - 2, barY - 2, barW + 4, barH + 4);
+
+             ctx.font = 'bold 11px "Press Start 2P", cursive';
+             ctx.textBaseline = 'bottom';
+             ctx.lineWidth = 4;
+             ctx.strokeStyle = 'rgba(0, 0, 0, 0.9)';
+             ctx.strokeText(label, CANVAS_WIDTH / 2, barY - 8);
+             ctx.fillStyle = '#fff';
+             ctx.fillText(label, CANVAS_WIDTH / 2, barY - 8);
+
+             ctx.font = 'bold 10px Arial, sans-serif';
+             ctx.textBaseline = 'middle';
+             ctx.fillStyle = '#fff';
+             ctx.fillText(`${Math.ceil(Math.max(0, currentHP))} / ${maxHP}`, CANVAS_WIDTH / 2, barY + barH / 2);
+             ctx.restore();
+         }
          function updateBoss() {
              if (boss.movingIn) { boss.x -= 2 * speedMultiplier; let bossStopX = Math.min(bird.x + 300, CANVAS_WIDTH - boss.width - 10); if (isBoss3) bossStopX = dragonPerchX(); if (boss.x <= bossStopX) { boss.x = bossStopX; boss.movingIn = false; } let img = (isBoss2) ? BOSS2_IMG : (isBoss3 ? DRAGON_IMG : BOSS_IMG); if (img.complete && img.naturalWidth !== 0) { drawBossGlow(); ctx.drawImage(img, boss.x, boss.y, boss.width, boss.height); } return; }
              if (bossIntroState < 5) { updateAbilityButtons(); let img = (isBoss2) ? BOSS2_IMG : (isBoss3 ? dragonIntroImg() : BOSS_IMG); if (img.complete && img.naturalWidth !== 0) { drawBossGlow(); ctx.drawImage(img, boss.x, boss.y, boss.width, boss.height); } else { ctx.fillStyle = "red"; ctx.fillRect(boss.x, boss.y, boss.width, boss.height); } if (bossIntroSkipLock > 0) bossIntroSkipLock--; if (bossIntroState === 0) { bossIntroState = 1; bossIntroTimer = isBoss3 ? dragonIntroTime(getLangText('b3_1')) : 120; bossIntroSkipLock = 120; } if (isBoss3) { const dIdx = bossIntroState - 1; const dLine = DRAGON_INTRO_LINES[dIdx]; if (dLine) { const dTxt = getLangText(dLine.text); drawDialogueBox(dTxt); bossIntroTimer--; if (bossIntroTimer <= 0) { if (dIdx >= DRAGON_INTRO_LINES.length - 1) { bossIntroState = 5; if(!musicMuted) { boss1Music.playbackRate = 1.12; boss1Music.play().catch(e=>console.log(e)); } } else { const nextTxt = getLangText(DRAGON_INTRO_LINES[dIdx + 1].text); bossIntroState = bossIntroState + 1; bossIntroTimer = dragonIntroTime(nextTxt); } } } } else if (!isBoss2) { if (bossIntroState === 1) { drawDialogueBox(getLangText('b1_1')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=2; bossIntroTimer=120;} } else if (bossIntroState === 2) { drawDialogueBox(getLangText('b1_2')); bossIntroTimer--; if(bossIntroTimer<=0){ bossIntroState=5; if(!musicMuted) { boss1Music.playbackRate = 1; boss1Music.play().catch(e=>console.log(e)); } } } } else { if (bossIntroState === 1) { drawDialogueBox(getLangText('b2_1')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=2; bossIntroTimer=120;} } else if (bossIntroState === 2) { drawDialogueBox(getLangText('b2_2')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=3; bossIntroTimer=120;} } else if (bossIntroState === 3) { drawDialogueBox(getLangText('b2_3')); bossIntroTimer--; if(bossIntroTimer<=0){ bossIntroState=5; if(!musicMuted) boss2Music.play().catch(e=>console.log(e)); } } } return; } restoreActionBar();
@@ -2858,7 +3219,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              
              for (let i = chocolates.length - 1; i >= 0; i--) { chocolates[i].Do_Frame_Things(); if (ImagesTouching(bird, chocolates[i]) && chocolates[i].visible && !chocolates[i].nice) { if (isSleighActive) { chocolates[i].visible = false; if(!sfxMuted){ explosionSound.currentTime=0; explosionSound.play().catch(e=>{}); } continue; } if (consumeBat()) { chocolates.splice(i, 1); continue; } if (isDashActive) { chocolates[i].visible = false; continue; } if (isShieldActive) { deactivateShield(); chocolates.splice(i, 1); } else if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} chocolates.splice(i, 1); trailRedTimer = 120; } else { if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} triggerPlayerDeath(); } } else if (chocolates[i].x < -50) chocolates.splice(i, 1); }
              for (let i = errorSigns.length - 1; i >= 0; i--) { errorSigns[i].Do_Frame_Things(); if (ImagesTouching(bird, errorSigns[i]) && errorSigns[i].visible && !errorSigns[i].nice) { if (isSleighActive) { errorSigns[i].visible = false; if(!sfxMuted){ explosionSound.currentTime=0; explosionSound.play().catch(e=>{}); } continue; } if (consumeBat()) { errorSigns.splice(i, 1); continue; } if (isDashActive) { errorSigns[i].visible = false; continue; } if (isShieldActive) { deactivateShield(); errorSigns.splice(i, 1); } else if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} errorSigns.splice(i, 1); trailRedTimer = 120; } else { if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} triggerPlayerDeath(); } } else if (errorSigns[i].x < -150) errorSigns.splice(i, 1); }
-             if (bossIntroState >= 5) { let barX = CANVAS_WIDTH/2 - 50; let barY = 20; let barW = 100; let barH = 10; let hpPercent = 1; if (isBoss2) { hpPercent = Math.max(0, (BOSS2_MAX_HITS - boss2Hits) / BOSS2_MAX_HITS); } else if (isBoss3) { hpPercent = Math.max(0, dragonHP / 100); } else { hpPercent = Math.max(0, boss.stamina / 100); } ctx.fillStyle = "black"; ctx.fillRect(barX, barY, barW, barH); ctx.fillStyle = "#FF0000"; ctx.fillRect(barX, barY, barW * hpPercent, barH); ctx.strokeStyle = "white"; ctx.lineWidth = 2; ctx.strokeRect(barX, barY, barW, barH); }
+             drawBossHealthBar();
          }
 let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let shetosBotVelocityY = 0; let activeFriendChatID = null; let friendChatListener = null;
 
@@ -3244,20 +3605,20 @@ let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let she
          }
 
          window.roundEnding = false;
-         function triggerPlayerDeath(msg) { 
+         function triggerPlayerDeath(msg, reason) { 
              if (game_mode === 'online_match' || game_mode === 'pvp_shetos') { 
                  if (!myHasCrashed) { 
                      myHasCrashed = true; 
                      window.roundEnding = false; 
                      if(!sfxMuted){deathSound.currentTime = 0; deathSound.play().catch(e=>console.warn(e));} 
                      if (game_mode === 'online_match') { 
-                         if (!activeMatchID) return triggerGameOver(msg); 
+                         if (!activeMatchID) return triggerGameOver(msg, reason); 
                          flushOnlineSync(true); 
                          try { checkRoundResult(); } catch (e) { console.log(e); } 
                      } 
                  } 
              } else { 
-                 triggerGameOver(msg); 
+                 triggerGameOver(msg, reason); 
              } 
          }
          function resetOnlineRound() { opponentLastSeen = Date.now(); pipes = []; bird.y = CANVAS_HEIGHT / 2; bird.velocity_y = 0; bird.velocity_x = 0; currentScore = 0; lastPipeY = 250; pipe_speed = -2; speedMultiplier = 1; pipe_spawn_timer = 0; onlineStartTimer = 3; isRoundStarting = true; myHasCrashed = false; enemyHasCrashed = false; window.roundEnding = false; enemyGhostY = CANVAS_HEIGHT / 2; enemyGhostRenderY = bird.y; enemyGhostRenderX = (game_mode === 'online_match' && snowballMode) ? snowballRivalX() : bird.x; onlineDirty = true; if(game_mode === 'pvp_shetos') { shetosBotY = CANVAS_HEIGHT/2; shetosBotScore = 0; shetosBotAlive = true; shetosBotVelocityY = 0; } if (snowballMode) resetSnowballState(); if (beatMode) resetBeatState(); if(activeMatchID && game_mode === 'online_match') { flushOnlineSync(true); } updateOnlineUI(); flashTimer = 0; }
@@ -3296,7 +3657,7 @@ window.playClickSound = function() {
              
              bird.x = CANVAS_WIDTH / 3; bird.y = CANVAS_HEIGHT / 2; bird.angle = 0; bird.velocity_y = 0; pipes = []; stars = []; shields = []; potions = []; slowPotions = []; errorSigns = []; trailHistory = [];  currentScore = 0; pipe_spawn_timer = 0; floatingTexts = []; myCanvas.style.filter = "none";
              
-             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; bossIntroState = 0; bossIntroTimer = 0; bossIntroSkipLock = 0; bossIntroSkipStamp = 0; isBoss2 = false; boss2Hits = 0; isBoss3 = false; dragonDefeated = false; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 0; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; boss.width = 150; boss.height = 150; boss.speedY = 2; boss.hitImg = BOSS_IMG; boss1Music.playbackRate = 1; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; previousBGIndex = 0; transitionType = "normal"; transitionDuration = 0; transitionText = ""; transitionTimer = 0; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; restoreActionBar(); 
+             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; bossIntroState = 0; bossIntroTimer = 0; bossIntroSkipLock = 0; bossIntroSkipStamp = 0; isBoss2 = false; boss2Hits = 0; isBoss3 = false; dragonDefeated = false; dragonHP = DRAGON_MAX_HP; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 0; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; boss.width = 150; boss.height = 150; boss.speedY = 2; boss.hitImg = BOSS_IMG; boss1Music.playbackRate = 1; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; previousBGIndex = 0; transitionType = "normal"; transitionDuration = 0; transitionText = ""; transitionTimer = 0; updateDifficulty(); resumeCountdownEndAt = 0; hideResumeCountdown(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; restoreActionBar(); 
 
              isSherlockActive = false; sherlockCooldown = 0; sherlockTimer = 0;
              isHrBreakActive = false; hrBreakCooldown = 0; hrBreakTimer = 0;
@@ -3329,7 +3690,14 @@ window.playClickSound = function() {
                  if (game_mode === 'waiting_for_website') { document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none'); return; }
                  if (game_mode === 'over_black_screen') { ctx.fillStyle = "black"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); ctx.font = '16px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(blackScreenText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2); blackScreenTimer--; if(blackScreenTimer <= 0) { quitToMenu(); } return; }
                  
-                 if (isPaused && game_mode !== 'online_match' && game_mode !== 'pvp_shetos') return; if (!ctx) return;
+                 if (isPaused && game_mode !== 'online_match' && game_mode !== 'pvp_shetos') {
+                     if (resumeCountdownEndAt > 0) {
+                         updateResumeCountdownDisplay();
+                         if (Date.now() >= resumeCountdownEndAt) finishResumeCountdown();
+                     }
+                     return;
+                 }
+                 if (!ctx) return;
                  
                  if ((game_mode === 'online_match' || game_mode === 'pvp_shetos') && isRoundStarting) { if (backgroundImages[currentBGIndex] && backgroundImages[currentBGIndex].complete) { ctx.drawImage(backgroundImages[currentBGIndex], 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); } else { ctx.fillStyle = "#222"; ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT); } if (beatMode && game_mode === 'online_match') { drawBeatBattle(-1e9); ctx.font = 'bold 80px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.lineWidth = 4; ctx.strokeStyle = "black"; let beatCount = Math.ceil(onlineStartTimer); if (beatCount <= 0) beatCount = getLangText("go"); ctx.strokeText(beatCount, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); ctx.fillText(beatCount, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); onlineStartTimer -= (1/FPS); if (onlineStartTimer <= -0.5) { isRoundStarting = false; roundStartTime = Date.now(); } return; } bird.Do_Frame_Things(); for(let i=0; i<pipes.length; i++) { let p = pipes[i]; p.Do_Frame_Things(); } if (game_mode === 'pvp_shetos') { ctx.save(); ctx.globalAlpha = 0.7; ctx.drawImage(PLAYER_IMG, bird.x, shetosBotY, 40, 40); ctx.restore(); } else if (activeMatchID && !enemyHasCrashed) { enemyGhostRenderY += (enemyGhostY - enemyGhostRenderY) * 0.25; enemyGhostRenderX += ((snowballMode ? snowballRivalX() : bird.x) - enemyGhostRenderX) * 0.15; ctx.save(); ctx.globalAlpha = 0.4; let ghostW = bird.MyImg.width || 50; let ghostH = bird.MyImg.height || 50; ghostW = birdHitW(); ghostH = birdHitH(); ctx.drawImage(bird.MyImg, enemyGhostRenderX, enemyGhostRenderY, ghostW, ghostH); ctx.restore(); } ctx.font = 'bold 80px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.lineWidth = 4; ctx.strokeStyle="black"; let displayText = Math.ceil(onlineStartTimer); if(displayText <= 0) displayText = getLangText("go"); ctx.strokeText(displayText, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); ctx.fillText(displayText, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); onlineStartTimer -= (1/FPS); if (onlineStartTimer <= -0.5) { isRoundStarting = false; roundStartTime = Date.now(); } { onlineSyncAccum += (1000 / FPS); if (onlineSyncAccum >= 200) { onlineSyncAccum = 0; flushOnlineSync(onlineDirty || (Date.now() - lastOnlineFlush) >= 1500); } } return; }
                  
@@ -3453,7 +3821,7 @@ window.playClickSound = function() {
                      updateBoss(); break;
                      case 'running':
                          time_game_last_running = new Date(); bottom_bar_offset += pipe_speed * speedMultiplier;
-                        if (!isEndless && currentScore >= 25 && !dragonDefeated) { game_mode = 'boss'; isBoss3 = true; pipes = []; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 140; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; bossIntroState = 0; boss.width = 250; boss.height = 132; boss.speedY = 1.2; boss.hitImg = DRAGON_IMG; boss.y = Math.max(50, CANVAS_HEIGHT / 2 - boss.height / 2 - 20); bgMusic.pause(); voidMusic.pause(); }
+                        if (!isEndless && currentScore >= 25 && !dragonDefeated) { game_mode = 'boss'; isBoss3 = true; pipes = []; dragonHP = DRAGON_MAX_HP; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 140; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; bossIntroState = 0; boss.width = 250; boss.height = 132; boss.speedY = 1.2; boss.hitImg = DRAGON_IMG; boss.y = Math.max(50, CANVAS_HEIGHT / 2 - boss.height / 2 - 20); bgMusic.pause(); voidMusic.pause(); }
                         else if (!isEndless && currentScore >= 50 && !boss1Defeated && currentScore < 100) { game_mode = 'boss'; pipes = []; bgMusic.pause(); voidMusic.pause(); boss.x = CANVAS_WIDTH + 500; boss.y = 120; boss.movingIn = true; boss.stamina = 100; boss.width = 150; boss.height = 150; boss.speedY = 2; boss.hitImg = BOSS_IMG; bossIntroState = 0; } else if (!isEndless && currentScore >= 100) { game_mode = 'boss'; pipes = []; isBoss2 = true; boss2Hits = 0; boss.hitImg = BOSS2_IMG; bgMusic.pause(); voidMusic.pause(); } 
                          for (var i = 0; i < pipes.length; i++) { pipes[i].velocity_x = pipe_speed; pipes[i].Do_Frame_Things(); } pipe_spawn_timer += (1000 / FPS) * speedMultiplier; let lastPipeX = pipes.length > 0 ? pipes[pipes.length - 1].x : -999;
                          if (pipe_spawn_timer > currentSpawnInterval && (CANVAS_WIDTH - lastPipeX > 220)) { let gap_size = isWidenActive ? 280 : 140; let safe_area = CANVAS_HEIGHT - gap_size - 50; if(safe_area < 50) safe_area = 50; let top_of_gap = Math.floor(Math.random() * (safe_area - 50)) + 50; add_pipe(CANVAS_WIDTH, top_of_gap, gap_size); pipe_spawn_timer = 0; } 
@@ -3696,12 +4064,18 @@ window.playClickSound = function() {
                          if(pipes[i].parentPipe) pipes[i].parentPipe.visible = false;
                          trailRedTimer = 120;
                      } else {
-                         triggerPlayerDeath(getLangText('wall'));
+                         triggerPlayerDeath(getLangText('wall'), 'pipe');
+                         if (game_mode === 'over') return;
                      }
                  }
              }
-             if (bird.y > CANVAS_HEIGHT || bird.y < -50) {
-                 triggerPlayerDeath(getLangText('fall'));
+             // A pipe collision is handled above; never replace that reason with a fall message
+             // if the same frame also carries the bird outside the playfield.
+             if (game_mode === 'over') return;
+             if (bird.y > CANVAS_HEIGHT) {
+                 triggerPlayerDeath(getLangText('highPlace'), 'fall');
+             } else if (bird.y < -50) {
+                 triggerPlayerDeath(getLangText('fall'), 'ceiling');
              }
             if (game_mode === 'boss' && !isBoss2 && ImagesTouching(bird, boss)) {
                 if(isDashActive || isHrBreakActive || isSleighActive) return;
@@ -3827,12 +4201,17 @@ window.playClickSound = function() {
              return STORY_MORSE[i];
          }
 
-         function triggerGameOver(msg) {
+         function triggerGameOver(msg, reason) {
              // Boss 1 / Boss 2 deaths always reveal a story part, the void reveals one half the time.
              let diedToBoss = (game_mode === 'boss' && !isBoss3);
              let diedInVoid = (game_mode === 'running' && currentBGIndex === 4);
+             let diedFromFall = (reason === 'fall');
              game_mode = 'over';
-             if (msg && (msg.includes("VICTORY") || msg.includes("DEFEAT"))) {
+             // This is a specific out-of-bounds message, not a generic death-screen joke.
+             // Keep it tied to the fall path so a pipe can never select it.
+             if (diedFromFall) {
+                 deathMessage = msg || getLangText('highPlace');
+             } else if (msg && (msg.includes("VICTORY") || msg.includes("DEFEAT"))) {
                  deathMessage = msg;
              } else if (diedToBoss || (diedInVoid && Math.random() < 0.5)) {
                  deathMessage = pickStoryPart();
@@ -3924,7 +4303,12 @@ window.playClickSound = function() {
                 xmasLast = 0;
                 return;
             }
-            if (land.style.display === 'none') { xmasLast = 0; return; }   // menu closed: sleep
+            if (land.style.display === 'none') {   // menu closed: clear the fixed overlay, then sleep
+                const cxHidden = cv.getContext('2d');
+                if (cxHidden) cxHidden.clearRect(0, 0, cv.width, cv.height);
+                xmasLast = 0;
+                return;
+            }
              if (!xmasFlakes.length) initXmasFlakes();
              const w = window.innerWidth, h = window.innerHeight;
              if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
