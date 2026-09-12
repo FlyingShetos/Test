@@ -107,6 +107,11 @@
            unreachable on short phone screens - it sat below the visible area). */
         #pause-menu::before { content: ""; margin-top: auto; }
         #pause-menu::after { content: ""; margin-bottom: auto; }
+        /* Keep the game frozen while a player gets ready after pressing RESUME. */
+        #resume-countdown { display: none; position: absolute; inset: 0; z-index: 175; flex-direction: column; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.38); pointer-events: none; text-align: center; }
+        #resume-countdown.show { display: flex; }
+        #resume-countdown-label { color: #f1c40f; font-family: 'Press Start 2P', cursive; font-size: clamp(12px, 2.4vw, 20px); line-height: 1.5; text-shadow: 3px 3px #000; }
+        #resume-countdown-number { color: #fff; font-family: 'Press Start 2P', cursive; font-size: clamp(54px, 12vw, 104px); line-height: 1; min-height: 1em; margin-top: 12px; text-shadow: 5px 5px #000, 0 0 18px rgba(241, 196, 15, 0.75); }
         #pause-menu h1 { font-family: 'Press Start 2P', cursive; color: white; margin-bottom: 30px; }
         .pause-options { display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px; width: 250px; }
         .toggle-row { display: flex; justify-content: space-between; align-items: center; color: white; font-family: 'Press Start 2P', cursive; font-size: 12px; }
@@ -404,6 +409,11 @@
              </div>
              <button id="resume-btn" data-i18n="resume" class="enter-btn btn-yellow btn-full-width" onclick="togglePause()">RESUME</button>
              <button class="enter-btn secondary-btn btn-full-width" style="background-color: #c0392b; margin-top:10px;" onclick="quitToMenu()" data-i18n="quitToMenu">QUIT TO MENU</button>
+         </div>
+
+         <div id="resume-countdown" aria-live="assertive" aria-atomic="true">
+             <div id="resume-countdown-label" data-i18n="getReady">GET READY</div>
+             <div id="resume-countdown-number">3</div>
          </div>
 
          <div id="shop-modal" class="modal" style="background: #041820; border: 4px solid #f1c40f;">
@@ -838,7 +848,7 @@
          const TRANSLATIONS = {
     en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", understand: "I UNDERSTAND", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS",
     comingSoon: "COMING SOON", comingSoonDesc: "Available in a future update.", storyDesc: "The classic adventure.<br>Secrets & Bosses.", endlessDesc: "Infinite run.<br>Speed increases forever.<br><b style='color:white;'>Leaderboard Enabled</b>", pvpDesc: "Score Battle!<br>Online.", trophiesLabel: "Trophies:", back: "BACK", selectOpponent: "Select Opponent", online: "ONLINE", onlineDesc: "Matchmake with<br>Real Humans.", snowMode: "SNOWBALL MODE", snowModeDesc: "Dodge & throw online!<br>First to 5 hits wins the round.", snowBtn: "SNOW", snowTarget: "First to 5 hits wins the round!", santaPower: "Santa's Gift (Sleigh / Nice Filter)", witchPower: "Witch's Magic (Broom / Bats)", beatMode: "BEAT BATTLE", beatModeDesc: "Rhythm duel online!<br>Tap the lanes, push the bar!", beatTarget: "Push the tug-of-war bar to your side!", round: "ROUND", you: "YOU", opponent: "OPPONENT", target: "Target: Don't Crash!",
-    music: "MUSIC", musicVol: "MUSIC VOL", sfx: "SFX", sfxVol: "SFX VOL", woof: "WOOF", xmasMode: "CHRISTMAS", language: "LANGUAGE", resume: "RESUME", quitToMenu: "QUIT TO MENU",
+    music: "MUSIC", musicVol: "MUSIC VOL", sfx: "SFX", sfxVol: "SFX VOL", woof: "WOOF", xmasMode: "CHRISTMAS", language: "LANGUAGE", resume: "RESUME", getReady: "GET READY", quitToMenu: "QUIT TO MENU",
     shopTitle: "Shop", dryFood: "Dry Food:", theLab: "THE LAB", skins: "SKINS", trails: "TRAILS",
     sellItem: "SELL ITEM", areYouSure: "Are you sure?", yes: "YES", no: "NO",
     friend: "Friend", typeMessage: "Type a message...", acceptChallenge: "Do you accept the challenge?", accept: "ACCEPT", decline: "DECLINE",
@@ -854,7 +864,7 @@
     b1_1: "oh, here you are", b1_2: "I was waiting for you", b2_1: "you are getting out of control", b2_2: "you werent supposed to come HERE", b2_3: "Its too late to go back now....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "So, we will not talk about how a dog is flying?", b3_2: "Why am i even asking that's not even my thoughts, It's the game developer who's typing all this nonsense.", b3_3: "I guess he thought it would be funny to make me question why a dog is flying.", b3_4: "Let's start the fight i guess.", boss3Defeated: "DRAGON DEFEATED!", sys: "System Override...", bypass: "Bypassing...", admin: "Administrator Granted.", tbc: "To Be Continued...", cat: "THAT WAS A CAT", kid: "you got clipped by a kid lmao", err1: "Connection Error", fall: "Fell down!", wall: "Hit a wall!", eaten: "EATEN BY SHETOS!" },
     de: { play: "SPIELEN", shop: "GESCHÄFT", achieve: "ERFOLGE", friends: "FREUNDE", lead: "BESTEN", ai: "KI CHAT", redeem: "EINLÖSEN", high: "Höchstpunktzahl", food: "Trockenfutter", trophies: "Trophäen", games: "Spiele", welcome: "WILLKOMMEN BEI<br>FLYING SHETOS", understand: "ICH VERSTEHE", chooseMode: "Modus wählen", story: "GESCHICHTSMODUS", endless: "ENDLOSMODUS", pvp: "PVP-MODUS", settings: "EINSTELLUNGEN",
     comingSoon: "BALD VERFÜGBAR", comingSoonDesc: "In einem zukünftigen Update verfügbar.", storyDesc: "Das klassische Abenteuer.<br>Geheimnisse & Bosse.", endlessDesc: "Endloser Lauf.<br>Die Geschwindigkeit steigt für immer.<br><b style='color:white;'>Bestenliste aktiviert</b>", pvpDesc: "Punkte-Battle!<br>Online.", trophiesLabel: "Trophäen:", back: "ZURÜCK", selectOpponent: "Gegner wählen", online: "ONLINE", onlineDesc: "Spiele gegen<br>echte Menschen.", snowMode: "SCHNEEBALL-MODUS", snowModeDesc: "Online ausweichen & werfen!<br>Erste zu 5 Treffern gewinnt.", snowBtn: "SCHNEE", snowTarget: "Erste zu 5 Treffern gewinnt die Runde!", santaPower: "Santas Geschenk (Schlitten / Filter)", witchPower: "Hexen-Magie (Besen / Fledermäuse)", beatMode: "BEAT-DUELL", beatModeDesc: "Rhythmus-Duell online!<br>Tippe die Lanes, schieb den Balken!", beatTarget: "Schieb den Balken auf deine Seite!", round: "RUNDE", you: "DU", opponent: "GEGNER", target: "Ziel: Nicht abstürzen!",
-    music: "MUSIK", musicVol: "MUSIK LAUTST.", sfx: "SFX", sfxVol: "SFX LAUTST.", woof: "WUFF", xmasMode: "WEIHNACHTEN", language: "SPRACHE", resume: "FORTSETZEN", quitToMenu: "ZUM MENÜ",
+    music: "MUSIK", musicVol: "MUSIK LAUTST.", sfx: "SFX", sfxVol: "SFX LAUTST.", woof: "WUFF", xmasMode: "WEIHNACHTEN", language: "SPRACHE", resume: "FORTSETZEN", getReady: "BEREIT MACHEN", quitToMenu: "ZUM MENÜ",
     shopTitle: "Geschäft", dryFood: "Trockenfutter:", theLab: "DAS LABOR", skins: "SKINS", trails: "SPUREN",
     sellItem: "ARTIKEL VERKAUFEN", areYouSure: "Bist du sicher?", yes: "JA", no: "NEIN",
     friend: "Freund", typeMessage: "Nachricht eingeben...", acceptChallenge: "Nimmst du die Herausforderung an?", accept: "ANNEHMEN", decline: "ABLEHNEN",
@@ -868,7 +878,7 @@
     b1_1: "oh, da bist du ja", b1_2: "ich habe auf dich gewartet", b2_1: "du gerätst außer kontrolle", b2_2: "du solltest nicht HIERHER kommen", b2_3: "es ist zu spät um umzukehren....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "Also, wir reden nicht darueber, wie ein Hund fliegt?", b3_2: "Warum frage ich ueberhaupt? Das sind nicht mal meine Gedanken, der Spieleentwickler tippt hier den ganzen Unsinn.", b3_3: "Ich glaube, er dachte, es waere lustig, mich fragen zu lassen, warum ein Hund fliegt.", b3_4: "Dann fangen wir wohl besser an zu kaempfen.", boss3Defeated: "DRACHE BESIEGT!", sys: "Systemüberschreibung...", bypass: "Umgehung...", admin: "Administrator gewährt.", tbc: "Fortsetzung folgt...", cat: "DAS WAR EINE KATZE", kid: "du wurdest von einem kind erwischt lmao", err1: "Verbindungsfehler", fall: "Heruntergefallen!", wall: "Wand getroffen!", eaten: "VON SHETOS GEFRESSEN!" },
     ar: { play: "العب", shop: "المتجر", achieve: "إنجازات", friends: "أصدقاء", lead: "المتصدرين", ai: "محادثة ذكاء", redeem: "استرداد", high: "أعلى نتيجة", food: "طعام جاف", trophies: "الجوائز", games: "الألعاب", welcome: "مرحباً بكم في<br>فلاينج شيتوس", understand: "أنا أفهم", chooseMode: "اختر الوضع", story: "وضع القصة", endless: "وضع لا نهاية له", pvp: "وضع لاعب ضد لاعب", settings: "الإعدادات",
     comingSoon: "قريباً", comingSoonDesc: "متاح في تحديث مستقبلي.", storyDesc: "المغامرة الكلاسيكية.<br>أسرار وزعماء.", endlessDesc: "جري لا نهائي.<br>السرعة تزداد إلى الأبد.<br><b style='color:white;'>لوحة المتصدرين مفعّلة</b>", pvpDesc: "معركة النقاط!<br>أونلاين.", trophiesLabel: "الجوائز:", back: "رجوع", selectOpponent: "اختر الخصم", online: "أونلاين", onlineDesc: "طابق مع<br>بشر حقيقيين.", snowMode: "وضع كرة الثلج", snowModeDesc: "راوغ وارمِ أونلاين!<br>أول من يسجل 5 إصابات يفوز.", snowBtn: "ثلج", snowTarget: "أول من يسجل 5 إصابات يفوز بالجولة!", santaPower: "هدية سانتا (المزلجة / الفلتر)", witchPower: "سحر الساحرة (المكنسة / الخفافيش)", beatMode: "معركة الإيقاع", beatModeDesc: "مبارزة إيقاع أونلاين!<br>اضغط المسارات وادفع الشريط!", beatTarget: "ادفع الشريط إلى جهتك!", round: "الجولة", you: "أنت", opponent: "الخصم", target: "الهدف: لا تصطدم!",
-    music: "الموسيقى", musicVol: "حجم الموسيقى", sfx: "المؤثرات", sfxVol: "حجم المؤثرات", woof: "ووف", xmasMode: "عيد الميلاد", language: "اللغة", resume: "استئناف", quitToMenu: "العودة إلى القائمة",
+    music: "الموسيقى", musicVol: "حجم الموسيقى", sfx: "المؤثرات", sfxVol: "حجم المؤثرات", woof: "ووف", xmasMode: "عيد الميلاد", language: "اللغة", resume: "استئناف", getReady: "استعد", quitToMenu: "العودة إلى القائمة",
     shopTitle: "المتجر", dryFood: "الطعام الجاف:", theLab: "المختبر", skins: "الأشكال", trails: "الأثر",
     sellItem: "بيع العنصر", areYouSure: "هل أنت متأكد؟", yes: "نعم", no: "لا",
     friend: "صديق", typeMessage: "اكتب رسالة...", acceptChallenge: "هل تقبل التحدي؟", accept: "قبول", decline: "رفض",
@@ -882,7 +892,7 @@
     b1_1: "أوه، ها أنت ذا", b1_2: "كنت في انتظارك", b2_1: "أنت تخرج عن السيطرة", b2_2: "لم يكن من المفترض أن تأتي إلى هنا", b2_3: "لقد فات الأوان للتراجع....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "طيب، مش هنتكلم إزاي كلب بيطير؟", b3_2: "ليه بسأل أصلًا؟ دي مش أفكاري، ده مطور اللعبة اللي بيكتب كل الهبل ده.", b3_3: "أكيد افتكر إنه مضحك يخليني أسأل ليه كلب بيطير.", b3_4: "خلينا نبدأ القتال يعني.", boss3Defeated: "تم هزيمة التنين!", sys: "تجاوز النظام...", bypass: "جاري التجاوز...", admin: "تم منح حق المسؤول.", tbc: "يتبع...", cat: "تلك كانت قطة", kid: "لقد صدمك طفل لول", err1: "خطأ في الاتصال", fall: "سقطت!", wall: "اصطدمت بجدار!", eaten: "أكلك شيتوس!" },
     it: { play: "GIOCA", shop: "NEGOZIO", achieve: "RISULTATI", friends: "AMICI", lead: "CLASSIFICA", ai: "CHAT AI", redeem: "RISCATTA", high: "Punteggio Max", food: "Cibo Secco", trophies: "Trofei", games: "Giochi", welcome: "BENVENUTO A<br>FLYING SHETOS", understand: "CAPISCO", chooseMode: "Scegli Modalità", story: "MODALITÀ STORIA", endless: "MODALITÀ INFINITA", pvp: "MODALITÀ PVP", settings: "IMPOSTAZIONI",
     comingSoon: "IN ARRIVO", comingSoonDesc: "Disponibile in un futuro aggiornamento.", storyDesc: "L'avventura classica.<br>Segreti & Boss.", endlessDesc: "Corsa infinita.<br>La velocità aumenta per sempre.<br><b style='color:white;'>Classifica attivata</b>", pvpDesc: "Battaglia di punteggi!<br>Online.", trophiesLabel: "Trofei:", back: "INDIETRO", selectOpponent: "Seleziona Avversario", online: "ONLINE", onlineDesc: "Abbinati con<br>persone reali.", snowMode: "MODALITÀ PALLE DI NEVE", snowModeDesc: "Schiva e lancia online!<br>Chi colpisce 5 volte vince.", snowBtn: "NEVE", snowTarget: "Chi colpisce 5 volte vince il round!", santaPower: "Regalo di Natale (Slitta / Filtro)", witchPower: "Magia della Strega (Scopa / Pipistrelli)", beatMode: "SFIDA A RITMO", beatModeDesc: "Duello ritmico online!<br>Tocca le corsie, spingi la barra!", beatTarget: "Spingi la barra dalla tua parte!", round: "ROUND", you: "TU", opponent: "AVVERSARIO", target: "Obiettivo: Non schiantarti!",
-    music: "MUSICA", musicVol: "VOLUME MUSICA", sfx: "SFX", sfxVol: "VOLUME SFX", woof: "WOOF", xmasMode: "NATALE", language: "LINGUA", resume: "RIPRENDI", quitToMenu: "ESCI AL MENU",
+    music: "MUSICA", musicVol: "VOLUME MUSICA", sfx: "SFX", sfxVol: "VOLUME SFX", woof: "WOOF", xmasMode: "NATALE", language: "LINGUA", resume: "RIPRENDI", getReady: "PREPARATI", quitToMenu: "ESCI AL MENU",
     shopTitle: "Negozio", dryFood: "Cibo Secco:", theLab: "IL LABORATORIO", skins: "SKIN", trails: "SCIE",
     sellItem: "VENDI OGGETTO", areYouSure: "Sei sicuro?", yes: "SÌ", no: "NO",
     friend: "Amico", typeMessage: "Scrivi un messaggio...", acceptChallenge: "Accetti la sfida?", accept: "ACCETTA", decline: "RIFIUTA",
@@ -1795,7 +1805,7 @@ window.triggerPvpTrashTalk = async function() {
          let CANVAS_WIDTH = 640; 
          let CANVAS_HEIGHT = 480;
 
-         var game_mode = 'waiting_for_website'; var myCanvas, ctx; var gameInterval = null; var FPS = 40; let isPaused = false; let voidUIErrorTimer = 0; 
+         var game_mode = 'waiting_for_website'; var myCanvas, ctx; var gameInterval = null; var FPS = 40; let isPaused = false; let resumeCountdownEndAt = 0; const RESUME_COUNTDOWN_MS = 3000; let voidUIErrorTimer = 0; 
          const BOSS_IMG = new Image(); BOSS_IMG.src = 'boss.png'; const BOSS2_IMG = new Image(); BOSS2_IMG.src = 'boss_2.png'; const PLAYER_IMG = new Image(); PLAYER_IMG.src = 'player.png'; const CHOCO_IMG = new Image(); CHOCO_IMG.src = 'chocolate.png'; const SHIELD_IMG = new Image(); SHIELD_IMG.src = 'shield.png'; const SHIELDED_BIRD_IMG = new Image(); SHIELDED_BIRD_IMG.src = 'player_shielded.png'; const POTION_IMG = new Image(); POTION_IMG.src = 'potion.png'; const SLOW_POTION_IMG = new Image(); SLOW_POTION_IMG.src = 'slow_potion.png'; const STAR_IMG = new Image(); STAR_IMG.src = 'dryfood.png'; const DOORDASH_IMG = new Image(); DOORDASH_IMG.src = 'doordash_cheetos.png'; var pipe_piece = new Image(); pipe_piece.src = 'wall.png'; const DRAGON_IMG = new Image(); DRAGON_IMG.src = 'dragon.png'; const DRAGON_MAD_IMG = new Image(); DRAGON_MAD_IMG.src = 'dragon_mad.png'; const DRAGON_DIZZY_IMG = new Image(); DRAGON_DIZZY_IMG.src = 'dragon_dizzy.png'; const DRAGON_SHOOT_IMG = new Image(); DRAGON_SHOOT_IMG.src = 'dragon_shoot.png'; const DRAGON_AWKWARD_IMG = new Image(); DRAGON_AWKWARD_IMG.src = 'dragon_awkward.png'; const DRAGON_ANNOYED_IMG = new Image(); DRAGON_ANNOYED_IMG.src = 'dragon_annoyed.png'; const DRAGON_DEADPAN_IMG = new Image(); DRAGON_DEADPAN_IMG.src = 'dragon_deadpan.png'; const DRAGON_SMUG_IMG = new Image(); DRAGON_SMUG_IMG.src = 'dragon_smug.png';
          const backgroundImages = []; for (let i = 1; i <= 5; i++) { let img = new Image(); img.src = `bg${i}.png`; backgroundImages.push(img); }
 
@@ -1931,7 +1941,7 @@ window.triggerPvpTrashTalk = async function() {
          }
          window.addEventListener('click', () => { if(mainMenuMusic.paused && !musicMuted && game_mode === 'waiting_for_website') { mainMenuMusic.play().catch(e => console.log("Music auto-started")); } }, {once: true});
 
-         let boss = { x: 9999, y: 100, width: 150, height: 150, stamina: 100, speedY: 2, movingIn: true, hitImg: BOSS_IMG }; let chocolates = []; let victoryTimer = 0; let deathMessage = "Game Over"; let bossIntroState = 0; let bossIntroTimer = 0; let bossIntroSkipLock = 0; let bossIntroSkipStamp = 0; let boss1Defeated = false; let isBoss2 = false; let isBoss3 = false; let dragonDefeated = false; let dragonHP = 100; let dragonPhase = 1; let dragonAtkState = 'idle'; let dragonAtkTimer = 0; let dragonCycle = 0; let dragonDashesDone = 0; let dragonDashVec = null; let dragonBodyCd = 0; let dragonDashSpeed = 13.5; let dragonMouthTimer = 0; let dragonDizzyDone = false; let dragonDizzyTimer = 0; let dragonDefeatTimer = 0; let dragonBob = 0; let dragonFire = []; let dragonTauntFx = []; const BOSS2_MAX_HITS = 5; let deleteBtnTimer = 0; let deleteBtnSpawnTimer = 0; let errorSigns = []; let errorSignCooldown = 0; 
+         let boss = { x: 9999, y: 100, width: 150, height: 150, stamina: 100, speedY: 2, movingIn: true, hitImg: BOSS_IMG }; let chocolates = []; let victoryTimer = 0; let deathMessage = "Game Over"; let bossIntroState = 0; let bossIntroTimer = 0; let bossIntroSkipLock = 0; let bossIntroSkipStamp = 0; let boss1Defeated = false; let isBoss2 = false; let isBoss3 = false; const DRAGON_MAX_HP = 100; let dragonDefeated = false; let dragonHP = DRAGON_MAX_HP; let dragonPhase = 1; let dragonAtkState = 'idle'; let dragonAtkTimer = 0; let dragonCycle = 0; let dragonDashesDone = 0; let dragonDashVec = null; let dragonBodyCd = 0; let dragonDashSpeed = 13.5; let dragonMouthTimer = 0; let dragonDizzyDone = false; let dragonDizzyTimer = 0; let dragonDefeatTimer = 0; let dragonBob = 0; let dragonFire = []; let dragonTauntFx = []; const BOSS2_MAX_HITS = 5; let deleteBtnTimer = 0; let deleteBtnSpawnTimer = 0; let errorSigns = []; let errorSignCooldown = 0; 
          function getAreaName(i) { return getLangText("area" + i); } const GLITCH_TEXTS = ["thats not the reality", "404", "not found", "wake up", "null", "error"]; let currentBGIndex = 0; let previousBGIndex = 0; let transitionText = ""; let transitionTimer = 0; let transitionType = "normal"; let transitionDuration = 0; const NORMAL_TRANSITION_DURATION = 32; const GLITCH_TRANSITION_DURATION = 80; let flashColor = null; let flashTimer = 0; let levelReached = 1; let cheatBuffer = ""; let floatingTexts = []; 
          var jump_amount = -7; var max_fall_speed = +8; var acceleration = 0.6; const SUPER_JUMP_AMOUNT = -3.8; const SUPER_ACCELERATION = 0.18; const SUPER_MAX_FALL_SPEED = +3.5; const VOID_ACCEL = 0.35; const VOID_MAX_FALL = 6.0; const MAGNET_RADIUS = 300; const INITIAL_LIVES = 3; let currentLives = 0; const MAX_DESTROY_CHARGES = 5; let wallDestroyCharges = 0; const WALLS_TO_DESTROY = 2; let dashCharges = 0; let isDashActive = false; const DASH_DURATION = 68; let dashTimer = 0; let shrinkCharges = 0; let isShrunk = false; let shrinkTimer = 0; const SHRINK_DURATION = 160; let widenCharges = 0; let isWidenActive = false; let widenTimer = 0; const WIDEN_DURATION = 240; let heisenBlinkTimer = 0; let pipe_speed = -2; let currentSpawnInterval = 2500; let speedMultiplier = 1; let trailRedTimer = 0; let trailGoldTimer = 0;
          var time_game_last_running; var bottom_bar_offset = 0; var pipes = []; var pipe_spawn_timer = 0; let currentScore = 0; let lastPipeY = 250; let totalGamesPlayed = 0; try { totalGamesPlayed = parseInt(localStorage.getItem('flappyGamesPlayed')) || 0; } catch(e) {}
@@ -2173,8 +2183,80 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              }); 
              document.getElementById('achievementsModal').style.display = 'block'; 
          }
-         window.togglePause = function() { playClickSound(); if (game_mode === 'waiting_for_website') { let menu = document.getElementById('pause-menu'); if(menu.style.display === 'flex') { menu.style.display = 'none'; } else { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'none'; } return; } if (game_mode === 'online_match' || game_mode === 'pvp_shetos') { let menu = document.getElementById('pause-menu'); if(menu.style.display === 'flex') { menu.style.display = 'none'; } else { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'block'; } return; } isPaused = !isPaused; let menu = document.getElementById('pause-menu'); if (isPaused) { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'block'; if (game_mode === 'running' || game_mode === 'boss') { bgMusic.pause(); voidMusic.pause(); breathingSound.pause(); boss1Music.pause(); boss2Music.pause(); connectorMusic.pause(); } } else { menu.style.display = 'none'; if (!musicMuted && (game_mode === 'running' || game_mode === 'boss')) { if (game_mode === 'boss') { if (!isBoss2) boss1Music.play().catch(e=>console.log(e)); else boss2Music.play().catch(e=>console.log(e)); } else { if (currentBGIndex === 4) voidMusic.play(); else if(connectorMusic.currentTime > 0 && !connectorMusic.ended) connectorMusic.play(); else bgMusic.play(); } } } }
-         window.quitToMenu = function() { restoreActionBar(); document.getElementById('user-profile').style.display = 'block'; bgMusic.pause(); bgMusic.currentTime = 0; voidMusic.pause(); voidMusic.currentTime = 0; connectorMusic.pause(); connectorMusic.currentTime = 0; boss1Music.pause(); boss1Music.currentTime = 0; boss2Music.pause(); boss2Music.currentTime = 0; breathingSound.pause(); breathingSound.currentTime = 0; const loader = document.getElementById('temp-online-loader'); if(loader) loader.remove(); if (activeMatchID) { db.collection('matches').doc(activeMatchID).update({ status: 'ended' }).catch(e=>console.log(e)); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; } isPaused = false; document.getElementById('pause-menu').style.display = 'none'; document.getElementById('online-ui').style.display = 'none'; document.getElementById('settings-btn').style.display = 'block'; 
+         function hideResumeCountdown() {
+             const overlay = document.getElementById('resume-countdown');
+             if (overlay) overlay.classList.remove('show');
+         }
+         function updateResumeCountdownDisplay() {
+             const number = document.getElementById('resume-countdown-number');
+             if (!number || resumeCountdownEndAt <= 0) return;
+             const seconds = Math.ceil(Math.max(0, resumeCountdownEndAt - Date.now()) / 1000);
+             number.innerText = seconds > 0 ? seconds : getLangText('go');
+         }
+         function resumeGameplayAudio() {
+             if (musicMuted || (game_mode !== 'running' && game_mode !== 'boss')) return;
+             if (game_mode === 'boss') {
+                 if (!isBoss2) boss1Music.play().catch(e => console.log(e));
+                 else boss2Music.play().catch(e => console.log(e));
+             } else if (currentBGIndex === 4) {
+                 voidMusic.play().catch(e => console.log(e));
+             } else if (connectorMusic.currentTime > 0 && !connectorMusic.ended) {
+                 connectorMusic.play().catch(e => console.log(e));
+             } else {
+                 bgMusic.play().catch(e => console.log(e));
+             }
+         }
+         function finishResumeCountdown() {
+             resumeCountdownEndAt = 0;
+             hideResumeCountdown();
+             isPaused = false;
+             resumeGameplayAudio();
+         }
+         function beginResumeCountdown() {
+             resumeCountdownEndAt = Date.now() + RESUME_COUNTDOWN_MS;
+             const menu = document.getElementById('pause-menu');
+             if (menu) menu.style.display = 'none';
+             const overlay = document.getElementById('resume-countdown');
+             if (overlay) overlay.classList.add('show');
+             updateResumeCountdownDisplay();
+         }
+         window.togglePause = function() {
+             // A second click cannot skip the ready period or accidentally unpause the game.
+             if (resumeCountdownEndAt > 0) return;
+             playClickSound();
+             if (game_mode === 'waiting_for_website') {
+                 const menu = document.getElementById('pause-menu');
+                 if (menu.style.display === 'flex') menu.style.display = 'none';
+                 else { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'none'; }
+                 return;
+             }
+             if (game_mode === 'online_match' || game_mode === 'pvp_shetos') {
+                 const menu = document.getElementById('pause-menu');
+                 if (menu.style.display === 'flex') menu.style.display = 'none';
+                 else { menu.style.display = 'flex'; document.getElementById('resume-btn').style.display = 'block'; }
+                 return;
+             }
+             const menu = document.getElementById('pause-menu');
+             if (!isPaused) {
+                 isPaused = true;
+                 menu.style.display = 'flex';
+                 document.getElementById('resume-btn').style.display = 'block';
+                 hideResumeCountdown();
+                 if (game_mode === 'running' || game_mode === 'boss') {
+                     bgMusic.pause(); voidMusic.pause(); breathingSound.pause();
+                     boss1Music.pause(); boss2Music.pause(); connectorMusic.pause();
+                 }
+             } else if (game_mode === 'running' || game_mode === 'boss') {
+                 // Keep isPaused true during the three-second countdown so physics,
+                 // timers, attacks and collisions cannot advance early.
+                 beginResumeCountdown();
+             } else {
+                 isPaused = false;
+                 menu.style.display = 'none';
+                 resumeGameplayAudio();
+             }
+         }
+         window.quitToMenu = function() { restoreActionBar(); document.getElementById('user-profile').style.display = 'block'; bgMusic.pause(); bgMusic.currentTime = 0; voidMusic.pause(); voidMusic.currentTime = 0; connectorMusic.pause(); connectorMusic.currentTime = 0; boss1Music.pause(); boss1Music.currentTime = 0; boss2Music.pause(); boss2Music.currentTime = 0; breathingSound.pause(); breathingSound.currentTime = 0; const loader = document.getElementById('temp-online-loader'); if(loader) loader.remove(); if (activeMatchID) { db.collection('matches').doc(activeMatchID).update({ status: 'ended' }).catch(e=>console.log(e)); if (unsubscribeMatch) { unsubscribeMatch(); unsubscribeMatch = null; } activeMatchID = null; } resumeCountdownEndAt = 0; hideResumeCountdown(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; document.getElementById('online-ui').style.display = 'none'; document.getElementById('settings-btn').style.display = 'block'; 
              myCanvas.width = CANVAS_WIDTH; myCanvas.height = CANVAS_HEIGHT; let container = document.getElementById('game-container'); container.classList.remove('portrait-shake'); myCanvas.style.filter = "none";
              document.getElementById('landing-page').style.display = 'flex'; updateMenuStats(); game_mode = 'waiting_for_website'; reset_game(); document.getElementById('user-profile').style.display = 'block'; // boot lands on the main menu: login/logout visible document.getElementById('dash-btn').style.display = 'none'; document.getElementById('bomb-btn').style.display = 'none'; document.getElementById('shrink-btn').style.display = 'none'; document.getElementById('widen-btn').style.display = 'none'; document.getElementById('sherlock-btn').style.display = 'none'; document.getElementById('hrbreak-btn').style.display = 'none'; document.getElementById('arthur-btn').style.display = 'none'; document.getElementById('santa-btn').style.display = 'none'; document.getElementById('witch-btn').style.display = 'none'; document.getElementById('snowball-btn').style.display = 'none';
              currentBGIndex = 0; ctx.fillStyle = "#041820"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); if(!musicMuted) mainMenuMusic.play().catch(e => console.log(e)); window.updateSplashText(); applyScale(); setTimeout(() => { try { showQueuedInvite(); } catch(e) {} }, 400); }
@@ -2849,6 +2931,57 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              ctx.fillStyle = g; ctx.beginPath(); ctx.arc(gx, gy, gr, 0, Math.PI * 2); ctx.fill();
              ctx.restore();
          }
+         // Draw boss health in one place so the dragon's bar stays in sync with its
+         // real HP and remains readable on both a phone and a desktop canvas.
+         function drawBossHealthBar() {
+             if (bossIntroState < 5) return;
+             const isDragonBoss = isBoss3;
+             const maxHP = isDragonBoss ? DRAGON_MAX_HP : (isBoss2 ? BOSS2_MAX_HITS : 100);
+             const currentHP = isDragonBoss ? dragonHP : (isBoss2 ? BOSS2_MAX_HITS - boss2Hits : boss.stamina);
+             const hpPercent = Math.max(0, Math.min(1, currentHP / maxHP));
+             const barW = Math.min(440, Math.max(140, CANVAS_WIDTH * (isDragonBoss ? 0.48 : 0.30)));
+             const barH = isDragonBoss ? 18 : 12;
+             const barX = Math.round((CANVAS_WIDTH - barW) / 2);
+             const barY = isDragonBoss ? 42 : 20;
+             const label = isDragonBoss ? 'SUNSET DRAGON' : 'BOSS';
+
+             ctx.save();
+             ctx.globalAlpha = 1;
+             ctx.textAlign = 'center';
+             ctx.textBaseline = 'middle';
+             // Thick dark backing keeps the bar visible over every arena background.
+             ctx.fillStyle = 'rgba(0, 0, 0, 0.78)';
+             ctx.fillRect(barX - 6, barY - 6, barW + 12, barH + 12);
+             ctx.fillStyle = isDragonBoss ? '#3b0a0a' : '#160707';
+             ctx.fillRect(barX, barY, barW, barH);
+             if (hpPercent > 0) {
+                 const fill = ctx.createLinearGradient(barX, barY, barX + barW, barY);
+                 if (isDragonBoss && dragonPhase === 2) {
+                     fill.addColorStop(0, '#ff7b00'); fill.addColorStop(1, '#ff1e00');
+                 } else {
+                     fill.addColorStop(0, '#ff4d4d'); fill.addColorStop(1, '#c40000');
+                 }
+                 ctx.fillStyle = fill;
+                 ctx.fillRect(barX, barY, barW * hpPercent, barH);
+             }
+             ctx.strokeStyle = '#fff';
+             ctx.lineWidth = isDragonBoss ? 3 : 2;
+             ctx.strokeRect(barX - 2, barY - 2, barW + 4, barH + 4);
+
+             ctx.font = 'bold 11px "Press Start 2P", cursive';
+             ctx.textBaseline = 'bottom';
+             ctx.lineWidth = 4;
+             ctx.strokeStyle = 'rgba(0, 0, 0, 0.9)';
+             ctx.strokeText(label, CANVAS_WIDTH / 2, barY - 8);
+             ctx.fillStyle = '#fff';
+             ctx.fillText(label, CANVAS_WIDTH / 2, barY - 8);
+
+             ctx.font = 'bold 10px Arial, sans-serif';
+             ctx.textBaseline = 'middle';
+             ctx.fillStyle = '#fff';
+             ctx.fillText(`${Math.ceil(Math.max(0, currentHP))} / ${maxHP}`, CANVAS_WIDTH / 2, barY + barH / 2);
+             ctx.restore();
+         }
          function updateBoss() {
              if (boss.movingIn) { boss.x -= 2 * speedMultiplier; let bossStopX = Math.min(bird.x + 300, CANVAS_WIDTH - boss.width - 10); if (isBoss3) bossStopX = dragonPerchX(); if (boss.x <= bossStopX) { boss.x = bossStopX; boss.movingIn = false; } let img = (isBoss2) ? BOSS2_IMG : (isBoss3 ? DRAGON_IMG : BOSS_IMG); if (img.complete && img.naturalWidth !== 0) { drawBossGlow(); ctx.drawImage(img, boss.x, boss.y, boss.width, boss.height); } return; }
              if (bossIntroState < 5) { updateAbilityButtons(); let img = (isBoss2) ? BOSS2_IMG : (isBoss3 ? dragonIntroImg() : BOSS_IMG); if (img.complete && img.naturalWidth !== 0) { drawBossGlow(); ctx.drawImage(img, boss.x, boss.y, boss.width, boss.height); } else { ctx.fillStyle = "red"; ctx.fillRect(boss.x, boss.y, boss.width, boss.height); } if (bossIntroSkipLock > 0) bossIntroSkipLock--; if (bossIntroState === 0) { bossIntroState = 1; bossIntroTimer = isBoss3 ? dragonIntroTime(getLangText('b3_1')) : 120; bossIntroSkipLock = 120; } if (isBoss3) { const dIdx = bossIntroState - 1; const dLine = DRAGON_INTRO_LINES[dIdx]; if (dLine) { const dTxt = getLangText(dLine.text); drawDialogueBox(dTxt); bossIntroTimer--; if (bossIntroTimer <= 0) { if (dIdx >= DRAGON_INTRO_LINES.length - 1) { bossIntroState = 5; if(!musicMuted) { boss1Music.playbackRate = 1.12; boss1Music.play().catch(e=>console.log(e)); } } else { const nextTxt = getLangText(DRAGON_INTRO_LINES[dIdx + 1].text); bossIntroState = bossIntroState + 1; bossIntroTimer = dragonIntroTime(nextTxt); } } } } else if (!isBoss2) { if (bossIntroState === 1) { drawDialogueBox(getLangText('b1_1')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=2; bossIntroTimer=120;} } else if (bossIntroState === 2) { drawDialogueBox(getLangText('b1_2')); bossIntroTimer--; if(bossIntroTimer<=0){ bossIntroState=5; if(!musicMuted) { boss1Music.playbackRate = 1; boss1Music.play().catch(e=>console.log(e)); } } } } else { if (bossIntroState === 1) { drawDialogueBox(getLangText('b2_1')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=2; bossIntroTimer=120;} } else if (bossIntroState === 2) { drawDialogueBox(getLangText('b2_2')); bossIntroTimer--; if(bossIntroTimer<=0){bossIntroState=3; bossIntroTimer=120;} } else if (bossIntroState === 3) { drawDialogueBox(getLangText('b2_3')); bossIntroTimer--; if(bossIntroTimer<=0){ bossIntroState=5; if(!musicMuted) boss2Music.play().catch(e=>console.log(e)); } } } return; } restoreActionBar();
@@ -2858,7 +2991,7 @@ for (let k in SKINS) { SKINS[k].img = new Image(); SKINS[k].img.src = SKINS[k].s
              
              for (let i = chocolates.length - 1; i >= 0; i--) { chocolates[i].Do_Frame_Things(); if (ImagesTouching(bird, chocolates[i]) && chocolates[i].visible && !chocolates[i].nice) { if (isSleighActive) { chocolates[i].visible = false; if(!sfxMuted){ explosionSound.currentTime=0; explosionSound.play().catch(e=>{}); } continue; } if (consumeBat()) { chocolates.splice(i, 1); continue; } if (isDashActive) { chocolates[i].visible = false; continue; } if (isShieldActive) { deactivateShield(); chocolates.splice(i, 1); } else if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} chocolates.splice(i, 1); trailRedTimer = 120; } else { if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} triggerPlayerDeath(); } } else if (chocolates[i].x < -50) chocolates.splice(i, 1); }
              for (let i = errorSigns.length - 1; i >= 0; i--) { errorSigns[i].Do_Frame_Things(); if (ImagesTouching(bird, errorSigns[i]) && errorSigns[i].visible && !errorSigns[i].nice) { if (isSleighActive) { errorSigns[i].visible = false; if(!sfxMuted){ explosionSound.currentTime=0; explosionSound.play().catch(e=>{}); } continue; } if (consumeBat()) { errorSigns.splice(i, 1); continue; } if (isDashActive) { errorSigns[i].visible = false; continue; } if (isShieldActive) { deactivateShield(); errorSigns.splice(i, 1); } else if ((currentSkinKey === 'tough' || currentSkinKey === 'black' || currentSkinKey === 'sherlock' || (currentSkinKey === 'custom' && currentLives > 0)) && currentLives > 0) { currentLives--; if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} errorSigns.splice(i, 1); trailRedTimer = 120; } else { if(!sfxMuted){damageSound.currentTime = 0; damageSound.play().catch(e=>console.warn(e));} triggerPlayerDeath(); } } else if (errorSigns[i].x < -150) errorSigns.splice(i, 1); }
-             if (bossIntroState >= 5) { let barX = CANVAS_WIDTH/2 - 50; let barY = 20; let barW = 100; let barH = 10; let hpPercent = 1; if (isBoss2) { hpPercent = Math.max(0, (BOSS2_MAX_HITS - boss2Hits) / BOSS2_MAX_HITS); } else if (isBoss3) { hpPercent = Math.max(0, dragonHP / 100); } else { hpPercent = Math.max(0, boss.stamina / 100); } ctx.fillStyle = "black"; ctx.fillRect(barX, barY, barW, barH); ctx.fillStyle = "#FF0000"; ctx.fillRect(barX, barY, barW * hpPercent, barH); ctx.strokeStyle = "white"; ctx.lineWidth = 2; ctx.strokeRect(barX, barY, barW, barH); }
+             drawBossHealthBar();
          }
 let shetosBotY = 250; let shetosBotScore = 0; let shetosBotAlive = true; let shetosBotVelocityY = 0; let activeFriendChatID = null; let friendChatListener = null;
 
@@ -3296,7 +3429,7 @@ window.playClickSound = function() {
              
              bird.x = CANVAS_WIDTH / 3; bird.y = CANVAS_HEIGHT / 2; bird.angle = 0; bird.velocity_y = 0; pipes = []; stars = []; shields = []; potions = []; slowPotions = []; errorSigns = []; trailHistory = [];  currentScore = 0; pipe_spawn_timer = 0; floatingTexts = []; myCanvas.style.filter = "none";
              
-             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; bossIntroState = 0; bossIntroTimer = 0; bossIntroSkipLock = 0; bossIntroSkipStamp = 0; isBoss2 = false; boss2Hits = 0; isBoss3 = false; dragonDefeated = false; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 0; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; boss.width = 150; boss.height = 150; boss.speedY = 2; boss.hitImg = BOSS_IMG; boss1Music.playbackRate = 1; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; previousBGIndex = 0; transitionType = "normal"; transitionDuration = 0; transitionText = ""; transitionTimer = 0; updateDifficulty(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; restoreActionBar(); 
+             speedMultiplier = 1; bgMusic.playbackRate = 1; isDoubleStarsActive = false; doubleStarTimer = 0; isSlowMotionActive = false; slowMoTimer = 0; isShieldActive = false; shieldTimer = 0; trailRedTimer = 0; trailGoldTimer = 0; isDashActive = false; dashTimer = 0; isShrunk = false; shrinkTimer = 0; isWidenActive = false; widenTimer = 0; heisenBlinkTimer = 0; arthurShotUsed = false; voidBreathingCount = 0; deathMessage = ""; bossIntroState = 0; bossIntroTimer = 0; bossIntroSkipLock = 0; bossIntroSkipStamp = 0; isBoss2 = false; boss2Hits = 0; isBoss3 = false; dragonDefeated = false; dragonHP = DRAGON_MAX_HP; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 0; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; boss.width = 150; boss.height = 150; boss.speedY = 2; boss.hitImg = BOSS_IMG; boss1Music.playbackRate = 1; deleteBtnTimer = 0; deleteBtnSpawnTimer = 0; errorSignCooldown = 0; boss1Defeated = false; document.getElementById('delete-boss-btn').style.display = 'none'; document.getElementById('game-container').className = ""; setGameSpeed(false); levelReached = 1; chocolates = []; boss.stamina = 100; boss.x = CANVAS_WIDTH + 100; boss.movingIn = true; victoryTimer = 0; currentBGIndex = 0; previousBGIndex = 0; transitionType = "normal"; transitionDuration = 0; transitionText = ""; transitionTimer = 0; updateDifficulty(); resumeCountdownEndAt = 0; hideResumeCountdown(); isPaused = false; document.getElementById('pause-menu').style.display = 'none'; voidUIErrorTimer = 0; restoreActionBar(); 
 
              isSherlockActive = false; sherlockCooldown = 0; sherlockTimer = 0;
              isHrBreakActive = false; hrBreakCooldown = 0; hrBreakTimer = 0;
@@ -3329,7 +3462,14 @@ window.playClickSound = function() {
                  if (game_mode === 'waiting_for_website') { document.querySelectorAll('.game-action-btn').forEach(btn => btn.style.display = 'none'); return; }
                  if (game_mode === 'over_black_screen') { ctx.fillStyle = "black"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); ctx.font = '16px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.fillText(blackScreenText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2); blackScreenTimer--; if(blackScreenTimer <= 0) { quitToMenu(); } return; }
                  
-                 if (isPaused && game_mode !== 'online_match' && game_mode !== 'pvp_shetos') return; if (!ctx) return;
+                 if (isPaused && game_mode !== 'online_match' && game_mode !== 'pvp_shetos') {
+                     if (resumeCountdownEndAt > 0) {
+                         updateResumeCountdownDisplay();
+                         if (Date.now() >= resumeCountdownEndAt) finishResumeCountdown();
+                     }
+                     return;
+                 }
+                 if (!ctx) return;
                  
                  if ((game_mode === 'online_match' || game_mode === 'pvp_shetos') && isRoundStarting) { if (backgroundImages[currentBGIndex] && backgroundImages[currentBGIndex].complete) { ctx.drawImage(backgroundImages[currentBGIndex], 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); } else { ctx.fillStyle = "#222"; ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT); } if (beatMode && game_mode === 'online_match') { drawBeatBattle(-1e9); ctx.font = 'bold 80px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.lineWidth = 4; ctx.strokeStyle = "black"; let beatCount = Math.ceil(onlineStartTimer); if (beatCount <= 0) beatCount = getLangText("go"); ctx.strokeText(beatCount, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); ctx.fillText(beatCount, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); onlineStartTimer -= (1/FPS); if (onlineStartTimer <= -0.5) { isRoundStarting = false; roundStartTime = Date.now(); } return; } bird.Do_Frame_Things(); for(let i=0; i<pipes.length; i++) { let p = pipes[i]; p.Do_Frame_Things(); } if (game_mode === 'pvp_shetos') { ctx.save(); ctx.globalAlpha = 0.7; ctx.drawImage(PLAYER_IMG, bird.x, shetosBotY, 40, 40); ctx.restore(); } else if (activeMatchID && !enemyHasCrashed) { enemyGhostRenderY += (enemyGhostY - enemyGhostRenderY) * 0.25; enemyGhostRenderX += ((snowballMode ? snowballRivalX() : bird.x) - enemyGhostRenderX) * 0.15; ctx.save(); ctx.globalAlpha = 0.4; let ghostW = bird.MyImg.width || 50; let ghostH = bird.MyImg.height || 50; ghostW = birdHitW(); ghostH = birdHitH(); ctx.drawImage(bird.MyImg, enemyGhostRenderX, enemyGhostRenderY, ghostW, ghostH); ctx.restore(); } ctx.font = 'bold 80px "Press Start 2P"'; ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.lineWidth = 4; ctx.strokeStyle="black"; let displayText = Math.ceil(onlineStartTimer); if(displayText <= 0) displayText = getLangText("go"); ctx.strokeText(displayText, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); ctx.fillText(displayText, CANVAS_WIDTH/2, CANVAS_HEIGHT/2); onlineStartTimer -= (1/FPS); if (onlineStartTimer <= -0.5) { isRoundStarting = false; roundStartTime = Date.now(); } { onlineSyncAccum += (1000 / FPS); if (onlineSyncAccum >= 200) { onlineSyncAccum = 0; flushOnlineSync(onlineDirty || (Date.now() - lastOnlineFlush) >= 1500); } } return; }
                  
@@ -3453,7 +3593,7 @@ window.playClickSound = function() {
                      updateBoss(); break;
                      case 'running':
                          time_game_last_running = new Date(); bottom_bar_offset += pipe_speed * speedMultiplier;
-                        if (!isEndless && currentScore >= 25 && !dragonDefeated) { game_mode = 'boss'; isBoss3 = true; pipes = []; dragonHP = 100; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 140; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; bossIntroState = 0; boss.width = 250; boss.height = 132; boss.speedY = 1.2; boss.hitImg = DRAGON_IMG; boss.y = Math.max(50, CANVAS_HEIGHT / 2 - boss.height / 2 - 20); bgMusic.pause(); voidMusic.pause(); }
+                        if (!isEndless && currentScore >= 25 && !dragonDefeated) { game_mode = 'boss'; isBoss3 = true; pipes = []; dragonHP = DRAGON_MAX_HP; dragonPhase = 1; dragonAtkState = 'idle'; dragonAtkTimer = 140; dragonCycle = 0; dragonDashesDone = 0; dragonDashVec = null; dragonBodyCd = 0; dragonDizzyDone = false; dragonDizzyTimer = 0; dragonDefeatTimer = 0; dragonFire = []; dragonTauntFx = []; bossIntroState = 0; boss.width = 250; boss.height = 132; boss.speedY = 1.2; boss.hitImg = DRAGON_IMG; boss.y = Math.max(50, CANVAS_HEIGHT / 2 - boss.height / 2 - 20); bgMusic.pause(); voidMusic.pause(); }
                         else if (!isEndless && currentScore >= 50 && !boss1Defeated && currentScore < 100) { game_mode = 'boss'; pipes = []; bgMusic.pause(); voidMusic.pause(); boss.x = CANVAS_WIDTH + 500; boss.y = 120; boss.movingIn = true; boss.stamina = 100; boss.width = 150; boss.height = 150; boss.speedY = 2; boss.hitImg = BOSS_IMG; bossIntroState = 0; } else if (!isEndless && currentScore >= 100) { game_mode = 'boss'; pipes = []; isBoss2 = true; boss2Hits = 0; boss.hitImg = BOSS2_IMG; bgMusic.pause(); voidMusic.pause(); } 
                          for (var i = 0; i < pipes.length; i++) { pipes[i].velocity_x = pipe_speed; pipes[i].Do_Frame_Things(); } pipe_spawn_timer += (1000 / FPS) * speedMultiplier; let lastPipeX = pipes.length > 0 ? pipes[pipes.length - 1].x : -999;
                          if (pipe_spawn_timer > currentSpawnInterval && (CANVAS_WIDTH - lastPipeX > 220)) { let gap_size = isWidenActive ? 280 : 140; let safe_area = CANVAS_HEIGHT - gap_size - 50; if(safe_area < 50) safe_area = 50; let top_of_gap = Math.floor(Math.random() * (safe_area - 50)) + 50; add_pipe(CANVAS_WIDTH, top_of_gap, gap_size); pipe_spawn_timer = 0; } 
