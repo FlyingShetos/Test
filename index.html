@@ -69,6 +69,18 @@
         #cheat-feedback { display: none; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,255,0,0.8); color: black; font-weight: bold; padding: 10px 20px; border-radius: 5px; z-index: 200; font-family: 'Press Start 2P', cursive; font-size: 12px; }
         
         #settings-btn { position: absolute; top: 10px; left: 10px; z-index: 60; font-size: 24px; background: none; border: none; cursor: pointer; }
+        /* Fullscreen toggle. The one-time "I UNDERSTAND" screen used to be the only way
+           into fullscreen, so now the player always has their own button for it - this
+           icon sits right next to the settings gear and flips between enter/exit art.
+           z-index matches #settings-btn so it hides behind the pause menu and modals
+           exactly like the gear does, instead of floating on top of them. */
+        #fullscreen-btn { position: absolute; top: 10px; left: 58px; z-index: 60; width: 34px; height: 34px; padding: 0; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.45); border: 2px solid rgba(255, 255, 255, 0.75); border-radius: 5px; color: #fff; cursor: pointer; }
+        #fullscreen-btn:hover { background: rgba(241, 196, 15, 0.35); border-color: #f1c40f; color: #f1c40f; }
+        #fullscreen-btn.fs-on { border-color: #f1c40f; color: #f1c40f; }
+        #fullscreen-btn svg { display: block; pointer-events: none; }
+        #fullscreen-btn .fs-exit { display: none; }
+        #fullscreen-btn.fs-on .fs-enter { display: none; }
+        #fullscreen-btn.fs-on .fs-exit { display: block; }
         
         #action-bar { position: absolute; bottom: 10px; left: 0; right: 0; z-index: 40; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 8px; padding: 0 10px; pointer-events: none; }
         .game-action-btn { display: none; font-size: 10px; padding: 10px 12px; border: 2px solid white; font-family: 'Press Start 2P', cursive; color: white; cursor: pointer; border-radius: 5px; align-items: center; justify-content: center; pointer-events: auto; }
@@ -314,6 +326,20 @@
          <p style="font-size: 10px; color: #ccc; margin-bottom: 20px; font-family: Arial;">By pressing 'I UNDERSTAND' you agree to our <a href="#" onclick="openPrivacyPolicy(); return false;" style="color: lime;" data-i18n="privacyLink">Privacy Policy</a>.</p>
          <button id="lang-btn-understand" data-i18n="understand" class="enter-btn btn-yellow" style="font-size: 18px; padding: 15px 30px;" onclick="closeStartupWarning(); playClickSound();">I UNDERSTAND</button>
      </div>
+     <script>
+        // The "I UNDERSTAND" gate is a one-time thing. Once a player accepts it the
+        // choice is remembered in localStorage, so a refresh (or any later visit)
+        // goes straight to the menu instead of asking all over again. This lives in
+        // its own tiny inline script so the warning is hidden before it can be painted.
+        (function() {
+            try {
+                if (localStorage.getItem('flappyWarningSeen') === 'true') {
+                    var w = document.getElementById('startup-warning');
+                    if (w) w.style.display = 'none';
+                }
+            } catch (e) {}
+        })();
+     </script>
 
      <div id="rotate-overlay">
          <div class="rotate-icon">📱</div>
@@ -332,6 +358,10 @@
 
          <button id="delete-boss-btn" data-i18n="delete" onclick="hitBossTwo()">DELETE</button>
          <button id="settings-btn" onclick="togglePause()">⚙️</button>
+        <button id="fullscreen-btn" onclick="playClickSound(); toggleFullscreen()" title="Fullscreen" aria-label="Fullscreen">
+            <svg class="fs-enter" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg class="fs-exit" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
          
          <div id="action-bar">
              <button id="dash-btn" data-i18n="dash" class="game-action-btn" onclick="triggerDash()">DASH</button>
@@ -456,6 +486,7 @@
                      </select>
                  </div>
              </div>
+             <button id="fullscreen-menu-btn" class="enter-btn btn-yellow btn-full-width" style="font-size: 11px;" onclick="playClickSound(); toggleFullscreen()">FULLSCREEN</button>
              <button id="resume-btn" data-i18n="resume" class="enter-btn btn-yellow btn-full-width" onclick="togglePause()">RESUME</button>
              <button class="enter-btn secondary-btn btn-full-width" style="background-color: #c0392b; margin-top:10px;" onclick="quitToMenu()" data-i18n="quitToMenu">QUIT TO MENU</button>
          </div>
@@ -757,16 +788,78 @@
             };
             try {
                 const el = document.documentElement;
-                if (el.requestFullscreen && !document.fullscreenElement) {
-                    el.requestFullscreen().then(lock).catch(function(){});
-                } else { lock(); }
+                if (window.isFullscreenActive()) { lock(); return; }
+                if (el.requestFullscreen) { el.requestFullscreen().then(lock).catch(function(){}); }
+                else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); lock(); }
+                else { lock(); }
             } catch (e) { try { lock(); } catch (e2) {} }
         };
         window.closeStartupWarning = function() {
+            // Remember the acceptance: this warning is a one-time gate, never a
+            // every-refresh one. Fullscreen still rides along on this first click.
+            try { localStorage.setItem('flappyWarningSeen', 'true'); } catch (e) {}
             try { const w = document.getElementById('startup-warning'); if (w) w.style.display = 'none'; } catch (e) {}
             try { window.requestLandscape(); } catch (e) {}
             try { if (typeof updateOrientation === 'function') updateOrientation(); } catch (e) {}
         };
+
+        // --- FULLSCREEN TOGGLE ----------------------------------------------------
+        // "I UNDERSTAND" used to double as the only fullscreen request, and it now
+        // shows a single time per browser, so fullscreen gets its own button that is
+        // always there: the little icon next to the settings gear plus a labelled one
+        // inside SETTINGS. It is a toggle - tap to enter, tap again to leave.
+        window.isFullscreenActive = function() {
+            try { return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement); } catch (e) { return false; }
+        };
+        window.leaveFullscreen = function() {
+            try {
+                if (document.exitFullscreen) { const p = document.exitFullscreen(); if (p && p.catch) p.catch(function(){}); }
+                else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+                else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
+                else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+            } catch (e) {}
+        };
+        window.toggleFullscreen = function() {
+            if (window.isFullscreenActive()) { window.leaveFullscreen(); } else { window.requestLandscape(); }
+            window.updateFullscreenButtons();
+        };
+        // Keeps both buttons in step with reality - including when the player leaves
+        // fullscreen with Esc or the browser drops us out of it by itself.
+        window.updateFullscreenButtons = function() {
+            let on = false;
+            try { on = window.isFullscreenActive(); } catch (e) {}
+            try {
+                const icon = document.getElementById('fullscreen-btn');
+                if (icon) icon.classList.toggle('fs-on', on);
+            } catch (e) {}
+            try {
+                const label = (typeof getLangText === 'function') ? getLangText(on ? 'exitFullscreen' : 'fullscreen') : (on ? 'EXIT FULLSCREEN' : 'FULLSCREEN');
+                const icon = document.getElementById('fullscreen-btn');
+                if (icon) { icon.title = label; icon.setAttribute('aria-label', label); }
+                const menuBtn = document.getElementById('fullscreen-menu-btn');
+                if (menuBtn) menuBtn.innerText = label;
+            } catch (e) {}
+        };
+        ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(function(ev) {
+            document.addEventListener(ev, function() { try { window.updateFullscreenButtons(); } catch (e) {} });
+        });
+
+        // A Google sign-in popup drops the page out of fullscreen and fullscreen can
+        // only be re-entered from a real user gesture, so that flow reloads the page
+        // with a note to ourselves. The warning screen can no longer be what restores
+        // it (it only shows once now), so the first tap/click/key after such a reload
+        // puts the game straight back into fullscreen.
+        try {
+            if (localStorage.getItem('flappyPendingFullscreen') === '1') {
+                localStorage.removeItem('flappyPendingFullscreen');
+                const GESTURES = ['pointerdown', 'mousedown', 'touchstart', 'keydown'];
+                const restoreFullscreenOnce = function() {
+                    GESTURES.forEach(function(ev) { window.removeEventListener(ev, restoreFullscreenOnce, true); });
+                    try { window.requestLandscape(); } catch (e) {}
+                };
+                GESTURES.forEach(function(ev) { window.addEventListener(ev, restoreFullscreenOnce, true); });
+            }
+        } catch (e) {}
 
         // Whatever happens during boot, the first tap/click/keypress anywhere
         // dismisses the loading screen so the menu can never be stuck behind it.
@@ -848,7 +941,7 @@
         // Last resort: if a mid-boot crash still left any menu handler undefined,
         // replace it with a working stub instead of a silently dead button.
         window.addEventListener('load', function() {
-            const menuHandlers = ['openModeSelect','openShopFromMenu','openAchievements','openFriends','openLeaderboard','openNetWorthLeaderboard','openStoryChallenge','redeemStoryReward','openRedeemModal','openPrivacyPolicy','togglePause','signInWithGoogle','signOutUser','closeModal','closeAllModals','quitToMenu','closeStartupWarning','playClickSound'];
+            const menuHandlers = ['openModeSelect','openShopFromMenu','openAchievements','openFriends','openLeaderboard','openNetWorthLeaderboard','openStoryChallenge','redeemStoryReward','openRedeemModal','openPrivacyPolicy','togglePause','signInWithGoogle','signOutUser','closeModal','closeAllModals','quitToMenu','closeStartupWarning','toggleFullscreen','updateFullscreenButtons','requestLandscape','playClickSound'];
             const missing = [];
             for (let i = 0; i < menuHandlers.length; i++) {
                 if (typeof window[menuHandlers[i]] !== 'function') {
@@ -935,7 +1028,7 @@
          ];
 
          const TRANSLATIONS = {
-    en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", understand: "I UNDERSTAND", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS", netWorth: "NEW WORTH", storySecret: "STORY",
+    en: { play: "PLAY GAME", shop: "SHOP", achieve: "ACHIEVE", friends: "FRIENDS", lead: "LEADER", ai: "AI CHAT", redeem: "REDEEM CODE", high: "High Score", food: "Dry Food", trophies: "Trophies", games: "Games", welcome: "WELCOME TO<br>FLYING SHETOS", understand: "I UNDERSTAND", fullscreen: "FULLSCREEN", exitFullscreen: "EXIT FULLSCREEN", chooseMode: "Choose Mode", story: "STORY MODE", endless: "ENDLESS MODE", pvp: "PVP MODE", settings: "SETTINGS", netWorth: "NEW WORTH", storySecret: "STORY",
     comingSoon: "COMING SOON", comingSoonDesc: "Available in a future update.", storyDesc: "The classic adventure.<br>Secrets & Bosses.", endlessDesc: "Infinite run.<br>Speed increases forever.<br><b style='color:white;'>Leaderboard Enabled</b>", pvpDesc: "Score Battle!<br>Online.", trophiesLabel: "Trophies:", back: "BACK", selectOpponent: "Select Opponent", online: "ONLINE", onlineDesc: "Matchmake with<br>Real Humans.", snowMode: "SNOWBALL MODE", snowModeDesc: "Dodge & throw online!<br>First to 5 hits wins the round.", snowBtn: "SNOW", snowTarget: "First to 5 hits wins the round!", santaPower: "Santa's Gift (Sleigh / Nice Filter)", witchPower: "Witch's Magic (Broom / Bats)", beatMode: "BEAT BATTLE", beatModeDesc: "Rhythm duel online!<br>Tap the lanes, push the bar!", beatTarget: "Push the tug-of-war bar to your side!", round: "ROUND", you: "YOU", opponent: "OPPONENT", target: "Target: Don't Crash!",
     music: "MUSIC", musicVol: "MUSIC VOL", sfx: "SFX", sfxVol: "SFX VOL", woof: "WOOF", xmasMode: "CHRISTMAS", language: "LANGUAGE", resume: "RESUME", getReady: "GET READY", quitToMenu: "QUIT TO MENU",
     shopTitle: "Shop", dryFood: "Dry Food:", theLab: "THE LAB", skins: "SKINS", trails: "TRAILS", netWorthDesc: "The richest players ranked by Dry Food.", netWorthLogin: "Log in to view the Dry Food net worth leaderboard.", storyTitle: "FmouAmfnRdkaksvM", storyInstructions: "Enter the English translations for the 10 story parts shown on the death screen, in order, to claim 2,000 Dry Food. This reward can only be claimed once.", storyClaim: "CLAIM 2,000 DRY FOOD", storyAlready: "The story reward has already been claimed.", storyWrong: "Part {n} is not correct. Check the translation and try again.", storySuccess: "Story complete! +2,000 Dry Food!", storyPlaceholder: "Type the English translation...", storyPart: "PART", storyTranslation: "translation",
@@ -948,10 +1041,10 @@
     privacyLink: "Privacy Policy", bugsAdvice: "Bugs/Advice:", login: "Login", logout: "Logout", dash: "DASH", shrink: "SHRINK", widen: "WIDEN", bomb: "BOMB", predictBtn: "PREDICT", hrBreakBtn: "HR BREAK", deadEyeBtn: "DEAD EYE", santaBtn: "GIFT", sleighBlitzMsg: "SLEIGH BLITZ!", niceFilterMsg: "NAUGHTY OR NICE FILTER!", witchBtn: "MAGIC", broomMsg: "WITCH'S BROOM BOOST!", batsMsg: "BAT'S PROTECTION!", batsLabel: "BATS: ", delete: "DELETE", downloading: "Downloading Assets...",
     scoreLabel: "Score: ", endlessLabel: "Endless: ", error: "ERROR", foodLabel: "Food: ", shield: "SHIELD", doubleDryfood: "DOUBLE DRYFOOD", slowMotion: "SLOW MOTION", livesLabel: "Lives: ", godMode: "GOD MODE", bombsLabel: "Bombs: ", dashesLabel: "Dashes: ", shrinksLabel: "Shrinks: ", widensLabel: "Widens: ", victory: "VICTORY!", go: "GO!", waitingShetos: "Waiting for Shetos...", waitingOpponent: "Waiting for Opponent...", tapMenu: "Tap to return to Menu", unknownArea: "UNKNOWN AREA", active: "ACTIVE", autoPilot: "AUTO-PILOT", searching: "Searching...",
     area0: "The Beginning", area1: "The SKY", area2: "The SUNSET", area3: "The NIGHT", area4: "The VOID",
-    syncingData: "SYNCING DATA...", dataSynced: "DATA SYNCED!", bossDefeated: "BOSS DEFEATED!", boss2Defeated: "BOSS 2 DEFEATED!", opponentDisconnected: "OPPONENT DISCONNECTED!", customEquipped: "CUSTOM EQUIPPED!", itemSold: "ITEM SOLD!", maxToggles: "MAX 3 TOGGLES ALLOWED", warpAhead: "WARP AHEAD! +10", warpBack: "WARP BACK! -10", endlessMode: "ENDLESS MODE!", codeRedeemed: "CODE REDEEMED!", unlimitedAir: "you got unlimited amount of air", searchingOpponent: "SEARCHING FOR OPPONENT...", waitingFor: "WAITING FOR", cancel: "CANCEL", challengedYou: "CHALLENGED YOU!",
+    syncingData: "SYNCING DATA...", dataSynced: "DATA SYNCED!", bossDefeated: "BOSS DEFEATED!", boss2Defeated: "BOSS 2 DEFEATED!", opponentDisconnected: "OPPONENT DISCONNECTED!", customEquipped: "CUSTOM EQUIPPED!", itemSold: "ITEM SOLD!", maxToggles: "MAX 3 TOGGLES ALLOWED", warpAhead: "WARP AHEAD! +10", warpBack: "WARP BACK! -10", endlessMode: "ENDLESS MODE!", codeRedeemed: "CODE REDEEMED!", unlimitedAir: "you got unlimited amount of air", searchingOpponent: "SEARCHING FOR OPPONENT", waitingFor: "WAITING FOR", cancel: "CANCEL", challengedYou: "CHALLENGED YOU!",
     shopEquipped: "EQUIPPED", shopEquip: "EQUIP", shopBuy: "BUY", shopSell: "SELL", achReward: "Reward:", none: "None",
     b1_1: "oh, here you are", b1_2: "I was waiting for you", b2_1: "you are getting out of control", b2_2: "you werent supposed to come HERE", b2_3: "Its too late to go back now....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "So, we will not talk about how a dog is flying?", b3_2: "Why am i even asking that's not even my thoughts, It's the game developer who's typing all this nonsense.", b3_3: "I guess he thought it would be funny to make me question why a dog is flying.", b3_4: "Let's start the fight i guess.", boss3Defeated: "DRAGON DEFEATED!", sys: "System Override...", bypass: "Bypassing...", admin: "Administrator Granted.", tbc: "To Be Continued...", cat: "THAT WAS A CAT", kid: "you got clipped by a kid lmao", err1: "Connection Error", highPlace: "shetos died from a high place", fall: "Fell down!", wall: "Hit a wall!", eaten: "EATEN BY SHETOS!" },
-    de: { play: "SPIELEN", shop: "GESCHÄFT", achieve: "ERFOLGE", friends: "FREUNDE", lead: "BESTEN", ai: "KI CHAT", redeem: "EINLÖSEN", high: "Höchstpunktzahl", food: "Trockenfutter", trophies: "Trophäen", games: "Spiele", welcome: "WILLKOMMEN BEI<br>FLYING SHETOS", understand: "ICH VERSTEHE", chooseMode: "Modus wählen", story: "GESCHICHTSMODUS", endless: "ENDLOSMODUS", pvp: "PVP-MODUS", settings: "EINSTELLUNGEN", netWorth: "VERMÖGEN", storySecret: "GESCHICHTE",
+    de: { play: "SPIELEN", shop: "GESCHÄFT", achieve: "ERFOLGE", friends: "FREUNDE", lead: "BESTEN", ai: "KI CHAT", redeem: "EINLÖSEN", high: "Höchstpunktzahl", food: "Trockenfutter", trophies: "Trophäen", games: "Spiele", welcome: "WILLKOMMEN BEI<br>FLYING SHETOS", understand: "ICH VERSTEHE", fullscreen: "VOLLBILD", exitFullscreen: "VOLLBILD BEENDEN", chooseMode: "Modus wählen", story: "GESCHICHTSMODUS", endless: "ENDLOSMODUS", pvp: "PVP-MODUS", settings: "EINSTELLUNGEN", netWorth: "VERMÖGEN", storySecret: "GESCHICHTE",
     comingSoon: "BALD VERFÜGBAR", comingSoonDesc: "In einem zukünftigen Update verfügbar.", storyDesc: "Das klassische Abenteuer.<br>Geheimnisse & Bosse.", endlessDesc: "Endloser Lauf.<br>Die Geschwindigkeit steigt für immer.<br><b style='color:white;'>Bestenliste aktiviert</b>", pvpDesc: "Punkte-Battle!<br>Online.", trophiesLabel: "Trophäen:", back: "ZURÜCK", selectOpponent: "Gegner wählen", online: "ONLINE", onlineDesc: "Spiele gegen<br>echte Menschen.", snowMode: "SCHNEEBALL-MODUS", snowModeDesc: "Online ausweichen & werfen!<br>Erste zu 5 Treffern gewinnt.", snowBtn: "SCHNEE", snowTarget: "Erste zu 5 Treffern gewinnt die Runde!", santaPower: "Santas Geschenk (Schlitten / Filter)", witchPower: "Hexen-Magie (Besen / Fledermäuse)", beatMode: "BEAT-DUELL", beatModeDesc: "Rhythmus-Duell online!<br>Tippe die Lanes, schieb den Balken!", beatTarget: "Schieb den Balken auf deine Seite!", round: "RUNDE", you: "DU", opponent: "GEGNER", target: "Ziel: Nicht abstürzen!",
     music: "MUSIK", musicVol: "MUSIK LAUTST.", sfx: "SFX", sfxVol: "SFX LAUTST.", woof: "WUFF", xmasMode: "WEIHNACHTEN", language: "SPRACHE", resume: "FORTSETZEN", getReady: "BEREIT MACHEN", quitToMenu: "ZUM MENÜ",
     shopTitle: "Geschäft", dryFood: "Trockenfutter:", theLab: "DAS LABOR", skins: "SKINS", trails: "SPUREN", netWorthDesc: "Die reichsten Spieler nach Trockenfutter.", netWorthLogin: "Melde dich an, um die Trockenfutter-Bestenliste zu sehen.", storyTitle: "FmouAmfnRdkaksvM", storyInstructions: "Gib die englischen Übersetzungen der 10 Story-Teile vom Todesbildschirm in der richtigen Reihenfolge ein, um 2.000 Trockenfutter zu erhalten. Die Belohnung ist nur einmal verfügbar.", storyClaim: "2.000 TROCKENFUTTER HOLEN", storyAlready: "Die Geschichten-Belohnung wurde bereits eingelöst.", storyWrong: "Teil {n} ist nicht richtig. Prüfe die Übersetzung und versuche es erneut.", storySuccess: "Geschichte abgeschlossen! +2.000 Trockenfutter!", storyPlaceholder: "Englische Übersetzung eingeben...", storyPart: "TEIL", storyTranslation: "Übersetzung",
@@ -962,10 +1055,10 @@
     privacyLink: "Datenschutzerklärung", bugsAdvice: "Fehler/Rat:", login: "Anmelden", logout: "Abmelden", dash: "SPRINT", shrink: "SCHRUMPFEN", widen: "ERWEITERN", bomb: "BOMBE", predictBtn: "VORHERSAGEN", hrBreakBtn: "HR-PAUSE", deadEyeBtn: "TODESBLICK", santaBtn: "GESCHENK", sleighBlitzMsg: "SCHLITTEN-BLITZ!", niceFilterMsg: "BÖSE ODER LIEB-FILTER!", witchBtn: "MAGIE", broomMsg: "HEXENBESEN-SCHUB!", batsMsg: "FLEDERMAUS-SCHUTZ!", batsLabel: "FLEDERMÄUSE: ", delete: "LÖSCHEN", downloading: "Assets werden geladen...",
     scoreLabel: "Punkte: ", endlessLabel: "Endlos: ", error: "FEHLER", foodLabel: "Futter: ", shield: "SCHILD", doubleDryfood: "DOPPELTROFUTTER", slowMotion: "ZEITLUPE", livesLabel: "Leben: ", godMode: "GOTT-MODUS", bombsLabel: "Bomben: ", dashesLabel: "Sprints: ", shrinksLabel: "Schrumpfen: ", widensLabel: "Erweitern: ", victory: "SIEG!", go: "LOS!", waitingShetos: "Warte auf Shetos...", waitingOpponent: "Warte auf Gegner...", tapMenu: "Tippen, um zum Menü zurückzukehren", unknownArea: "UNBEKANNTES GEBIET", active: "AKTIV", autoPilot: "AUTOPILOT", searching: "Suche...",
     area0: "Der Anfang", area1: "Der HIMMEL", area2: "Der SONNENUNTERGANG", area3: "Die NACHT", area4: "Die LEERE",
-    syncingData: "DATEN WERDEN SYNCHRONISIERT...", dataSynced: "DATEN SYNCHRONISIERT!", bossDefeated: "BOSS BESIEGT!", boss2Defeated: "BOSS 2 BESIEGT!", opponentDisconnected: "GEGNER GETRENNT!", customEquipped: "CUSTOM AUSGERÜSTET!", itemSold: "ARTIKEL VERKAUFT!", maxToggles: "MAX 3 SCHALTER ERLAUBT", warpAhead: "VORWÄRTS GEWARPT! +10", warpBack: "ZURÜCK GEWARPT! -10", endlessMode: "ENDLOSMODUS!", codeRedeemed: "CODE EINGELÖST!", unlimitedAir: "du hast unbegrenzt Luft bekommen", searchingOpponent: "SUCHE GEGNER...", waitingFor: "WARTE AUF", cancel: "ABBRECHEN", challengedYou: "FORDERT DICH HERAUS!",
+    syncingData: "DATEN WERDEN SYNCHRONISIERT...", dataSynced: "DATEN SYNCHRONISIERT!", bossDefeated: "BOSS BESIEGT!", boss2Defeated: "BOSS 2 BESIEGT!", opponentDisconnected: "GEGNER GETRENNT!", customEquipped: "CUSTOM AUSGERÜSTET!", itemSold: "ARTIKEL VERKAUFT!", maxToggles: "MAX 3 SCHALTER ERLAUBT", warpAhead: "VORWÄRTS GEWARPT! +10", warpBack: "ZURÜCK GEWARPT! -10", endlessMode: "ENDLOSMODUS!", codeRedeemed: "CODE EINGELÖST!", unlimitedAir: "du hast unbegrenzt Luft bekommen", searchingOpponent: "SUCHE GEGNER", waitingFor: "WARTE AUF", cancel: "ABBRECHEN", challengedYou: "FORDERT DICH HERAUS!",
     shopEquipped: "AUSGERÜSTET", shopEquip: "AUSRÜSTEN", shopBuy: "KAUFEN", shopSell: "VERKAUFEN", achReward: "Belohnung:", none: "Keine",
     b1_1: "oh, da bist du ja", b1_2: "ich habe auf dich gewartet", b2_1: "du gerätst außer kontrolle", b2_2: "du solltest nicht HIERHER kommen", b2_3: "es ist zu spät um umzukehren....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "Also, wir reden nicht darueber, wie ein Hund fliegt?", b3_2: "Warum frage ich ueberhaupt? Das sind nicht mal meine Gedanken, der Spieleentwickler tippt hier den ganzen Unsinn.", b3_3: "Ich glaube, er dachte, es waere lustig, mich fragen zu lassen, warum ein Hund fliegt.", b3_4: "Dann fangen wir wohl besser an zu kaempfen.", boss3Defeated: "DRACHE BESIEGT!", sys: "Systemüberschreibung...", bypass: "Umgehung...", admin: "Administrator gewährt.", tbc: "Fortsetzung folgt...", cat: "DAS WAR EINE KATZE", kid: "du wurdest von einem kind erwischt lmao", err1: "Verbindungsfehler", highPlace: "shetos starb aus großer Höhe", fall: "Heruntergefallen!", wall: "Wand getroffen!", eaten: "VON SHETOS GEFRESSEN!" },
-    ar: { play: "العب", shop: "المتجر", achieve: "إنجازات", friends: "أصدقاء", lead: "المتصدرين", ai: "محادثة ذكاء", redeem: "استرداد", high: "أعلى نتيجة", food: "طعام جاف", trophies: "الجوائز", games: "الألعاب", welcome: "مرحباً بكم في<br>فلاينج شيتوس", understand: "أنا أفهم", chooseMode: "اختر الوضع", story: "وضع القصة", endless: "وضع لا نهاية له", pvp: "وضع لاعب ضد لاعب", settings: "الإعدادات", netWorth: "صافي الثروة", storySecret: "القصة",
+    ar: { play: "العب", shop: "المتجر", achieve: "إنجازات", friends: "أصدقاء", lead: "المتصدرين", ai: "محادثة ذكاء", redeem: "استرداد", high: "أعلى نتيجة", food: "طعام جاف", trophies: "الجوائز", games: "الألعاب", welcome: "مرحباً بكم في<br>فلاينج شيتوس", understand: "أنا أفهم", fullscreen: "ملء الشاشة", exitFullscreen: "إنهاء ملء الشاشة", chooseMode: "اختر الوضع", story: "وضع القصة", endless: "وضع لا نهاية له", pvp: "وضع لاعب ضد لاعب", settings: "الإعدادات", netWorth: "صافي الثروة", storySecret: "القصة",
     comingSoon: "قريباً", comingSoonDesc: "متاح في تحديث مستقبلي.", storyDesc: "المغامرة الكلاسيكية.<br>أسرار وزعماء.", endlessDesc: "جري لا نهائي.<br>السرعة تزداد إلى الأبد.<br><b style='color:white;'>لوحة المتصدرين مفعّلة</b>", pvpDesc: "معركة النقاط!<br>أونلاين.", trophiesLabel: "الجوائز:", back: "رجوع", selectOpponent: "اختر الخصم", online: "أونلاين", onlineDesc: "طابق مع<br>بشر حقيقيين.", snowMode: "وضع كرة الثلج", snowModeDesc: "راوغ وارمِ أونلاين!<br>أول من يسجل 5 إصابات يفوز.", snowBtn: "ثلج", snowTarget: "أول من يسجل 5 إصابات يفوز بالجولة!", santaPower: "هدية سانتا (المزلجة / الفلتر)", witchPower: "سحر الساحرة (المكنسة / الخفافيش)", beatMode: "معركة الإيقاع", beatModeDesc: "مبارزة إيقاع أونلاين!<br>اضغط المسارات وادفع الشريط!", beatTarget: "ادفع الشريط إلى جهتك!", round: "الجولة", you: "أنت", opponent: "الخصم", target: "الهدف: لا تصطدم!",
     music: "الموسيقى", musicVol: "حجم الموسيقى", sfx: "المؤثرات", sfxVol: "حجم المؤثرات", woof: "ووف", xmasMode: "عيد الميلاد", language: "اللغة", resume: "استئناف", getReady: "استعد", quitToMenu: "العودة إلى القائمة",
     shopTitle: "المتجر", dryFood: "الطعام الجاف:", theLab: "المختبر", skins: "الأشكال", trails: "الأثر", netWorthDesc: "أغنى اللاعبين حسب كمية الطعام الجاف.", netWorthLogin: "سجّل الدخول لرؤية لوحة متصدري الطعام الجاف.", storyTitle: "FmouAmfnRdkaksvM", storyInstructions: "اكتب الترجمات الإنجليزية لأجزاء القصة العشرة الظاهرة على شاشة الموت بالترتيب لتحصل على 2000 طعام جاف. يمكن الحصول على المكافأة مرة واحدة فقط.", storyClaim: "احصل على 2000 طعام جاف", storyAlready: "تم الحصول على مكافأة القصة من قبل.", storyWrong: "الجزء {n} غير صحيح. راجع الترجمة وحاول مرة أخرى.", storySuccess: "اكتملت القصة! +2000 طعام جاف!", storyPlaceholder: "اكتب الترجمة الإنجليزية...", storyPart: "الجزء", storyTranslation: "الترجمة",
@@ -976,10 +1069,10 @@
     privacyLink: "سياسة الخصوصية", bugsAdvice: "الأخطاء/النصيحة:", login: "تسجيل الدخول", logout: "تسجيل الخروج", dash: "اندفاع", shrink: "انكماش", widen: "توسيع", bomb: "قنبلة", predictBtn: "تنبؤ", hrBreakBtn: "استراحة", deadEyeBtn: "عين قاتلة", santaBtn: "هدية", sleighBlitzMsg: "اندفاع الزلاجة!", niceFilterMsg: "شقي أم لطيف!", witchBtn: "سحر", broomMsg: "اندفاع مكنسة الساحرة!", batsMsg: "حماية الخفافيش!", batsLabel: "الخفافيش: ", delete: "حذف", downloading: "جارٍ تحميل الأصول...",
     scoreLabel: "النقاط: ", endlessLabel: "لا نهائي: ", error: "خطأ", foodLabel: "الطعام: ", shield: "درع", doubleDryfood: "طعام جاف مضاعف", slowMotion: "حركة بطيئة", livesLabel: "الأرواح: ", godMode: "وضع الإله", bombsLabel: "القنابل: ", dashesLabel: "الاندفاعات: ", shrinksLabel: "الانكماش: ", widensLabel: "التوسيع: ", victory: "النصر!", go: "انطلق!", waitingShetos: "في انتظار شيتوس...", waitingOpponent: "في انتظار الخصم...", tapMenu: "اضغط للعودة إلى القائمة", unknownArea: "منطقة غير معروفة", active: "نشط", autoPilot: "الطيار الآلي", searching: "جارٍ البحث...",
     area0: "البداية", area1: "السماء", area2: "الغروب", area3: "الليل", area4: "الفراغ",
-    syncingData: "جارٍ مزامنة البيانات...", dataSynced: "تمت مزامنة البيانات!", bossDefeated: "تم هزيمة الزعيم!", boss2Defeated: "تم هزيمة الزعيم 2!", opponentDisconnected: "انقطع الخصم!", customEquipped: "تم تجهيز المخصص!", itemSold: "تم بيع العنصر!", maxToggles: "مسموح بـ 3 مفاتيح كحد أقصى", warpAhead: "قفزة للأمام! +10", warpBack: "قفزة للخلف! -10", endlessMode: "الوضع اللانهائي!", codeRedeemed: "تم استرداد الرمز!", unlimitedAir: "حصلت على كمية غير محدودة من الهواء", searchingOpponent: "جارٍ البحث عن خصم...", waitingFor: "في انتظار", cancel: "إلغاء", challengedYou: "تحداك!",
+    syncingData: "جارٍ مزامنة البيانات...", dataSynced: "تمت مزامنة البيانات!", bossDefeated: "تم هزيمة الزعيم!", boss2Defeated: "تم هزيمة الزعيم 2!", opponentDisconnected: "انقطع الخصم!", customEquipped: "تم تجهيز المخصص!", itemSold: "تم بيع العنصر!", maxToggles: "مسموح بـ 3 مفاتيح كحد أقصى", warpAhead: "قفزة للأمام! +10", warpBack: "قفزة للخلف! -10", endlessMode: "الوضع اللانهائي!", codeRedeemed: "تم استرداد الرمز!", unlimitedAir: "حصلت على كمية غير محدودة من الهواء", searchingOpponent: "جارٍ البحث عن خصم", waitingFor: "في انتظار", cancel: "إلغاء", challengedYou: "تحداك!",
     shopEquipped: "مُجهَّز", shopEquip: "تجهيز", shopBuy: "شراء", shopSell: "بيع", achReward: "المكافأة:", none: "لا شيء",
     b1_1: "أوه، ها أنت ذا", b1_2: "كنت في انتظارك", b2_1: "أنت تخرج عن السيطرة", b2_2: "لم يكن من المفترض أن تأتي إلى هنا", b2_3: "لقد فات الأوان للتراجع....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "طيب، مش هنتكلم إزاي كلب بيطير؟", b3_2: "ليه بسأل أصلًا؟ دي مش أفكاري، ده مطور اللعبة اللي بيكتب كل الهبل ده.", b3_3: "أكيد افتكر إنه مضحك يخليني أسأل ليه كلب بيطير.", b3_4: "خلينا نبدأ القتال يعني.", boss3Defeated: "تم هزيمة التنين!", sys: "تجاوز النظام...", bypass: "جاري التجاوز...", admin: "تم منح حق المسؤول.", tbc: "يتبع...", cat: "تلك كانت قطة", kid: "لقد صدمك طفل لول", err1: "خطأ في الاتصال", highPlace: "مات شيتوس من مكان مرتفع", fall: "سقطت!", wall: "اصطدمت بجدار!", eaten: "أكلك شيتوس!" },
-    it: { play: "GIOCA", shop: "NEGOZIO", achieve: "RISULTATI", friends: "AMICI", lead: "CLASSIFICA", ai: "CHAT AI", redeem: "RISCATTA", high: "Punteggio Max", food: "Cibo Secco", trophies: "Trofei", games: "Giochi", welcome: "BENVENUTO A<br>FLYING SHETOS", understand: "CAPISCO", chooseMode: "Scegli Modalità", story: "MODALITÀ STORIA", endless: "MODALITÀ INFINITA", pvp: "MODALITÀ PVP", settings: "IMPOSTAZIONI", netWorth: "PATRIMONIO", storySecret: "STORIA",
+    it: { play: "GIOCA", shop: "NEGOZIO", achieve: "RISULTATI", friends: "AMICI", lead: "CLASSIFICA", ai: "CHAT AI", redeem: "RISCATTA", high: "Punteggio Max", food: "Cibo Secco", trophies: "Trofei", games: "Giochi", welcome: "BENVENUTO A<br>FLYING SHETOS", understand: "CAPISCO", fullscreen: "SCHERMO INTERO", exitFullscreen: "ESCI DA SCHERMO INTERO", chooseMode: "Scegli Modalità", story: "MODALITÀ STORIA", endless: "MODALITÀ INFINITA", pvp: "MODALITÀ PVP", settings: "IMPOSTAZIONI", netWorth: "PATRIMONIO", storySecret: "STORIA",
     comingSoon: "IN ARRIVO", comingSoonDesc: "Disponibile in un futuro aggiornamento.", storyDesc: "L'avventura classica.<br>Segreti & Boss.", endlessDesc: "Corsa infinita.<br>La velocità aumenta per sempre.<br><b style='color:white;'>Classifica attivata</b>", pvpDesc: "Battaglia di punteggi!<br>Online.", trophiesLabel: "Trofei:", back: "INDIETRO", selectOpponent: "Seleziona Avversario", online: "ONLINE", onlineDesc: "Abbinati con<br>persone reali.", snowMode: "MODALITÀ PALLE DI NEVE", snowModeDesc: "Schiva e lancia online!<br>Chi colpisce 5 volte vince.", snowBtn: "NEVE", snowTarget: "Chi colpisce 5 volte vince il round!", santaPower: "Regalo di Natale (Slitta / Filtro)", witchPower: "Magia della Strega (Scopa / Pipistrelli)", beatMode: "SFIDA A RITMO", beatModeDesc: "Duello ritmico online!<br>Tocca le corsie, spingi la barra!", beatTarget: "Spingi la barra dalla tua parte!", round: "ROUND", you: "TU", opponent: "AVVERSARIO", target: "Obiettivo: Non schiantarti!",
     music: "MUSICA", musicVol: "VOLUME MUSICA", sfx: "SFX", sfxVol: "VOLUME SFX", woof: "WOOF", xmasMode: "NATALE", language: "LINGUA", resume: "RIPRENDI", getReady: "PREPARATI", quitToMenu: "ESCI AL MENU",
     shopTitle: "Negozio", dryFood: "Cibo Secco:", theLab: "IL LABORATORIO", skins: "SKIN", trails: "SCIE", netWorthDesc: "I giocatori più ricchi classificati per Cibo Secco.", netWorthLogin: "Accedi per vedere la classifica del Cibo Secco.", storyTitle: "FmouAmfnRdkaksvM", storyInstructions: "Inserisci in inglese le traduzioni delle 10 parti della storia mostrate nella schermata di morte, nell'ordine corretto, per ottenere 2.000 Cibo Secco. La ricompensa è disponibile una sola volta.", storyClaim: "RISCATTA 2.000 CIBO SECCO", storyAlready: "La ricompensa della storia è già stata riscattata.", storyWrong: "La parte {n} non è corretta. Controlla la traduzione e riprova.", storySuccess: "Storia completata! +2.000 Cibo Secco!", storyPlaceholder: "Scrivi la traduzione inglese...", storyPart: "PARTE", storyTranslation: "traduzione",
@@ -990,7 +1083,7 @@
     privacyLink: "Informativa sulla privacy", bugsAdvice: "Bug/Consigli:", login: "Accedi", logout: "Esci", dash: "SCATTO", shrink: "RIMPICCIOLISCI", widen: "ALLARGA", bomb: "BOMBA", predictBtn: "PREVEDI", hrBreakBtn: "PAUSA HR", deadEyeBtn: "OCCHIO MORTALE", santaBtn: "REGALO", sleighBlitzMsg: "SLITTA BLITZ!", niceFilterMsg: "CATTIVO O BUONO!", witchBtn: "MAGIA", broomMsg: "SCOPA DELLA STREGA!", batsMsg: "PROTEZIONE DEI PIPISTRELLI!", batsLabel: "PIPISTRELLI: ", delete: "ELIMINA", downloading: "Download risorse...",
     scoreLabel: "Punteggio: ", endlessLabel: "Infinito: ", error: "ERRORE", foodLabel: "Cibo: ", shield: "SCUDO", doubleDryfood: "CIBO SECCO DOPPIO", slowMotion: "RALLENTATORE", livesLabel: "Vite: ", godMode: "MODALITÀ DIO", bombsLabel: "Bombe: ", dashesLabel: "Scatti: ", shrinksLabel: "Rimpicciolimenti: ", widensLabel: "Allargamenti: ", victory: "VITTORIA!", go: "VIA!", waitingShetos: "In attesa di Shetos...", waitingOpponent: "In attesa dell'avversario...", tapMenu: "Tocca per tornare al menu", unknownArea: "ZONA SCONOSCIUTA", active: "ATTIVO", autoPilot: "PILOTA AUTOMATICO", searching: "Ricerca...",
     area0: "L'inizio", area1: "Il CIELO", area2: "Il TRAMONTO", area3: "La NOTTE", area4: "Il VUOTO",
-    syncingData: "SINCRONIZZAZIONE DATI...", dataSynced: "DATI SINCRONIZZATI!", bossDefeated: "BOSS SCONFITTO!", boss2Defeated: "BOSS 2 SCONFITTO!", opponentDisconnected: "AVVERSARIO DISCONNESSO!", customEquipped: "PERSONALIZZATO EQUIPAGGIATO!", itemSold: "OGGETTO VENDUTO!", maxToggles: "MAX 3 INTERRUTTORI CONSENTITI", warpAhead: "AVANZI! +10", warpBack: "INDIETRO! -10", endlessMode: "MODALITÀ INFINITA!", codeRedeemed: "CODICE RISCATTATO!", unlimitedAir: "hai ottenuto aria illimitata", searchingOpponent: "CERCO UN AVVERSARIO...", waitingFor: "IN ATTESA DI", cancel: "ANNULLA", challengedYou: "TI HA SFIDATO!",
+    syncingData: "SINCRONIZZAZIONE DATI...", dataSynced: "DATI SINCRONIZZATI!", bossDefeated: "BOSS SCONFITTO!", boss2Defeated: "BOSS 2 SCONFITTO!", opponentDisconnected: "AVVERSARIO DISCONNESSO!", customEquipped: "PERSONALIZZATO EQUIPAGGIATO!", itemSold: "OGGETTO VENDUTO!", maxToggles: "MAX 3 INTERRUTTORI CONSENTITI", warpAhead: "AVANZI! +10", warpBack: "INDIETRO! -10", endlessMode: "MODALITÀ INFINITA!", codeRedeemed: "CODICE RISCATTATO!", unlimitedAir: "hai ottenuto aria illimitata", searchingOpponent: "CERCO UN AVVERSARIO", waitingFor: "IN ATTESA DI", cancel: "ANNULLA", challengedYou: "TI HA SFIDATO!",
     shopEquipped: "EQUIPAGGIATO", shopEquip: "EQUIPAGGIA", shopBuy: "COMPRA", shopSell: "VENDI", achReward: "Ricompensa:", none: "Nessuna",
     b1_1: "oh, eccoti qui", b1_2: "ti stavo aspettando", b2_1: "stai perdendo il controllo", b2_2: "non dovevi venire QUI", b2_3: "è troppo tardi per tornare indietro....", b2_reverse: "ekatsim gib a gnikam era uoY", b3_1: "Quindi, non parliamo del fatto che un cane vola?", b3_2: "Perche' lo chiedo? Non sono nemmeno i miei pensieri, e' lo sviluppatore che scrive tutte queste sciocchezze.", b3_3: "Immagino abbia pensato che fosse divertente farmi chiedere perche' un cane vola.", b3_4: "Direi di iniziare a combattere.", boss3Defeated: "DRAGO SCONFITTO!", sys: "Override del Sistema...", bypass: "Bypass in corso...", admin: "Amministratore Concesso.", tbc: "Continua...", cat: "QUELLO ERA UN GATTO", kid: "ti ha colpito un bambino lmao", err1: "Errore di Connessione", highPlace: "shetos è morto da un luogo alto", fall: "Sei caduto!", wall: "Hai colpito un muro!", eaten: "MANGIATO DA SHETOS!" }
 };
@@ -1002,6 +1095,9 @@
             document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if (t[k] !== undefined) el.innerText = t[k]; });
             document.querySelectorAll('[data-i18n-html]').forEach(el => { const k = el.getAttribute('data-i18n-html'); if (t[k] !== undefined) el.innerHTML = t[k]; });
             document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { const k = el.getAttribute('data-i18n-placeholder'); if (t[k] !== undefined) el.placeholder = t[k]; });
+            // The two fullscreen buttons build their own label (it depends on the current
+            // fullscreen state, not only on the language), so refresh them here as well.
+            try { if (typeof window.updateFullscreenButtons === 'function') window.updateFullscreenButtons(); } catch (e) {}
             document.getElementById('lang-select').blur();
         }
 
@@ -1246,14 +1342,18 @@
         window.signInWithGoogle = function() {
             if(!auth) return showGameMessage("Offline Mode: Login unavailable.");
             const provider = new firebase.auth.GoogleAuthProvider();
-            const wasFullscreen = !!document.fullscreenElement;
+            const wasFullscreen = window.isFullscreenActive();
             auth.signInWithPopup(provider).then(function() {
                 // The Google popup steals focus and drops the page out of fullscreen.
                 // Fullscreen can only be re-entered from a fresh user gesture, so we
-                // refresh the page after a successful login: the startup screen's
-                // "I UNDERSTAND" click then puts the game straight back to fullscreen.
+                // refresh the page after a successful login and leave a note behind in
+                // localStorage: the boot code then puts the game straight back into
+                // fullscreen on the player's very next tap. (That job used to belong to
+                // the "I UNDERSTAND" click, but the warning now shows only once, so it
+                // can no longer be relied on.)
                 // Players who never entered fullscreen are left alone (no reload).
-                if (wasFullscreen && !document.fullscreenElement) {
+                if (wasFullscreen && !window.isFullscreenActive()) {
+                    try { localStorage.setItem('flappyPendingFullscreen', '1'); } catch (e) {}
                     setTimeout(function() { try { location.reload(); } catch (e) {} }, 1500);
                 }
             }).catch(e => showGameMessage(e.message));
@@ -1565,7 +1665,8 @@
          window.challengeFriend = async function(friendID, friendName, mode) {
              playClickSound(); snowballMode = (mode === 'snowball' || mode === true); beatMode = (mode === 'beat'); closeAllModals(); if(!db || !currentUser) return;
              mainMenuMusic.pause(); mainMenuMusic.currentTime = 0; document.getElementById('landing-page').style.display = 'none'; 
-             showMatchLoader(getLangText('waitingFor') + ' ' + friendName.toUpperCase() + '...' + (snowballMode ? ' ❄' : (beatMode ? ' 🎵' : '')));
+             /* No trailing "..." here: showMatchLoader already appends the animated 3 dots. */
+             showMatchLoader(getLangText('waitingFor') + ' ' + friendName.toUpperCase() + (snowballMode ? ' ❄' : (beatMode ? ' 🎵' : '')));
              
              let createdMatchID = null;
              // A token so cancelMatchSearch() can abort a challenge that is still being
@@ -4244,6 +4345,7 @@ window.playClickSound = function() {
          function bootStep(name, fn) { try { fn(); } catch (e) { console.error("Boot step failed: " + name, e); } }
          bootStep('applyScale', applyScale);
          bootStep('applySavedSettings', applySavedSettings);
+         bootStep('updateFullscreenButtons', updateFullscreenButtons);   // syncs the fullscreen icon/label with the real state
          bootStep('updateSplashText', updateSplashText);   // the splash is no longer a translated string, so seed one at boot
          bootStep('applyDNDUI', applyDNDUI);
          bootStep('updateMenuStats', updateMenuStats);
