@@ -19,6 +19,12 @@
         #loading-bar-container { width: 300px; height: 20px; border: 2px solid white; border-radius: 10px; overflow: hidden; margin-top: 20px; }
         #loading-bar { width: 0%; height: 100%; background: lime; transition: width 0.2s; }
         #loading-text { font-family: 'Press Start 2P', cursive; color: white; font-size: 14px; margin-top: 10px; }
+        /* Extra line under the bar. Stays empty (and therefore invisible) while the
+           download is healthy; it only speaks up when files stall, so the player is
+           told what is happening instead of watching a frozen percentage. */
+        #loading-status { font-family: Arial, sans-serif; color: #f1c40f; font-size: 12px; margin-top: 14px; padding: 0 20px; max-width: 460px; text-align: center; line-height: 1.7; }
+        #loading-status:empty { display: none; }
+        #loading-status button { margin-top: 12px; font-size: 12px; }
         
         #ping-counter { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); font-family: 'Press Start 2P', cursive; font-size: 10px; color: lime; z-index: 200; text-shadow: 1px 1px black; }
         
@@ -319,6 +325,7 @@
          <div id="loading-bar-container">
              <div id="loading-bar"></div>
          </div>
+         <div id="loading-status"></div>
      </div>
 
      <div id="startup-warning" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; box-sizing: border-box;">
@@ -757,13 +764,40 @@
          // half-built: the stat boxes kept their placeholder "0"s and every menu button
          // (they all call playClickSound() first) silently stopped working, because the
          // handler it needed had never been defined. Nothing can stop that throw any
-         // more, but at least the loading screen can never trap the player behind it.
+         // more, but at least a dead button now says so instead of doing nothing.
+         // Note: this used to force the loading screen away on the first error or tap.
+         // It deliberately does not any more - the main menu must never open on top of a
+         // half-downloaded game. The asset gate below is the only way through, and a
+         // boot that dies before it can even start reports itself instead of hiding.
         window.__flyingShetosErrors = 0;
+        // Flipped by the preloader once every asset has either loaded or failed.
+        window.__assetsReady = false;
+        window.__preloaderStarted = false;
         function clearLoadingScreen() {
+            if (!window.__assetsReady) return;   // never open the menu on missing assets
             try { var el = document.getElementById('loading-screen'); if (el && el.style.display !== 'none') el.style.display = 'none'; } catch (e) {}
+        }
+        // If boot crashed before the preloader could even start there is nothing left to
+        // wait for, so say so on the loading screen (with a way out) rather than leaving
+        // the player staring at a frozen 0%.
+        function reportStartupFailure() {
+            try {
+                if (window.__assetsReady || window.__preloaderStarted) return;
+                var box = document.getElementById('loading-status');
+                if (!box || box.getAttribute('data-failed') === '1') return;
+                box.setAttribute('data-failed', '1');
+                box.innerHTML = 'The game failed to start loading.';
+                var btn = document.createElement('button');
+                btn.className = 'enter-btn btn-yellow';
+                btn.innerText = 'RELOAD';
+                btn.onclick = function () { try { location.reload(); } catch (e) {} };
+                box.appendChild(document.createElement('br'));
+                box.appendChild(btn);
+            } catch (e) {}
         }
         window.addEventListener('error', function () { window.__flyingShetosErrors++; clearLoadingScreen(); }, true);
         window.addEventListener('unhandledrejection', function () { window.__flyingShetosErrors++; clearLoadingScreen(); });
+        window.addEventListener('load', function () { setTimeout(reportStartupFailure, 2000); });
 
         // Every menu button calls playClickSound() first. If a boot error ever stops
         // the full definition further down from being built, this early version keeps
@@ -861,19 +895,10 @@
             }
         } catch (e) {}
 
-        // Whatever happens during boot, the first tap/click/keypress anywhere
-        // dismisses the loading screen so the menu can never be stuck behind it.
-        function clearLoadingOnAnyInput() {
-            clearLoadingScreen();
-            window.removeEventListener('pointerdown', clearLoadingOnAnyInput, true);
-            window.removeEventListener('mousedown', clearLoadingOnAnyInput, true);
-            window.removeEventListener('touchstart', clearLoadingOnAnyInput, true);
-            window.removeEventListener('keydown', clearLoadingOnAnyInput, true);
-        }
-        window.addEventListener('pointerdown', clearLoadingOnAnyInput, true);
-        window.addEventListener('mousedown', clearLoadingOnAnyInput, true);
-        window.addEventListener('touchstart', clearLoadingOnAnyInput, true);
-        window.addEventListener('keydown', clearLoadingOnAnyInput, true);
+        // There used to be a "first tap/click/keypress anywhere dismisses the loading
+        // screen" escape hatch here. It is gone on purpose: it let an impatient player
+        // tap straight past the download bar into a main menu whose skins, backgrounds
+        // and sounds had not arrived yet. The asset gate below is now the only way in.
 
         // --- IN-GAME MESSAGES ------------------------------------------------
         // alert()/prompt() yank the player out of fullscreen (and on mobile can
@@ -945,7 +970,7 @@
             const missing = [];
             for (let i = 0; i < menuHandlers.length; i++) {
                 if (typeof window[menuHandlers[i]] !== 'function') {
-                    window[menuHandlers[i]] = function() { try { showGameMessage("The game is still loading - please refresh the page once more."); } catch (e) {} };
+                    window[menuHandlers[i]] = function() { try { showGameMessage("Please logout and login again."); } catch (e) {} };
                     missing.push(menuHandlers[i]);
                 }
             }
@@ -1038,7 +1063,7 @@
     dnd: "DND", dndInfo: "Do Not Disturb: mutes ALL game music and sound effects so your own music keeps playing uninterrupted.",
     profileBtn: "STATS", charactersTitle: "Characters", fromFriend: "from", challengeDeclined: "CHALLENGE DECLINED", giftSent: "GIFT SENT!",
     splash: "Splash!", achievements: "Achievements", characterInfo: "Character Info", noDescription: "No description available.", endlessLeaderboard: "Endless Leaderboard", allTime: "ALL TIME", weekly: "WEEKLY", rank: "Rank", player: "Player", score: "Score", loading: "Loading...", offlineMode: "Offline Mode", noScores: "No scores yet.", errorLoading: "Error loading scores.", friendsTitle: "Friends", enterUsername: "Enter Exact Username", add: "ADD", loadingFriends: "Loading Friends...", noFriends: "No friends added yet.", chat: "CHAT", donate: "DONATE", challenge: "CHALLENGE", redeemCode: "REDEEM CODE", secretCode: "Enter your secret code here. One-time use only!", enterCode: "Enter code...", submit: "SUBMIT",
-    privacyLink: "Privacy Policy", bugsAdvice: "Bugs/Advice:", login: "Login", logout: "Logout", dash: "DASH", shrink: "SHRINK", widen: "WIDEN", bomb: "BOMB", predictBtn: "PREDICT", hrBreakBtn: "HR BREAK", deadEyeBtn: "DEAD EYE", santaBtn: "GIFT", sleighBlitzMsg: "SLEIGH BLITZ!", niceFilterMsg: "NAUGHTY OR NICE FILTER!", witchBtn: "MAGIC", broomMsg: "WITCH'S BROOM BOOST!", batsMsg: "BAT'S PROTECTION!", batsLabel: "BATS: ", delete: "DELETE", downloading: "Downloading Assets...",
+    privacyLink: "Privacy Policy", bugsAdvice: "Bugs/Advice:", login: "Login", logout: "Logout", dash: "DASH", shrink: "SHRINK", widen: "WIDEN", bomb: "BOMB", predictBtn: "PREDICT", hrBreakBtn: "HR BREAK", deadEyeBtn: "DEAD EYE", santaBtn: "GIFT", sleighBlitzMsg: "SLEIGH BLITZ!", niceFilterMsg: "NAUGHTY OR NICE FILTER!", witchBtn: "MAGIC", broomMsg: "WITCH'S BROOM BOOST!", batsMsg: "BAT'S PROTECTION!", batsLabel: "BATS: ", delete: "DELETE", downloading: "Downloading Assets...", stillDownloading: "Still downloading %N file(s)...", stuckFiles: "These files will not finish downloading:", reload: "RELOAD",
     scoreLabel: "Score: ", endlessLabel: "Endless: ", error: "ERROR", foodLabel: "Food: ", shield: "SHIELD", doubleDryfood: "DOUBLE DRYFOOD", slowMotion: "SLOW MOTION", livesLabel: "Lives: ", godMode: "GOD MODE", bombsLabel: "Bombs: ", dashesLabel: "Dashes: ", shrinksLabel: "Shrinks: ", widensLabel: "Widens: ", victory: "VICTORY!", go: "GO!", waitingShetos: "Waiting for Shetos...", waitingOpponent: "Waiting for Opponent...", tapMenu: "Tap to return to Menu", unknownArea: "UNKNOWN AREA", active: "ACTIVE", autoPilot: "AUTO-PILOT", searching: "Searching...",
     area0: "The Beginning", area1: "The SKY", area2: "The SUNSET", area3: "The NIGHT", area4: "The VOID",
     syncingData: "SYNCING DATA...", dataSynced: "DATA SYNCED!", bossDefeated: "BOSS DEFEATED!", boss2Defeated: "BOSS 2 DEFEATED!", opponentDisconnected: "OPPONENT DISCONNECTED!", customEquipped: "CUSTOM EQUIPPED!", itemSold: "ITEM SOLD!", maxToggles: "MAX 3 TOGGLES ALLOWED", warpAhead: "WARP AHEAD! +10", warpBack: "WARP BACK! -10", endlessMode: "ENDLESS MODE!", codeRedeemed: "CODE REDEEMED!", unlimitedAir: "you got unlimited amount of air", searchingOpponent: "SEARCHING FOR OPPONENT", waitingFor: "WAITING FOR", cancel: "CANCEL", challengedYou: "CHALLENGED YOU!",
@@ -1052,7 +1077,7 @@
     friend: "Freund", typeMessage: "Nachricht eingeben...", acceptChallenge: "Nimmst du die Herausforderung an?", accept: "ANNEHMEN", decline: "ABLEHNEN",
     unlockLabText: "Schalte die Macht frei, um<br>deinen ultimativen Custom Shetos zu bauen.", labCost: "Kosten: 1500 Trockenfutter", unlockLab: "LABOR FREISCHALTEN", pointsAvailable: "VERFÜGBARE PUNKTE:", baseAppearance: "GRUNDAUSSEHEN", abilities: "FÄHIGKEITEN (Max 10 Gesamt) - Max 3 aktivieren", lives: "Leben (Herzen)", dashes: "Sprints", bombs: "Bomben", shrinks: "Schrumpfen", widenGap: "Lücke vergrößern", magnetizeFood: "Futter magnetisieren", predict: "Vorhersagen (Autopilot)", hrBreak: "HR-Pause (Unverwundbarkeit)", deadEye: "Todesblick (Zielen)", customTrailColors: "INDIVIDUELLE SPURFARBEN", baseColor: "Basisfarbe", shieldColor: "Schildfarbe", damageColor: "Schadensfarbe", potionColor: "Trankfarbe", slowColor: "Zeitlupenfarbe", foodColor: "Futterfarbe", saveEquip: "SPEICHERN & AUSRÜSTEN",
     splash: "Splash!", achievements: "Erfolge", characterInfo: "Charakterinfo", noDescription: "Keine Beschreibung verfügbar.", endlessLeaderboard: "Endlos-Bestenliste", allTime: "ALLZEIT", weekly: "WÖCHENTLICH", rank: "Rang", player: "Spieler", score: "Punkte", loading: "Lädt...", offlineMode: "Offline-Modus", noScores: "Noch keine Punkte.", errorLoading: "Fehler beim Laden der Punkte.", friendsTitle: "Freunde", enterUsername: "Exakten Benutzernamen eingeben", add: "HINZUFÜGEN", loadingFriends: "Lade Freunde...", noFriends: "Noch keine Freunde hinzugefügt.", chat: "CHAT", donate: "SPENDEN", challenge: "HERAUSFORDERN", redeemCode: "CODE EINLÖSEN", secretCode: "Gib hier deinen geheimen Code ein. Nur einmal verwendbar!", enterCode: "Code eingeben...", submit: "ABSENDEN",
-    privacyLink: "Datenschutzerklärung", bugsAdvice: "Fehler/Rat:", login: "Anmelden", logout: "Abmelden", dash: "SPRINT", shrink: "SCHRUMPFEN", widen: "ERWEITERN", bomb: "BOMBE", predictBtn: "VORHERSAGEN", hrBreakBtn: "HR-PAUSE", deadEyeBtn: "TODESBLICK", santaBtn: "GESCHENK", sleighBlitzMsg: "SCHLITTEN-BLITZ!", niceFilterMsg: "BÖSE ODER LIEB-FILTER!", witchBtn: "MAGIE", broomMsg: "HEXENBESEN-SCHUB!", batsMsg: "FLEDERMAUS-SCHUTZ!", batsLabel: "FLEDERMÄUSE: ", delete: "LÖSCHEN", downloading: "Assets werden geladen...",
+    privacyLink: "Datenschutzerklärung", bugsAdvice: "Fehler/Rat:", login: "Anmelden", logout: "Abmelden", dash: "SPRINT", shrink: "SCHRUMPFEN", widen: "ERWEITERN", bomb: "BOMBE", predictBtn: "VORHERSAGEN", hrBreakBtn: "HR-PAUSE", deadEyeBtn: "TODESBLICK", santaBtn: "GESCHENK", sleighBlitzMsg: "SCHLITTEN-BLITZ!", niceFilterMsg: "BÖSE ODER LIEB-FILTER!", witchBtn: "MAGIE", broomMsg: "HEXENBESEN-SCHUB!", batsMsg: "FLEDERMAUS-SCHUTZ!", batsLabel: "FLEDERMÄUSE: ", delete: "LÖSCHEN", downloading: "Assets werden geladen...", stillDownloading: "%N Datei(en) werden noch geladen...", stuckFiles: "Diese Dateien lassen sich nicht herunterladen:", reload: "NEU LADEN",
     scoreLabel: "Punkte: ", endlessLabel: "Endlos: ", error: "FEHLER", foodLabel: "Futter: ", shield: "SCHILD", doubleDryfood: "DOPPELTROFUTTER", slowMotion: "ZEITLUPE", livesLabel: "Leben: ", godMode: "GOTT-MODUS", bombsLabel: "Bomben: ", dashesLabel: "Sprints: ", shrinksLabel: "Schrumpfen: ", widensLabel: "Erweitern: ", victory: "SIEG!", go: "LOS!", waitingShetos: "Warte auf Shetos...", waitingOpponent: "Warte auf Gegner...", tapMenu: "Tippen, um zum Menü zurückzukehren", unknownArea: "UNBEKANNTES GEBIET", active: "AKTIV", autoPilot: "AUTOPILOT", searching: "Suche...",
     area0: "Der Anfang", area1: "Der HIMMEL", area2: "Der SONNENUNTERGANG", area3: "Die NACHT", area4: "Die LEERE",
     syncingData: "DATEN WERDEN SYNCHRONISIERT...", dataSynced: "DATEN SYNCHRONISIERT!", bossDefeated: "BOSS BESIEGT!", boss2Defeated: "BOSS 2 BESIEGT!", opponentDisconnected: "GEGNER GETRENNT!", customEquipped: "CUSTOM AUSGERÜSTET!", itemSold: "ARTIKEL VERKAUFT!", maxToggles: "MAX 3 SCHALTER ERLAUBT", warpAhead: "VORWÄRTS GEWARPT! +10", warpBack: "ZURÜCK GEWARPT! -10", endlessMode: "ENDLOSMODUS!", codeRedeemed: "CODE EINGELÖST!", unlimitedAir: "du hast unbegrenzt Luft bekommen", searchingOpponent: "SUCHE GEGNER", waitingFor: "WARTE AUF", cancel: "ABBRECHEN", challengedYou: "FORDERT DICH HERAUS!",
@@ -1066,7 +1091,7 @@
     friend: "صديق", typeMessage: "اكتب رسالة...", acceptChallenge: "هل تقبل التحدي؟", accept: "قبول", decline: "رفض",
     unlockLabText: "افتح القوة لبناء<br>شيتوس المخصص النهائي.", labCost: "التكلفة: 1500 طعام جاف", unlockLab: "فتح المختبر", pointsAvailable: "النقاط المتاحة:", baseAppearance: "المظهر الأساسي", abilities: "القدرات (الحد الأقصى 10) - فعّل 3 كحد أقصى", lives: "الأرواح (قلوب)", dashes: "الاندفاعات", bombs: "القنابل", shrinks: "الانكماش", widenGap: "توسيع الفجوة", magnetizeFood: "جذب الطعام", predict: "التنبؤ (الطيار الآلي)", hrBreak: "استراحة (حصانة)", deadEye: "العين القاتلة (التصويب)", customTrailColors: "ألوان الأثر المخصصة", baseColor: "اللون الأساسي", shieldColor: "لون الدرع", damageColor: "لون الضرر", potionColor: "لون الجرعة", slowColor: "لون البطء", foodColor: "لون الطعام", saveEquip: "حفظ وتجهيز المخصص",
     splash: "دفقة!", achievements: "الإنجازات", characterInfo: "معلومات الشخصية", noDescription: "لا يوجد وصف متاح.", endlessLeaderboard: "لوحة متصدرين الوضع اللانهائي", allTime: "كل الأوقات", weekly: "أسبوعي", rank: "الترتيب", player: "اللاعب", score: "النقاط", loading: "جارٍ التحميل...", offlineMode: "وضع غير متصل", noScores: "لا توجد نتائج بعد.", errorLoading: "خطأ في تحميل النتائج.", friendsTitle: "الأصدقاء", enterUsername: "أدخل اسم المستخدم بالضبط", add: "إضافة", loadingFriends: "جارٍ تحميل الأصدقاء...", noFriends: "لم تتم إضافة أصدقاء بعد.", chat: "محادثة", donate: "تبرع", challenge: "تحدي", redeemCode: "استرداد الرمز", secretCode: "أدخل رمزك السري هنا. للاستخدام مرة واحدة فقط!", enterCode: "أدخل الرمز...", submit: "إرسال",
-    privacyLink: "سياسة الخصوصية", bugsAdvice: "الأخطاء/النصيحة:", login: "تسجيل الدخول", logout: "تسجيل الخروج", dash: "اندفاع", shrink: "انكماش", widen: "توسيع", bomb: "قنبلة", predictBtn: "تنبؤ", hrBreakBtn: "استراحة", deadEyeBtn: "عين قاتلة", santaBtn: "هدية", sleighBlitzMsg: "اندفاع الزلاجة!", niceFilterMsg: "شقي أم لطيف!", witchBtn: "سحر", broomMsg: "اندفاع مكنسة الساحرة!", batsMsg: "حماية الخفافيش!", batsLabel: "الخفافيش: ", delete: "حذف", downloading: "جارٍ تحميل الأصول...",
+    privacyLink: "سياسة الخصوصية", bugsAdvice: "الأخطاء/النصيحة:", login: "تسجيل الدخول", logout: "تسجيل الخروج", dash: "اندفاع", shrink: "انكماش", widen: "توسيع", bomb: "قنبلة", predictBtn: "تنبؤ", hrBreakBtn: "استراحة", deadEyeBtn: "عين قاتلة", santaBtn: "هدية", sleighBlitzMsg: "اندفاع الزلاجة!", niceFilterMsg: "شقي أم لطيف!", witchBtn: "سحر", broomMsg: "اندفاع مكنسة الساحرة!", batsMsg: "حماية الخفافيش!", batsLabel: "الخفافيش: ", delete: "حذف", downloading: "جارٍ تحميل الأصول...", stillDownloading: "جارٍ تحميل %N ملف...", stuckFiles: "هذه الملفات لن يكتمل تنزيلها:", reload: "إعادة تحميل",
     scoreLabel: "النقاط: ", endlessLabel: "لا نهائي: ", error: "خطأ", foodLabel: "الطعام: ", shield: "درع", doubleDryfood: "طعام جاف مضاعف", slowMotion: "حركة بطيئة", livesLabel: "الأرواح: ", godMode: "وضع الإله", bombsLabel: "القنابل: ", dashesLabel: "الاندفاعات: ", shrinksLabel: "الانكماش: ", widensLabel: "التوسيع: ", victory: "النصر!", go: "انطلق!", waitingShetos: "في انتظار شيتوس...", waitingOpponent: "في انتظار الخصم...", tapMenu: "اضغط للعودة إلى القائمة", unknownArea: "منطقة غير معروفة", active: "نشط", autoPilot: "الطيار الآلي", searching: "جارٍ البحث...",
     area0: "البداية", area1: "السماء", area2: "الغروب", area3: "الليل", area4: "الفراغ",
     syncingData: "جارٍ مزامنة البيانات...", dataSynced: "تمت مزامنة البيانات!", bossDefeated: "تم هزيمة الزعيم!", boss2Defeated: "تم هزيمة الزعيم 2!", opponentDisconnected: "انقطع الخصم!", customEquipped: "تم تجهيز المخصص!", itemSold: "تم بيع العنصر!", maxToggles: "مسموح بـ 3 مفاتيح كحد أقصى", warpAhead: "قفزة للأمام! +10", warpBack: "قفزة للخلف! -10", endlessMode: "الوضع اللانهائي!", codeRedeemed: "تم استرداد الرمز!", unlimitedAir: "حصلت على كمية غير محدودة من الهواء", searchingOpponent: "جارٍ البحث عن خصم", waitingFor: "في انتظار", cancel: "إلغاء", challengedYou: "تحداك!",
@@ -1080,7 +1105,7 @@
     friend: "Amico", typeMessage: "Scrivi un messaggio...", acceptChallenge: "Accetti la sfida?", accept: "ACCETTA", decline: "RIFIUTA",
     unlockLabText: "Sblocca il potere per costruire<br>il tuo Shetos personalizzato definitivo.", labCost: "Costo: 1500 Cibo Secco", unlockLab: "SBLOCCA LAB", pointsAvailable: "PUNTI DISPONIBILI:", baseAppearance: "ASPETTO BASE", abilities: "ABILITÀ (Max 10 Totali) - Attiva Max 3", lives: "Vite (Cuori)", dashes: "Scatti", bombs: "Bombe", shrinks: "Rimpicciolimenti", widenGap: "Allarga il varco", magnetizeFood: "Magnetizza il cibo", predict: "Prevedi (Pilota automatico)", hrBreak: "Pausa HR (Invincibilità)", deadEye: "Occhio mortale (Mira)", customTrailColors: "COLORI SCIA PERSONALIZZATI", baseColor: "Colore base", shieldColor: "Colore scudo", damageColor: "Colore danno", potionColor: "Colore pozione", slowColor: "Colore rallentamento", foodColor: "Colore cibo", saveEquip: "SALVA & EQUIPAGGIA",
     splash: "Splash!", achievements: "Obiettivi", characterInfo: "Info personaggio", noDescription: "Nessuna descrizione disponibile.", endlessLeaderboard: "Classifica Infinita", allTime: "SEMPRE", weekly: "SETTIMANALE", rank: "Posizione", player: "Giocatore", score: "Punteggio", loading: "Caricamento...", offlineMode: "Modalità offline", noScores: "Nessun punteggio ancora.", errorLoading: "Errore nel caricamento dei punteggi.", friendsTitle: "Amici", enterUsername: "Inserisci il nome utente esatto", add: "AGGIUNGI", loadingFriends: "Caricamento amici...", noFriends: "Nessun amico aggiunto.", chat: "CHAT", donate: "DONA", challenge: "SFIDA", redeemCode: "RISCATTA CODICE", secretCode: "Inserisci il tuo codice segreto qui. Usabile una sola volta!", enterCode: "Inserisci il codice...", submit: "INVIA",
-    privacyLink: "Informativa sulla privacy", bugsAdvice: "Bug/Consigli:", login: "Accedi", logout: "Esci", dash: "SCATTO", shrink: "RIMPICCIOLISCI", widen: "ALLARGA", bomb: "BOMBA", predictBtn: "PREVEDI", hrBreakBtn: "PAUSA HR", deadEyeBtn: "OCCHIO MORTALE", santaBtn: "REGALO", sleighBlitzMsg: "SLITTA BLITZ!", niceFilterMsg: "CATTIVO O BUONO!", witchBtn: "MAGIA", broomMsg: "SCOPA DELLA STREGA!", batsMsg: "PROTEZIONE DEI PIPISTRELLI!", batsLabel: "PIPISTRELLI: ", delete: "ELIMINA", downloading: "Download risorse...",
+    privacyLink: "Informativa sulla privacy", bugsAdvice: "Bug/Consigli:", login: "Accedi", logout: "Esci", dash: "SCATTO", shrink: "RIMPICCIOLISCI", widen: "ALLARGA", bomb: "BOMBA", predictBtn: "PREVEDI", hrBreakBtn: "PAUSA HR", deadEyeBtn: "OCCHIO MORTALE", santaBtn: "REGALO", sleighBlitzMsg: "SLITTA BLITZ!", niceFilterMsg: "CATTIVO O BUONO!", witchBtn: "MAGIA", broomMsg: "SCOPA DELLA STREGA!", batsMsg: "PROTEZIONE DEI PIPISTRELLI!", batsLabel: "PIPISTRELLI: ", delete: "ELIMINA", downloading: "Download risorse...", stillDownloading: "Download di %N file ancora in corso...", stuckFiles: "Questi file non completano il download:", reload: "RICARICA",
     scoreLabel: "Punteggio: ", endlessLabel: "Infinito: ", error: "ERRORE", foodLabel: "Cibo: ", shield: "SCUDO", doubleDryfood: "CIBO SECCO DOPPIO", slowMotion: "RALLENTATORE", livesLabel: "Vite: ", godMode: "MODALITÀ DIO", bombsLabel: "Bombe: ", dashesLabel: "Scatti: ", shrinksLabel: "Rimpicciolimenti: ", widensLabel: "Allargamenti: ", victory: "VITTORIA!", go: "VIA!", waitingShetos: "In attesa di Shetos...", waitingOpponent: "In attesa dell'avversario...", tapMenu: "Tocca per tornare al menu", unknownArea: "ZONA SCONOSCIUTA", active: "ATTIVO", autoPilot: "PILOTA AUTOMATICO", searching: "Ricerca...",
     area0: "L'inizio", area1: "Il CIELO", area2: "Il TRAMONTO", area3: "La NOTTE", area4: "Il VUOTO",
     syncingData: "SINCRONIZZAZIONE DATI...", dataSynced: "DATI SINCRONIZZATI!", bossDefeated: "BOSS SCONFITTO!", boss2Defeated: "BOSS 2 SCONFITTO!", opponentDisconnected: "AVVERSARIO DISCONNESSO!", customEquipped: "PERSONALIZZATO EQUIPAGGIATO!", itemSold: "OGGETTO VENDUTO!", maxToggles: "MAX 3 INTERRUTTORI CONSENTITI", warpAhead: "AVANZI! +10", warpBack: "INDIETRO! -10", endlessMode: "MODALITÀ INFINITA!", codeRedeemed: "CODICE RISCATTATO!", unlimitedAir: "hai ottenuto aria illimitata", searchingOpponent: "CERCO UN AVVERSARIO", waitingFor: "IN ATTESA DI", cancel: "ANNULLA", challengedYou: "TI HA SFIDATO!",
@@ -1183,7 +1208,9 @@
          }, 3000);
 
          const ASSETS_TO_LOAD = [
-             'boss.png', 'boss_2.png', 'player.png', 'chocolate.png', 'shield.png', 'player_shielded.png',
+             // player_rich/yellow/black were missing from this list even though the SKINS
+             // table draws them, so those skins could reach the menu undownloaded.
+             'boss.png', 'boss_2.png', 'player.png', 'player_rich.png', 'player_yellow.png', 'player_black.png', 'chocolate.png', 'shield.png', 'player_shielded.png',
              'potion.png', 'slow_potion.png', 'dryfood.png', 'doordash_cheetos.png', 'luigi_shetos.png', 'heisen_bark.png', 
              'wall.png',
             'sherlock.png', 'employed.png', 'arthur.png', 'santa_shetos.png', 'witch_shetos.png', 
@@ -1192,49 +1219,123 @@
             'big_santa_shetos.png', 'big_witch_shetos.png',
              'bg1.png', 'bg2.png', 'bg3.png', 'bg4.png', 'bg5.png',
              'main_menu.mp3', 'woof.mp3', 'bg_song.mp3', 'void.mp3', 'song_connector.mp3', 'alarm_clock.mp3',
-             'breathing.mp3', 'shield_breaking.mp3', 'damage.mp3', 'explosion.mp3', 'button.mp3', 'buy.mp3',
+             'breathing.mp3', 'Rwrongway.wav', 'shield_breaking.mp3', 'damage.mp3', 'explosion.mp3', 'button.mp3', 'buy.mp3',
              'dash.mp3', 'boss_1.mp3', 'boss_2.mp3', 'death.mp3',
              'dragon.png', 'dragon_mad.png', 'dragon_dizzy.png', 'dragon_shoot.png',
              'dragon_awkward.png', 'dragon_annoyed.png', 'dragon_deadpan.png', 'dragon_smug.png',
              'desktop_error.mp3', 'red_alarm.mp3', 'red_bolt.mp3', 'blue_bolt.mp3', 'tick.mp3', 'byte_collect.mp3', 'gravity_flip.mp3'
          ];
          
-         let assetsLoaded = 0;
+         // --- ASSET GATE ---------------------------------------------------------
+         // The main menu stays behind the loading screen until every file above has
+         // reported back - loaded OR failed, because one missing file must not hold the
+         // whole game hostage. Files are tracked by name in a Set rather than counted,
+         // so a browser that fires two events for the same clip can no longer push the
+         // bar past 100% and open the menu early.
          let loadingScreenCleared = false;
-         // Some browsers never fire oncanplaythrough for an audio file (cached, blocked,
-         // or autoplay-restricted), which used to leave the download bar up forever and
-         // make the whole menu look dead. The bar is a nicety - the game is not.
+         let assetWatchdog = null;
+         const pendingAssets = new Set(ASSETS_TO_LOAD);
+         const assetProbes = new Map();          // src -> the Image/Audio doing the fetch
+         let lastAssetProgress = Date.now();
+         let retryRounds = 0;
+         const MAX_RETRY_ROUNDS = 5;
+         const ASSET_STALL_MS = 20000;           // nothing at all finished for this long => stuck
+         const ASSET_POLL_MS = 1000;
+         window.__preloaderStarted = true;
+
+         function setLoadingStatus(text) {
+             try {
+                 const box = document.getElementById('loading-status');
+                 if (box && box.getAttribute('data-failed') !== '1') box.innerText = text || '';
+             } catch (e) {}
+         }
          function hideLoadingScreen() {
              if (loadingScreenCleared) return;
              loadingScreenCleared = true;
+             window.__assetsReady = true;        // the gate the boot safety net respects
+             try { if (assetWatchdog) clearInterval(assetWatchdog); } catch (e) {}
+             try { setLoadingStatus(''); } catch (e) {}
              try { document.getElementById('loading-screen').style.display = 'none'; } catch (e) {}
          }
-         setTimeout(hideLoadingScreen, 12000);
          function updatePreloader() {
-             assetsLoaded++;
-             let percent = Math.floor((assetsLoaded / ASSETS_TO_LOAD.length) * 100);
-             document.getElementById('loading-bar').style.width = percent + '%';
-             document.getElementById('loading-text').innerText = `${getLangText("downloading")} ${percent}%`;
-             
-             if (assetsLoaded >= ASSETS_TO_LOAD.length) {
-                 setTimeout(hideLoadingScreen, 500);
-             }
+             const total = ASSETS_TO_LOAD.length;
+             const percent = Math.max(0, Math.min(100, Math.floor(((total - pendingAssets.size) / total) * 100)));
+             try {
+                 document.getElementById('loading-bar').style.width = percent + '%';
+                 document.getElementById('loading-text').innerText = `${getLangText("downloading")} ${percent}%`;
+             } catch (e) {}
+         }
+         function assetResolved(src) {
+             if (!pendingAssets.delete(src)) return;   // duplicate event from an old fetch
+             lastAssetProgress = Date.now();
+             updatePreloader();
+             if (pendingAssets.size === 0) setTimeout(hideLoadingScreen, 500);
+         }
+         function loadAsset(src) {
+             try {
+                 let el;
+                 if (src.endsWith('.png')) {
+                     el = new Image();
+                     el.onload = function () { assetResolved(src); };
+                     el.onerror = function () { assetResolved(src); };
+                     el.src = src;
+                 } else {
+                     el = new Audio();
+                     el.preload = 'auto';
+                     const done = function () { assetResolved(src); };
+                     el.addEventListener('canplaythrough', done);
+                     el.addEventListener('error', done);
+                     el.src = src;
+                     el.load();
+                 }
+                 assetProbes.set(src, el);
+             } catch (e) { assetResolved(src); }
          }
 
-         ASSETS_TO_LOAD.forEach(src => {
-             if(src.endsWith('.png')) {
-                 let img = new Image();
-                 img.onload = updatePreloader;
-                 img.onerror = updatePreloader; 
-                 img.src = src;
-             } else if(src.endsWith('.mp3')) {
-                 let audio = new Audio();
-                 audio.oncanplaythrough = updatePreloader;
-                 audio.onerror = updatePreloader;
-                 audio.src = src;
-                 audio.load();
+         // Some browsers never fire canplaythrough for an audio file (cached, blocked or
+         // autoplay-restricted). That used to be "solved" by dropping the player into the
+         // menu after 12 seconds, assets or not. Instead the watchdog asks each pending
+         // element how far along it really is - which costs no extra downloads - and only
+         // re-requests files once the whole batch has stopped making progress.
+         function pollAssets() {
+             if (loadingScreenCleared || pendingAssets.size === 0) return;
+             pendingAssets.forEach(function (src) {
+                 const el = assetProbes.get(src);
+                 if (!el) { loadAsset(src); return; }                            // never got started
+                 if (src.endsWith('.png')) { if (el.complete) assetResolved(src); }
+                 else if (el.error || el.readyState >= 4) assetResolved(src);     // HAVE_ENOUGH_DATA
+             });
+             if (loadingScreenCleared || pendingAssets.size === 0) return;
+             if (Date.now() - lastAssetProgress < ASSET_STALL_MS) return;
+             lastAssetProgress = Date.now();
+             retryRounds++;
+             const stuck = Array.from(pendingAssets);
+             if (retryRounds <= MAX_RETRY_ROUNDS) {
+                 setLoadingStatus(String(getLangText('stillDownloading')).replace('%N', stuck.length));
+             } else {
+                 // Out of patience: offer a reload instead of a half-loaded main menu.
+                 // Shown once; the re-requests below keep running either way, so a
+                 // connection that recovers still gets the player into the game.
+                 try {
+                     const box = document.getElementById('loading-status');
+                     if (box && box.getAttribute('data-failed') !== '1') {
+                         box.setAttribute('data-failed', '1');
+                         box.innerText = getLangText('stuckFiles') + ' ' + stuck.slice(0, 4).join(', ') + (stuck.length > 4 ? '…' : '');
+                         const btn = document.createElement('button');
+                         btn.className = 'enter-btn btn-yellow';
+                         btn.innerText = getLangText('reload');
+                         btn.onclick = function () { try { location.reload(); } catch (e) {} };
+                         box.appendChild(document.createElement('br'));
+                         box.appendChild(btn);
+                     }
+                 } catch (e) {}
              }
-        });
+             stuck.forEach(loadAsset);
+         }
+
+         assetWatchdog = setInterval(pollAssets, ASSET_POLL_MS);
+         ASSETS_TO_LOAD.forEach(loadAsset);
+         updatePreloader();
 
         // closeStartupWarning is defined in the boot safety block at the top of this
         // script (before anything that could throw), so "I UNDERSTAND" always works.
